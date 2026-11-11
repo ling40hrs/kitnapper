@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- KitNapper desktop application. Build targets are provided by NetBeans. -->
+<project name="KitNapper" default="default" basedir=".">
+    <description>Builds, tests, and runs the KitNapper desktop application.</description>
+    <import file="nbproject/build-impl.xml"/>
+</project>

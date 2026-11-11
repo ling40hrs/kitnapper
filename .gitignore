@@ -1,0 +1,21 @@
+# NetBeans / Ant build artifacts
+nbproject/private/
+**/nbproject/private/
+build/
+**/build/
+dist/
+**/dist/
+nbbuild/
+**/classes/
+*.class
+*.jar
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/
+
+# Local agent rules (not tracked)
+AGENTS.md
