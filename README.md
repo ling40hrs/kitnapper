@@ -1,11 +1,15 @@
 # KitNapper
 
-![KitNapper banner](assets/banner.jpg)
+<p align="center">
+  <img src="assets/banner.jpg" alt="KitNapper banner" width="100%" />
+</p>
 
-![Java 17](https://img.shields.io/badge/Java-17-informational?style=flat-square)
-![Build](https://img.shields.io/badge/build-Ant%20%2F%20NetBeans-informational?style=flat-square)
-![Dependencies](https://img.shields.io/badge/dependencies-none-informational?style=flat-square)
-![Status](https://img.shields.io/badge/status-in%20development-yellow?style=flat-square)
+<p align="center">
+  <img src="https://img.shields.io/badge/Java-17-informational?style=flat-square" alt="Java 17" />
+  <img src="https://img.shields.io/badge/build-Ant%20%2F%20NetBeans-informational?style=flat-square" alt="Build" />
+  <img src="https://img.shields.io/badge/dependencies-none-informational?style=flat-square" alt="Dependencies" />
+  <img src="https://img.shields.io/badge/status-in%20development-yellow?style=flat-square" alt="Status" />
+</p>
 
 A desktop application for managing equipment loans at a small institution. KitNapper replaces the paper sign-out sheet: staff publish available gear, students check items out, and the app tracks due dates, overdue loans, and late fees.
 
