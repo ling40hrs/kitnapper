@@ -1,5 +1,7 @@
 # KitNapper
 
+![KitNapper banner](assets/banner.jpg)
+
 ![Java 17](https://img.shields.io/badge/Java-17-informational?style=flat-square)
 ![Build](https://img.shields.io/badge/build-Ant%20%2F%20NetBeans-informational?style=flat-square)
 ![Dependencies](https://img.shields.io/badge/dependencies-none-informational?style=flat-square)
@@ -30,6 +32,8 @@ Finals/
 ├── README.md
 ├── .editorconfig             shared formatting
 ├── .gitignore
+├── assets/
+│   └── banner.jpg            README banner image
 ├── docs/
 │   ├── PRD.md                product requirements and domain model
 │   ├── SRS.md                verifiable requirements and demo walkthrough
