@@ -75,11 +75,13 @@ Line estimates are sanity checks against the 200-line cap, not budgets to hit.
 | `AuthServiceImpl.java` | impl; authenticates against the users **loaded from `DataStore`**, not a hard-coded list (D23) | 60 |
 | `CatalogServiceImpl.java` | impl | 80 |
 | `LoanServiceImpl.java` | impl; enforces INV-3, INV-6 (3-loan cap) and the 14-day window via `LoanRecord.checkout`; on return, computes the fee for the **chosen return date**, skips a zero fee, freezes exactly one `Penalty` (FR-07, D20), and only calls `markAvailable()` when the item is `LOANED` (D15) | 150 |
+| `LoanMessages.java` | package-private user-facing strings for checkout/return failures and the due-date window | 35 |
+| `Ids.java` | sequential system IDs from the highest numeric suffix: `L-NNN`, `p-NNN`, `e-NNN`; malformed suffixes ignored (D22) | 55 |
 | `PenaltyServiceImpl.java` | impl | 80 |
 | `InventoryServiceImpl.java` | impl; goes through `Equipment` transition methods only (INV-5) | 100 |
 | `DataStoreImpl.java` | impl; orchestrates load → seed fallback → save-on-mutation; fallback covers model-validation and referential failures too (D18); atomic move with a Windows replace-existing fallback | 80 |
 | `ImageStoreImpl.java` | impl: validate extension (png/jpg/jpeg/gif/bmp) and ≤ 20 MB, decode via `ImageIO`, downscale to 1024 px longest edge, re-encode JPEG q0.85, atomic tmp+move write into `kitnapper-images/` (design §12) | 140 |
-| `AppContext.java` | holds the single set of service instances (incl. `ImageStore`), the shared `LateFeeStrategy`, the `DataStore`, the current session `User`, and the theme toggle; simple `addChangeListener(Runnable)` for views (NFR-02, §5 D2) | 60 |
+| `AppContext.java` | holds the single set of service instances (incl. `CatalogService`, `LoanService`, `ImageStore`), the shared `LateFeeStrategy`, the `DataStore`, an injectable `Supplier<LocalDate>` clock, the current session `User`, and the theme toggle; simple `addChangeListener(Runnable)` for views (NFR-02, §5 D2) | 105 |
 
 ### 2.3 `kitnapper.service.persistence` (hand-written JSON — no libraries)
 

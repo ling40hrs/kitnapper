@@ -4,12 +4,13 @@
 > Repository: `/Users/student/kitnapper`
 > Baseline: `main` @ `745ae28` (`fix(ui): repair M2 field, resize, and exit bugs`)
 > Written: 2026-11-14
-> Status: approved plan; **WP0 complete, WP1 next**
+> Status: approved plan; **WP1 complete, WP2 next**
 
 > **Resume here (fresh session):** this plan *is* the handoff — no separate
 > handoff doc is needed. Read `docs/preferences.md`, then §7 **WP1** and §9.2
-> `CatalogProbe`, and continue the §17 execution log. Current state: WP0
-> verified and committed; working tree clean; no M3 code exists yet.
+> `CatalogProbe`, and continue the §17 execution log. Current state: WP0 and
+> WP1 verified and committed; working tree clean; service/controller layer
+> exists, no catalog UI yet.
 
 ---
 
@@ -383,12 +384,12 @@ public static void paint(Graphics2D g, int x, int y, EquipmentStatus status);
 
 ### WP1 — Services + controllers + business probes
 
-- [ ] `Ids.java` (loan, penalty, equipment).
-- [ ] `CatalogService` + `CatalogServiceImpl`.
-- [ ] `LoanServiceImpl` with the §5.3 rules and friendly messages.
-- [ ] `AppContext`: construct both services, injectable `today`, `fireChanged`.
-- [ ] `CatalogController` (state + change subscription) and `BorrowingController`.
-- [ ] `CatalogProbe` covering §9.2; compile and run against `build/classes`.
+- [x] `Ids.java` (loan, penalty, equipment).
+- [x] `CatalogService` + `CatalogServiceImpl`.
+- [x] `LoanServiceImpl` with the §5.3 rules and friendly messages.
+- [x] `AppContext`: construct both services, injectable `today`, `fireChanged`.
+- [x] `CatalogController` (state + change subscription) and `BorrowingController`.
+- [x] `CatalogProbe` covering §9.2; compile and run against `build/classes`.
 
 **Exit:** `CatalogProbe` green; `DataProbe` still `PASS=26 FAIL=0`; no Swing
 changes yet. This is the point where the risky rules are proven.
@@ -903,15 +904,70 @@ wiring, `CatalogController`, `BorrowingController`, and `CatalogProbe`.
 - WP1 starts from a clean tree with **no M3 source code written yet**.
 
 
+### WP1 — Services, controllers, and business probes (2026-11-14)
+
+**Status:** complete. Starting HEAD `6da2fa487922015a19bccc7255f487311bd566e2`;
+working tree clean before the phase.
+
+Added:
+
+- `service/Ids.java`
+- `service/CatalogService.java`
+- `service/CatalogServiceImpl.java`
+- `service/LoanServiceImpl.java`
+- `service/LoanMessages.java` (extracted when `LoanServiceImpl` reached 210
+  lines; final size 188)
+- `controller/CatalogController.java`
+- `controller/BorrowingController.java`
+
+Modified:
+
+- `service/AppContext.java`: catalog/loan getters, injectable clock, and
+  package-private `fireChanged()`
+- `docs/implementation-plan.md`: `Ids`/`LoanMessages` inventory rows and the
+  `AppContext` description
+
+Plan corrections applied during execution:
+
+- The seed clock is real `LocalDate.now()`, so `CatalogProbe` derives
+  `T = L-003.dueDate + 4` instead of assuming a fixed calendar date.
+- The `T-1` checkout test runs as student2, avoiding the 3-loan cap masking
+  the window rejection.
+- Return resolves and validates linked equipment before any mutation, so a
+  missing/decommissioned item cannot leave a half-returned loan.
+- `AppContext.fireChanged()` is package-private as planned but was `private`
+  in the code.
+
+Verification (commands run from the repository and probe harness):
+
+| Check | Result |
+| :--- | :--- |
+| `ant clean jar` | BUILD SUCCESSFUL |
+| `CatalogProbe` | `PASS=28 FAIL=0` |
+| `DataProbe` | `PASS=26 FAIL=0` |
+| `SkinProbe` | `light_pixels=175 total=6400` |
+| `EdgeProbe` | `PASS=4 FAIL=0` |
+| `FrameProbe` | `PASS=5 FAIL=0` |
+| `FontProbe` | `text=Inter` |
+| `SizeProbe` | unchanged key heights; manager sidebar still 6 buttons |
+| `CloseProbe` | `EXITED_OK` |
+| WP1 line counts | 53/27/54/188/32/102/89/67, all ≤ 200 |
+| Pre-existing >200 files | `ResizeBands.java` 213, `JsonParser.java` 202 (untouched) |
+
+No `kitnapper.view` file changed. The catalog is still the M2 placeholder until
+WP2/WP4.
+
+**Next:** WP2 — shell split and mounting API.
+
 ---
 
 ## Appendix A — Implementation checklist (copy into the working session)
 
 ```
 [x] WP0 preflight: probes green, HEAD recorded
-[ ] Ids + CatalogService(+Impl) + LoanServiceImpl + AppContext
-[ ] CatalogController + BorrowingController
-[ ] CatalogProbe green; DataProbe still 26
+[x] Ids + CatalogService(+Impl) + LoanServiceImpl + AppContext
+[x] CatalogController + BorrowingController
+[x] CatalogProbe green; DataProbe still 26
 [ ] MainFrame split + mount/status/commands; manager nav
 [ ] Badges, SegmentedControl, GradientTile, skeletons, PhotoTile, Toasts,
     TableSkins, DialogSkin
