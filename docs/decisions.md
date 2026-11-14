@@ -10,7 +10,7 @@
 | Problem | Replace physical sign-out logbooks for schools/studios |
 | Team | **YAPPERS** (group project): Casiano, Cudia, Villacorza |
 | Course | CS203 – Object-Oriented Programming |
-| Current phase | Implementation (M0 domain core complete) |
+| Current phase | Implementation (M1 persistence complete) |
 
 ## 2. Product Decisions (from PRD interview)
 
@@ -147,7 +147,15 @@ The attribution rules above now run on the Windows machine, not just the origina
 
 ## 9. Implementation Status
 
-- **M0 complete: domain core implemented.** The `kitnapper.model` layer (18 files per `implementation-plan.md` §2.1, including `GeneralEquipment` for the JSON `BASE` kind) compiles and enforces INV-1/2/4/5; `Main.java` is still a blank placeholder, and services, persistence and Swing views are not yet written. The scaffold is a NetBeans Ant project at `desktop-app/` on the repository root (`C:\Users\CIIT\Downloads\kitnapper\desktop-app`).
+- **M1 complete: JSON persistence layer implemented.** `kitnapper.service` +
+  `kitnapper.service.persistence` (14 files): hand-written JSON parser/writer (no
+  libraries), entity mappers for all three equipment kinds, `AppData`/`DataStore(+Impl)`
+  with seed fallback on missing or corrupt saves (NFR-07, D18), a `LoanService`
+  skeleton interface, and the PRD 9 seed dataset computed relative to the seeding
+  date (D4). Round-trip and corruption checks (16/16) ran through a scratch `main`
+  deleted before the commit (`fe9ed34`). Next: write `design.md` §13 with the user,
+  then M2 (shell + login) — see `HANDOFF-M2.md`.
+- **M0 complete: domain core implemented.** The `kitnapper.model` layer (18 files per `implementation-plan.md` §2.1, including `GeneralEquipment` for the JSON `BASE` kind) compiles and enforces INV-1/2/4/5; `Main.java` is still a blank placeholder, and persistence and Swing views beyond M1 are not yet written. The scaffold is a NetBeans Ant project at `desktop-app/` on the repository root (`C:\Users\CIIT\Downloads\kitnapper\desktop-app`).
 - Future build order: model → service/persistence → Swing views → demo polish. **Detailed in `docs/implementation-plan.md` (milestones M0–M6) — follow it one milestone at a time; the class inventory, JSON schema, and implementation decisions D1–D6 live there.**
 - Respect `OOP/AGENTS.md`: Java 17 + Swing, NetBeans Ant, no third-party libraries, 200-line file cap, MVC separation.
 - Swift was considered during the scaffold decision and **explicitly rejected**; the repository is Java-only.

@@ -13,7 +13,7 @@
 
 A desktop application for managing equipment loans at a small institution. KitNapper replaces the paper sign-out sheet: staff publish available gear, students check items out, and the app tracks due dates, overdue loans, and late fees.
 
-This repository currently contains the project documentation and a NetBeans Ant scaffold. The M0 domain core (`kitnapper.model`, 18 classes) is implemented and building; services, JSON persistence, and the Swing UI are not yet written.
+This repository contains the project documentation and a NetBeans Ant scaffold. The M0 domain core (`kitnapper.model`, 18 classes) and the M1 persistence layer (`kitnapper.service` + `kitnapper.service.persistence`, 14 classes — hand-written JSON with seed fallback) are implemented and building; the Swing UI (M2–M6) is not yet written.
 
 ## Contents
 
@@ -55,7 +55,7 @@ Finals/
     ├── src/kitnapper/
     │   ├── Main.java         entry point (placeholder until M2)
     │   ├── model/            domain core — 18 classes (M0)
-    │   ├── service/
+    │   ├── service/           services + JSON persistence layer (M1)
     │   ├── view/
     │   └── controller/
     ├── test/
@@ -108,6 +108,7 @@ Build output is written to `build/` and `dist/`, both of which are ignored by Gi
 | [`docs/implementation-plan.md`](docs/implementation-plan.md) | Build order, class/file inventory, JSON persistence spec, decisions D1–D23 |
 | [`docs/seed-data.md`](docs/seed-data.md) | Where seed data lives and when to split it out |
 | [`docs/logout-tokens.md`](docs/logout-tokens.md) | Runbook: logging out of every stored GitHub credential on the build machine |
+| [`HANDOFF-M2.md`](HANDOFF-M2.md) | Next session's execution doc (M2 shell + login); `HANDOFF-M1.md` kept for traceability |
 
 The PRD and SRS are the sources of truth for behavior. If implementation and documentation disagree, the documentation takes precedence until both are updated together.
 
@@ -123,4 +124,4 @@ The PRD and SRS are the sources of truth for behavior. If implementation and doc
 
 ## Status
 
-Documentation complete, M0 domain core implemented (18 model classes, invariant-enforced). Services, JSON persistence, and the Swing UI are next (M1–M6). See `docs/decisions.md` for the decision record, `docs/implementation-plan.md` for the build order, and `docs/design.md` §13 for the open skeleton-loading plan.
+Documentation complete; M0 domain core and M1 JSON persistence implemented and building. The Swing UI is next (M2–M6): `docs/design.md` §13 (skeleton loading states) must be written with the user before M2 (shell + login) starts. See `docs/decisions.md` for the decision record, `docs/implementation-plan.md` for the build order, and `HANDOFF-M2.md` for the next session's working document.
