@@ -72,7 +72,7 @@ Line estimates are sanity checks against the 200-line cap, not budgets to hit.
 | `DataStore.java` | interface: `load()`, `save()`, `resetToSeed()` plus read accessors over the live aggregate (REQ-012, D17) | 30 |
 | `AppData.java` | the in-memory aggregate: four live lists (`users`, `equipment`, `loans`, `penalties`) that services mutate and `save()` persists (D17) | 50 |
 | `ImageStore.java` | interface: `importPhoto(equipmentId, sourcePath)`, `photoFor(equipmentId)`, `deletePhoto(equipmentId)`; reset/orphan-sweep hooks (design §12) | 30 |
-| `AuthServiceImp.java` | impl; authenticates against the users **loaded from `DataStore`**, not a hard-coded list (D23) | 60 |
+| `AuthServiceImpl.java` | impl; authenticates against the users **loaded from `DataStore`**, not a hard-coded list (D23) | 60 |
 | `CatalogServiceImpl.java` | impl | 80 |
 | `LoanServiceImpl.java` | impl; enforces INV-3, INV-6 (3-loan cap) and the 14-day window via `LoanRecord.checkout`; on return, computes the fee for the **chosen return date**, skips a zero fee, freezes exactly one `Penalty` (FR-07, D20), and only calls `markAvailable()` when the item is `LOANED` (D15) | 150 |
 | `PenaltyServiceImpl.java` | impl | 80 |

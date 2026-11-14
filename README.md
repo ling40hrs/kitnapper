@@ -124,4 +124,4 @@ The PRD and SRS are the sources of truth for behavior. If implementation and doc
 
 ## Status
 
-Documentation complete; M0 domain core and M1 JSON persistence implemented and building. The Swing UI is next (M2–M6); `docs/design.md` is fully resolved including §13 (skeleton loading states). See `docs/decisions.md` for the decision record, `docs/implementation-plan.md` for the build order, and `HANDOFF-M2.md` for the next session's working document.
+Documentation complete; M0 domain core, M1 JSON persistence, and M2 Win11 shell + mock login implemented. **M2 caveat:** the final 200-line-cap file split was not re-compiled on the machine it was written on — run `ant clean jar` and the login smoke test before M3 work (see `HANDOFF-M3.md`). The remaining milestones are M3–M6 (catalog, loans, penalties, polish). See `docs/decisions.md` for the decision record, `docs/implementation-plan.md` for the build order, and `HANDOFF-M3.md` for the next session's working document.

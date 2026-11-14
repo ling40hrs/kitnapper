@@ -147,6 +147,20 @@ The attribution rules above now run on the Windows machine, not just the origina
 
 ## 9. Implementation Status
 
+- **M2 complete: Win11 shell + mock login implemented** (2026-11-14). Two-frame
+  flow (`LoginFrame` ↔ `MainFrame`) with custom-painted chrome (drag, resize
+  bands, manual maximize to the work area), role-grouped sidebar, omnibar with
+  inert search placeholder, status bar, inline login errors, instant
+  dark/light theme toggle, Ctrl+F binding, and placeholder screens (real page
+  header + "No records to show yet.") for everything M3+. Auth is mock via
+  `AuthService(+Impl)` over `DataStore.users()` (D23). **Deviation:** the
+  200-line cap forced a late split into 5 shared paint/chrome files
+  (`FlatButton`, `FieldSkin`, `RoundedPanel`, `ResizeBands`, `Sidebar`), so the
+  class inventory in `implementation-plan.md` undercounts the view package.
+  **Verification caveat:** the pre-split build compiled, jarred, and passed a
+  scripted UI walkthrough (login/error/shell/sign-out/manager/theme/maximize/
+  drag/resize/close); the post-split rewrite was **not** re-compiled before the
+  machine was retired — verify first (see `HANDOFF-M3.md` §2).
 - **M1 complete: JSON persistence layer implemented.** `kitnapper.service` +
   `kitnapper.service.persistence` (14 files): hand-written JSON parser/writer (no
   libraries), entity mappers for all three equipment kinds, `AppData`/`DataStore(+Impl)`
