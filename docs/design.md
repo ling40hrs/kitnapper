@@ -18,6 +18,11 @@
 
 Reference mood: linear.app, vercel dashboard, GitHub dark — all achievable in plain Swing.
 
+**Additional design inspirations (added 2026-11-14):**
+
+- **[files.community](https://files.community/)** — the Files app for Windows: refined dark surfaces, a persistent sidebar with section grouping, and clean list/detail views. Directly relevant to our sidebar shell, inventory tables, and card/table toggling.
+- **[shelf.nu](https://www.shelf.nu/)** — an asset/kit lending tracker: booking cards, availability badges, and dashboard KPIs for equipment custody. Conceptually the closest existing product to KitNapper — study its catalog cards, status badge language, and loan detail layouts.
+
 **Hard constraint:** no third-party libraries (PRD §7.2), so **no FlatLaf, no theme packs, no icon fonts**. The dark look is custom-painted Swing: `UIManager` defaults, custom `TableCellRenderer`s, custom `JPanel` backgrounds, and Unicode glyphs for icons.
 
 ## 3. Color Tokens
@@ -163,3 +168,4 @@ All twelve questions were answered with the user in a single session; no guesses
 | 2026-11-11 | No third-party libraries → custom Swing theme, Unicode icons |
 | 2026-11-11 | Details deferred; questions captured in §9 |
 | 2026-11-14 | All 12 §9 questions resolved with the user (answers in §9): amber accent `#F0A32E`, warm `#2C1E16` base with full warm ramp, Inter bundled in-app, cards+dense-tables, KPI/overdue/activity dashboard, catalog toggle, custom logo icon later, mixed-by-role microcopy, 1080p target, single window + dialogs, dark + light themes, transition-only fades |
+| 2026-11-14 | Design inspirations added: files.community (sidebar shell, list/detail views) and shelf.nu (asset-lending domain twin — cards, badges, KPIs) |
