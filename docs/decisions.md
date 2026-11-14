@@ -78,6 +78,7 @@
 | `docs/SRS.md` | 3.0.0 | Verifiable requirements, invariants, demo walkthrough, traceability |
 | `docs/design.md` | draft | Dark-dashboard direction, color/type tokens, open design questions |
 | `docs/seed-data.md` | — | Points to PRD §9; save-file/reset behaviour |
+| `docs/logout-tokens.md` | — | Runbook for removing all stored GitHub credentials from the Windows build machine |
 | `docs/decisions.md` | — | This file |
 
 ## 5. Design Direction
@@ -109,6 +110,16 @@
 - Conventional commit types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `style`.
 - **Explicit approval is required before every git write operation** — stage, commit, push, tag, branch, revert.
 - Never commit NetBeans build output (`build/`, `dist/`, `nbproject/private/`, `*.class`).
+
+**Windows build machine setup (2026-11-14)**
+
+The attribution rules above now run on the Windows machine, not just the original push machine:
+
+- **GitHub CLI 2.104.0** installed (`C:\Program Files\GitHub CLI\gh.exe`), authenticated as `ling40hrs`; `gh auth setup-git` links it to Git pushes.
+- **SSH signing** enabled: ed25519 key generated at `C:\Users\CIIT\.ssh\id_ed25519`, uploaded to the `ling40hrs` account as a **signing key** (title: "KitNapper build machine"). Repo-local config: `commit.gpgsign=true`, `gpg.format=ssh`, `user.signingkey` pointing at the public key — commits get the GitHub **Verified** badge.
+- **Commit template** `C:\Users\CIIT\.gitmessage-kitnapper` (repo-local `commit.template`) pre-fills the two co-author trailers above. Note: `git commit -m` bypasses the template, so trailers must be added manually in that case.
+- The stray `aercn <aercn222@gmail.com>` identity that briefly existed in this machine's global git config was removed; the repo-local identity is the author above.
+- **History note:** two commits pushed 2026-11-11–14 under the wrong identity (`aercn`) were reverted from `main` and re-applied with correct attribution as `76e4739` (docs) and `1e98fbb` (fonts). No `aercn`-authored commits remain on the remote.
 
 ## 7. Deliverables
 

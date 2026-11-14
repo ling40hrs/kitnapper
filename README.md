@@ -106,6 +106,7 @@ Build output is written to `build/` and `dist/`, both of which are ignored by Gi
 | [`docs/design.md`](docs/design.md) | Dark dashboard direction, tokens, unresolved design questions |
 | [`docs/decisions.md`](docs/decisions.md) | Record of confirmed decisions and known gaps |
 | [`docs/seed-data.md`](docs/seed-data.md) | Where seed data lives and when to split it out |
+| [`docs/logout-tokens.md`](docs/logout-tokens.md) | Runbook: logging out of every stored GitHub credential on the build machine |
 
 The PRD and SRS are the sources of truth for behavior. If implementation and documentation disagree, the documentation takes precedence until both are updated together.
 
