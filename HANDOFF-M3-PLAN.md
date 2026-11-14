@@ -2,10 +2,14 @@
 
 > Scope: milestone **M3 — Catalog + Checkout**
 > Repository: `/Users/student/kitnapper`
-> Baseline: `main` @ `745ae28` (`fix(ui): repair M2 field, resize, and exit bugs`);
-> tree clean except untracked `HANDOFF-SESSION-2026-11-14.md`
+> Baseline: `main` @ `745ae28` (`fix(ui): repair M2 field, resize, and exit bugs`)
 > Written: 2026-11-14
-> Status: approved plan; **no code written yet** (Plan mode)
+> Status: approved plan; **WP0 complete, WP1 next**
+
+> **Resume here (fresh session):** this plan *is* the handoff — no separate
+> handoff doc is needed. Read `docs/preferences.md`, then §7 **WP1** and §9.2
+> `CatalogProbe`, and continue the §17 execution log. Current state: WP0
+> verified and committed; working tree clean; no M3 code exists yet.
 
 ---
 
@@ -887,6 +891,17 @@ Notes:
 
 **Next:** WP1 — `Ids`, `CatalogService(+Impl)`, `LoanServiceImpl`, `AppContext`
 wiring, `CatalogController`, `BorrowingController`, and `CatalogProbe`.
+
+### Plan bookkeeping (2026-11-14)
+
+- `ac35447` — plan + session handoff committed; WP0 log added.
+- `8be1bd1` — `docs/preferences.md` added as the tracked, portable process
+  doc; README index updated. Preferences now travel with the repo instead of
+  living only in the gitignored `AGENTS.md`.
+- Added this "Resume here" note so a renewed session continues from the plan
+  without a separate handoff file.
+- WP1 starts from a clean tree with **no M3 source code written yet**.
+
 
 ---
 
