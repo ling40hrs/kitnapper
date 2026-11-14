@@ -83,7 +83,7 @@
 ## 5. Design Direction
 
 - **Dark dashboard** aesthetic, staff-console tone.
-- Accent color, font choice, density, layout widgets, logo, motion, and light-mode support are **open questions** listed in `docs/design.md` §9 — ask one at a time in the next design session.
+- **Design pass completed 2026-11-14** — all 12 questions in `docs/design.md` §9 are resolved with the user: amber accent (`#F0A32E`), warm brown-black base (`#2C1E16`, full warm token ramp), Inter bundled in-app (`desktop-app/resources/fonts/`), airy catalog cards + dense data tables, dashboard = KPIs + overdue list + recent activity (derived from loan/penalty records, no new persistence), catalog cards/table toggle (session preference only), custom logo icon (wordmark placeholder until team art lands), microcopy mixed by role (plain for borrowers, formal for manager surfaces), 1080p target, single main window with modal dialogs, dark + light themes, fades on transitions only (≤150 ms Swing `Timer`).
 - Hard constraint: no third-party libraries → custom-painted Swing, Unicode glyph icons.
 
 ## 6. Git & Attribution
@@ -112,7 +112,7 @@
 
 ## 7. Deliverables
 
-- **Required:** working desktop app + the documentation in `Finals/docs/`.
+- **Required:** working desktop app + the documentation in `Finals/docs/` (on the current checkout that folder is the repository root's `docs/` — the `Finals/` prefix exists only on the NetBeans machine).
 - **Slides:** produce at the very end, only once everything else is finished, using the PDF skill.
 - UML diagrams: not required.
 
@@ -124,7 +124,7 @@
 
 ## 9. Implementation Status
 
-- **Scaffold created; no application code.** `Finals/desktop-app/` is a NetBeans Ant project with `nbproject/`, `build.xml`, `manifest.mf`, empty package folders, and a blank `Main.java` placeholder. Nothing has been implemented.
+- **Scaffold created; no application code.** `Finals/desktop-app/` is a NetBeans Ant project with `nbproject/`, `build.xml`, `manifest.mf`, empty package folders, and a blank `Main.java` placeholder. Nothing has been implemented. In the current checkout this project sits at `desktop-app/` on the repository root (`C:\Users\CIIT\Downloads\kitnapper\desktop-app`).
 - Future build order: model → service/persistence → Swing views → demo polish.
 - Respect `OOP/AGENTS.md`: Java 17 + Swing, NetBeans Ant, no third-party libraries, 200-line file cap, MVC separation.
 - Swift was considered during the scaffold decision and **explicitly rejected**; the repository is Java-only.

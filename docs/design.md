@@ -1,6 +1,6 @@
 # KitNapper — Design Specification
 
-> **Status:** direction agreed (dark dashboard), details pending. The open questions at the end are the agenda for the next design pass — do not invent answers before they are confirmed.
+> **Status:** direction agreed (dark dashboard) and all open questions resolved 2026-11-14 (answers in §9, logged in §10). Implementation should follow the tokens below.
 
 ## 1. Brand
 
@@ -26,15 +26,17 @@ Name the tokens in code (`Theme.java` constants), never hard-code hex in panels.
 
 | Token | Purpose | Proposed value |
 | :--- | :--- | :--- |
-| `BG_BASE` | Window background | `#0D1117` |
-| `BG_SURFACE` | Cards, panels, tables | `#161B22` |
-| `BG_ELEVATED` | Hovered rows, dialogs | `#1C2128` |
-| `BORDER` | Dividers, input outlines | `#30363D` |
-| `TEXT_PRIMARY` | Headings, values | `#E6EDF3` |
-| `TEXT_SECONDARY` | Labels, metadata | `#8B949E` |
-| `TEXT_MUTED` | Disabled, placeholders | `#6E7681` |
-| `ACCENT` | Primary buttons, selection, focus | TBD (§9) |
-| `ON_ACCENT` | Text on accent | TBD |
+| `BG_BASE` | Window background | `#2C1E16` (warm, §9 Q2) |
+| `BG_SURFACE` | Cards, panels, tables | `#3A281D` |
+| `BG_ELEVATED` | Hovered rows, dialogs | `#4A3526` |
+| `BORDER` | Dividers, input outlines | `#5C452F` |
+| `TEXT_PRIMARY` | Headings, values | `#F2E8DC` |
+| `TEXT_SECONDARY` | Labels, metadata | `#C4AE94` |
+| `TEXT_MUTED` | Disabled, placeholders | `#937F69` |
+| `ACCENT` | Primary buttons, selection, focus | `#F0A32E` (§9 Q1) |
+| `ON_ACCENT` | Text on accent | `#2C1E16` |
+
+**Warm ramp note (2026-11-14):** all dark tokens are warm-shifted to sit naturally on the `#2C1E16` base — do not mix in cool GitHub grays. The accent amber is orange-leaning (`#F0A32E`) so primary buttons stay visually distinct from the amber `UNDER_MAINTENANCE` badge (`#D29922`).
 
 ### Status colors (badges)
 
@@ -49,6 +51,22 @@ Name the tokens in code (`Theme.java` constants), never hard-code hex in panels.
 | Penalty `PAID` | green | Settled |
 | Penalty `WAIVED` | muted | Forgiven |
 
+### Light theme (§9 Q11 — dark and light both)
+
+| Token | Light value |
+| :--- | :--- |
+| `BG_BASE` | `#F7EFE2` (warm paper) |
+| `BG_SURFACE` | `#FFFDF8` |
+| `BG_ELEVATED` | `#FFFFFF` |
+| `BORDER` | `#E0D2BC` |
+| `TEXT_PRIMARY` | `#3B2A1C` |
+| `TEXT_SECONDARY` | `#7A6A55` |
+| `TEXT_MUTED` | `#A6937B` |
+| `ACCENT` | `#C77E14` (darker amber for contrast) |
+| `ON_ACCENT` | `#FFFDF8` |
+
+Status colors switch to darker variants in light mode for contrast: green `#2E8B3D`, blue `#1E6BB8`, red `#D64545`, amber `#A87A0C`, muted `#8A7A66`. Every token pair must pass the §8 contrast check in both modes.
+
 ## 4. Typography
 
 | Role | Size / weight |
@@ -59,7 +77,7 @@ Name the tokens in code (`Theme.java` constants), never hard-code hex in panels.
 | Label / caption | 11–12 px, regular, secondary color |
 | KPI number | 28–32 px, bold |
 
-Font stack must be Swing-safe: `Inter` if installed, else `Segoe UI`, else `SansSerif`. Monospace (`Monospaced`) for IDs, serial numbers, and money in tables.
+Font stack (§9 Q3, resolved 2026-11-14): **Inter is bundled in-app** at `desktop-app/resources/fonts/` and registered at runtime via `GraphicsEnvironment.registerFont` — font files are assets, not libraries, so the no-third-party rule holds. Fallback if the files are missing: `Segoe UI`, else `SansSerif`. Monospace (`Monospaced`) for IDs, serial numbers, and money in tables.
 
 ## 5. Layout
 
@@ -118,22 +136,24 @@ Single main window (role-aware), fixed sidebar navigation.
 - Status must never be conveyed by color alone — badges always include the word.
 - Money always formatted `₱1,234.00`; dates always `yyyy-MM-dd` or `MMM d, yyyy` (pick one, use everywhere).
 
-## 9. Open Questions — Next Design Pass
+## 9. Open Questions — RESOLVED 2026-11-14
 
-Ask the user these, one at a time, before building UI:
+All twelve questions were answered with the user in a single session; no guesses were made.
 
-1. **Accent color** — blue, teal, amber, or something else?
-2. **Background depth** — near-black (`#0D1117`) or softer slate (`#161B22` base)?
-3. **Font** — Inter-style sans, or a system font for a more "native" feel?
-4. **Density** — airy cards or compact, data-heavy tables for the catalog?
-5. **Dashboard widgets** — which matter most: KPIs, overdue list, recent activity, inventory breakdown?
-6. **Catalog layout** — cards, table, or a toggle between both?
-7. **Logo** — text-only wordmark, or an icon + wordmark?
-8. **Microcopy tone** — formal ("Authentication failed") or plain ("That email and password don't match")?
-9. **Target resolution** — 1080p, laptop 1366×768, or larger?
-10. **Window model** — single main window with dialogs, or separate windows per screen (Activity 7 style)?
-11. **Light mode** — needed, or dark only?
-12. **Motion** — none, or subtle fades on panel changes?
+| # | Question | Answer |
+| :-- | :--- | :--- |
+| 1 | Accent color | **Amber `#F0A32E`** — orange-leaning so primary buttons stay distinct from the `#D29922` maintenance badge |
+| 2 | Background depth | **Warm brown-black `#2C1E16`** base; the whole token ramp is warm-shifted (§3) |
+| 3 | Font | **Inter, bundled in-app** (`desktop-app/resources/fonts/`, registered via `GraphicsEnvironment`) |
+| 4 | Density | **Airy cards for catalog, dense tables** for loans/inventory |
+| 5 | Dashboard widgets | **KPIs + overdue list + recent activity** (activity derived from loan/penalty records — no new persistence format) |
+| 6 | Catalog layout | **Cards/table toggle** in the toolbar; defaults to cards; session preference only |
+| 7 | Logo | **Custom icon**; text wordmark placeholder until the team's art lands |
+| 8 | Microcopy tone | **Mixed by role** — plain for student-facing validation ("That email and password don't match."), formal for manager/audit surfaces ("Authentication failed.") |
+| 9 | Target resolution | **1080p** (with a 1366×768 sanity check during the SRS §6.2 walkthrough) |
+| 10 | Window model | **Single main window with modal dialogs** |
+| 11 | Light mode | **Dark and light** — two token sets (§3), a toggle, per-pair contrast verification |
+| 12 | Motion | **Fades on transitions only** (login→main, dialog open/close), ≤150 ms Swing `Timer` |
 
 ## 10. Decisions Log
 
@@ -142,3 +162,4 @@ Ask the user these, one at a time, before building UI:
 | 2026-11-11 | Dark dashboard direction approved |
 | 2026-11-11 | No third-party libraries → custom Swing theme, Unicode icons |
 | 2026-11-11 | Details deferred; questions captured in §9 |
+| 2026-11-14 | All 12 §9 questions resolved with the user (answers in §9): amber accent `#F0A32E`, warm `#2C1E16` base with full warm ramp, Inter bundled in-app, cards+dense-tables, KPI/overdue/activity dashboard, catalog toggle, custom logo icon later, mixed-by-role microcopy, 1080p target, single window + dialogs, dark + light themes, transition-only fades |

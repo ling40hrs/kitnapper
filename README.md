@@ -60,9 +60,12 @@ Finals/
     │   └── controller/
     ├── test/
     └── resources/
+        └── fonts/              bundled Inter (Regular, SemiBold, Bold)
 ```
 
 `desktop-app/` is a separate project root because NetBeans identifies an Ant project by the presence of `nbproject/` next to `build.xml`. Keeping the Java project in its own directory allows the repository root to hold documentation and shared configuration without confusing the IDE.
+
+On the NetBeans machine this repository lives at `OOP/Finals/`, so its paths carry `OOP/Finals/` prefixes (for example `OOP/Finals/desktop-app`). This checkout is the same tree with the repository root standing in for `Finals/` — `desktop-app/` here is `OOP/Finals/desktop-app` there, and `docs/` here is `Finals/docs/` in `docs/decisions.md`.
 
 ## Getting started
 
@@ -76,11 +79,20 @@ The main class is set to `kitnapper.Main` in `nbproject/project.properties`. `Ma
 
 ### Command line
 
-Ant is not installed globally on this machine. NetBeans bundles its own copy under `OOP/netbeans/extide/ant/bin/ant`:
+The command-line Ant depends on the machine:
+
+**NetBeans machine.** NetBeans bundles its own copy under `OOP/netbeans/extide/ant/bin/ant`:
 
 ```bash
 cd OOP/Finals/desktop-app
 ../../netbeans/extide/ant/bin/ant clean jar
+```
+
+**Windows machine.** Apache Ant 1.10.18 is installed at `C:\Users\CIIT\tools\apache-ant-1.10.18` (on the user PATH, with `ANT_HOME` set). Repository checkout: `C:\Users\CIIT\Downloads\kitnapper`:
+
+```bash
+cd C:\Users\CIIT\Downloads\kitnapper\desktop-app
+ant clean jar
 ```
 
 Build output is written to `build/` and `dist/`, both of which are ignored by Git.
