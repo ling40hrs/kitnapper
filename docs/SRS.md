@@ -3,7 +3,7 @@ project_name: "KitNapper"
 course: "CS203 – Object-Oriented Programming"
 artifact_type: "Software Requirements Specification (SRS)"
 derived_from: "PRD.md v3.1.0"
-version: "3.1.0"
+version: "3.1.1"
 ---
 
 # Software Requirements Specification — KitNapper
@@ -74,7 +74,7 @@ Priority scale: **H** = must-have, **M** = should-have, **L** = nice-to-have. Al
 
 | ID | Requirement | Priority |
 | :--- | :--- | :--- |
-| FR-06 | Return logging: a manager records the actual return date; the loan becomes `RETURNED` and the item returns to `AVAILABLE`. No condition assessment is performed. | H |
+| FR-06 | Return logging: a manager records the actual return date; the loan becomes `RETURNED` and the item returns to `AVAILABLE` — except an item already flagged `UNDER_MAINTENANCE` (including flagged while loaned), which stays `UNDER_MAINTENANCE` until the repair is completed. No condition assessment is performed. | H |
 | FR-07 | Late fees computed exclusively via `FeeStrategy`: `₱50.00 × days overdue`, displayed live while the loan is outstanding and frozen into a single `LATE_FEE` penalty on return. No grace period; fees are never hand-editable. | H |
 
 **Acceptance (FR-07):** an outstanding loan 4 days late displays ₱200.00 live; returning it creates exactly one ₱200.00 `LATE_FEE` penalty. A loan returned on its due date yields no penalty.
@@ -173,3 +173,4 @@ Seed dataset details: PRD §9; rationale and file placement: `seed-data.md`.
 | 2.1.0 | 2026-11-11 | Inventory CRUD promoted to must-have; click budget relaxed to ≤ 4; third-party libraries disallowed (hand-written JSON); automated tests removed in favour of manual verification; added full demo walkthrough and PRD traceability table |
 | 3.0.0 | 2026-11-11 | Swing + NetBeans Ant (replacing JavaFX); fixed-password mock login (FR-03); live accrual + freeze-on-return (FR-07); borrow limits (FR-04, INV-2, INV-6); All Loans view (FR-09); save file pinned to app folder; cancellation/extension explicitly out of scope |
 | 3.1.0 | 2026-11-14 | Windows 11 / Fluent direction (design.md v2.0); photo upload added to inventory scope (FR-10 + acceptance), image-storage NFR-08, walkthrough step 11 covers photo + decommission, category-tile definition in §1.3 |
+| 3.1.1 | 2026-11-14 | Clarified FR-06: an item flagged `UNDER_MAINTENANCE` while loaned keeps that status when returned (mirrors PRD §4.1); no scope change |

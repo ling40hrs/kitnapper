@@ -12,6 +12,8 @@ nbbuild/
 
 # Runtime state (never commit the save file)
 kitnapper-data.json
+kitnapper-data.json.tmp
+kitnapper-images/
 
 # OS / editor noise
 .DS_Store

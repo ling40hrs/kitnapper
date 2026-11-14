@@ -3,8 +3,8 @@ project_name: "KitNapper"
 team_name: "YAPPERS"
 course: "CS203 – Object-Oriented Programming"
 artifact_type: "Implementation Plan (structure, persistence format, build order)"
-derived_from: "PRD.md v3.0.0, SRS.md v3.0.0, design.md"
-version: "1.0.0"
+derived_from: "PRD.md v3.1.0, SRS.md v3.1.0, design.md"
+version: "1.2.0"
 ---
 
 # KitNapper — Implementation Plan
@@ -48,6 +48,7 @@ Line estimates are sanity checks against the 200-line cap, not budgets to hit.
 | `Equipment.java` | **abstract**; attributes per PRD §3.1 incl. the optional `photoFile` (§12 photo uploads); status transition methods (`markAvailable`, `markLoaned`, `markUnderMaintenance`, `decommission`) each validating the legal transitions of PRD §4.1 (INV-1 support) | 150 |
 | `DigitalEquipment.java` | extends `Equipment`; thin subclass adding `warrantyContact` (shown in inventory detail) | 60 |
 | `MechanicalTool.java` | extends `Equipment`; thin subclass adding `maintenanceIntervalDays` | 60 |
+| `GeneralEquipment.java` | extends `Equipment`; concrete subclass with no extra fields — the target of the JSON `kind: "BASE"` discriminator (decision D14) | 30 |
 | `LoanRecord.java` | attributes per PRD §3.1; static factory `checkout(...)` validating INV-2; `completeReturn(returnDate)`; `accruedFee(asOf, FeeStrategy)`; `isOverdue(asOf)`; `effectiveStatus(asOf)` (see §5 D1) | 150 |
 | `Penalty.java` | attributes per PRD §3.1; `markPaid()`, `waive(reason)`; INV-4 non-negative amount | 90 |
 | `FeeStrategy.java` | interface: `calculate(LoanRecord loan, LocalDate asOf): double` | 15 |
@@ -55,7 +56,7 @@ Line estimates are sanity checks against the 200-line cap, not budgets to hit.
 | `UserRole.java` | enum `BORROWER`, `MANAGER` | 10 |
 | `EquipmentCategory.java` | enum `CAMERA`, `LENS`, `LAPTOP`, `AUDIO`, `TOOL`, `OTHER` | 10 |
 | `EquipmentStatus.java` | enum `AVAILABLE`, `LOANED`, `UNDER_MAINTENANCE`, `DECOMMISSIONED` | 10 |
-| `LoanStatus.java` | enum `ACTIVE`, `RETURNED` (persisted states; `OVERDUE` is derived — §5 D1) | 10 |
+| `LoanStatus.java` | enum `ACTIVE`, `OVERDUE`, `RETURNED` — `OVERDUE` exists for `effectiveStatus(asOf)` but is never persisted (§5 D1) | 10 |
 | `PenaltyType.java` | enum `LATE_FEE` | 10 |
 | `PenaltyStatus.java` | enum `UNPAID`, `PAID`, `WAIVED` | 10 |
 | `PenaltyOutcome.java` | enum `PAID`, `WAIVED` (settlement action parameter) | 10 |
@@ -308,6 +309,9 @@ them. Logged here so implementation sessions don't re-litigate them.
 | D11 | Seed photos | Seed dataset ships without photos; missing/corrupt files always fall back to the category gradient tile. |
 | D12 | Tabs? | None. Sidebar is the only navigation; the omnibar breadcrumb shows location (design §5). |
 | D13 | Gradients | Exactly one permitted gradient: the photo-fallback category tile (design §3.4). Everything else is flat; gradient spot-check in the M6 review. |
+| D14 | What does JSON `kind: "BASE"` instantiate, given that `Equipment` is abstract (D5)? | A third concrete subclass `GeneralEquipment` (no extra fields). `Equipment` stays abstract; the `kind` discriminator round-trips all three concrete classes. |
+| D15 | What happens on the return of an item that was flagged `UNDER_MAINTENANCE` while `LOANED`? | The return closes the loan, but the item stays `UNDER_MAINTENANCE` until a manager completes the repair — the return workflow must not call `markAvailable()` in that case. Clarified in PRD/SRS 3.1.1. |
+| D16 | What exception policy does the model layer use? | Null arguments → `NullPointerException` (`Objects.requireNonNull`); invalid values (blank, negative, 15+-day window) → `IllegalArgumentException`; illegal status transitions or double settlement → `IllegalStateException`. The UI never surfaces these directly; services translate them into user messages. |
 
 ## 6. Verification Notes
 
@@ -324,3 +328,4 @@ them. Logged here so implementation sessions don't re-litigate them.
 | :--- | :--- | :--- |
 | 1.0.0 | 2026-11-14 | Initial implementation plan: class inventory, JSON spec, milestones M0–M6, decisions D1–D6 — written before any application code |
 | 1.1.0 | 2026-11-14 | Retargeted to design.md v2.0 (Windows 11 / Fluent): chrome/omnibar/status-bar/preview-pane view classes, `ImageStore` + `photoFile` through model and JSON, decisions D7–D13, skeleton plan flagged as blocking |
+| 1.2.0 | 2026-11-14 | M0 decisions: `GeneralEquipment` for the JSON `BASE` kind (D14), maintenance-flag return rule (D15), model exception policy (D16); `LoanStatus` clarified to hold all three constants with only `ACTIVE`/`RETURNED` persisted |

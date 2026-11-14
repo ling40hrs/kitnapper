@@ -6,7 +6,7 @@ artifact_type: "Product Requirements Document (PRD) / AI Context File"
 target_platforms:
   - "Desktop (Java 17+ / Swing)"
 architecture_style: "OOP / MVC / Local JSON Persistence"
-version: "3.1.0"
+version: "3.1.1"
 ---
 
 # Project Specification: KitNapper
@@ -181,7 +181,7 @@ Borrowing is **instant**: a borrower checks an item out directly, with no manage
 | `UNDER_MAINTENANCE` | Beyond economic repair | `DECOMMISSIONED` |
 | `AVAILABLE` | Manager decommissions idle item | `DECOMMISSIONED` |
 
-*`DECOMMISSIONED` is terminal — no transitions out. `DECOMMISSIONED` items remain in the inventory list for audit history but are never requestable. `UNDER_MAINTENANCE` items are also not borrowable.*
+*`DECOMMISSIONED` is terminal — no transitions out. `DECOMMISSIONED` items remain in the inventory list for audit history but are never requestable. `UNDER_MAINTENANCE` items are also not borrowable. An item flagged for maintenance while it is `LOANED` keeps that status when its loan is returned: the return closes the loan, but the item stays `UNDER_MAINTENANCE` until a manager completes the repair.*
 
 ### 4.2 Loan Lifecycle
 
@@ -360,3 +360,4 @@ On first application startup (with `T` = the startup date), populate the system 
 | 2.0.1 | 2026-11-11 | Third-party libraries disallowed — JSON save/load implemented with the Java standard library; click budget relaxed from two to four |
 | 3.0.0 | 2026-11-11 | UI toolkit switched from JavaFX to **Swing** (NetBeans Ant project, matching course activities); added mock login with fixed demo passwords (REQ-003); live fee accrual frozen into a penalty on return; added borrow limits (3 active loans, 14-day window) with invariants; added All Loans manager view (REQ-009); save file pinned to `kitnapper-data.json` in the app folder; cancellation/extension explicitly out of scope |
 | 3.1.0 | 2026-11-14 | Windows 11 / Fluent visual direction (design.md v2.0); image uploads moved into scope — optional per-item `photoFile` (§3.1), stored under `kitnapper-images/` (§7.2), seed ships without photos; JSON persistence unchanged (`schemaVersion` stays 1, field is nullable/additive) |
+| 3.1.1 | 2026-11-14 | Clarified §4.1: a return of an item flagged `UNDER_MAINTENANCE` while loaned closes the loan but leaves the item `UNDER_MAINTENANCE`; no scope change |

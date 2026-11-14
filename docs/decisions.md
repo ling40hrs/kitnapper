@@ -10,7 +10,7 @@
 | Problem | Replace physical sign-out logbooks for schools/studios |
 | Team | **YAPPERS** (group project): Casiano, Cudia, Villacorza |
 | Course | CS203 – Object-Oriented Programming |
-| Current phase | Documentation only (PRD, SRS, design) |
+| Current phase | Implementation (M0 domain core complete) |
 
 ## 2. Product Decisions (from PRD interview)
 
@@ -74,13 +74,13 @@
 
 | File | Version | Contents |
 | :--- | :--- | :--- |
-| `docs/PRD.md` | 3.1.0 | Product requirements, domain model, state machines, seed data, optional per-item photo |
-| `docs/SRS.md` | 3.1.0 | Verifiable requirements, invariants, demo walkthrough, traceability, image-storage NFR |
+| `docs/PRD.md` | 3.1.1 | Product requirements, domain model, state machines, seed data, optional per-item photo; clarified maintenance-flag return behavior |
+| `docs/SRS.md` | 3.1.1 | Verifiable requirements, invariants, demo walkthrough, traceability, image-storage NFR; FR-06 clarification |
 | `docs/design.md` | 2.0.0 | Windows 11 / Fluent direction (Files app): neutral ramp + amber accent, tokens, chrome/shell, components, photo uploads; §13 skeleton plan pending |
 | `docs/seed-data.md` | — | Points to PRD §9; save-file/reset behaviour |
 | `docs/logout-tokens.md` | — | Runbook for removing all stored GitHub credentials from the Windows build machine |
 | `docs/decisions.md` | — | This file |
-| `docs/implementation-plan.md` | 1.1.0 | Class/file inventory, JSON persistence spec, milestones M0–M6, implementation decisions D1–D13 (written 2026-11-14, before any code; v1.1.0 retargets the UI to design.md v2.0) |
+| `docs/implementation-plan.md` | 1.2.0 | Class/file inventory, JSON persistence spec, milestones M0–M6, implementation decisions D1–D16 (written 2026-11-14 before any code; v1.1.0 retargets the UI to design.md v2.0; v1.2.0 adds GeneralEquipment D14, maintenance-return D15, model exception policy D16) |
 
 ## 5. Design Direction
 
@@ -116,7 +116,7 @@ app as primary reference), superseding the warm dark-dashboard pass of the same 
 
 **Rules**
 
-- Remote: `https://github.com/ling40hrs/Schoolwork`, branch `main`.
+- Remote: `https://github.com/ling40hrs/kitnapper`, branch `main`.
 - Push with the authenticated `gh` account (`ling40hrs`).
 - Commits stay **SSH-signed** (`commit.gpgsign=true`, `gpg.format=ssh`, `~/.ssh/id_ed25519.pub`) so GitHub shows the verified badge; never bypass signing.
 - Conventional commit types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `style`.
@@ -147,7 +147,7 @@ The attribution rules above now run on the Windows machine, not just the origina
 
 ## 9. Implementation Status
 
-- **Scaffold created; no application code.** `Finals/desktop-app/` is a NetBeans Ant project with `nbproject/`, `build.xml`, `manifest.mf`, empty package folders, and a blank `Main.java` placeholder. Nothing has been implemented. In the current checkout this project sits at `desktop-app/` on the repository root (`C:\Users\CIIT\Downloads\kitnapper\desktop-app`).
+- **M0 complete: domain core implemented.** The `kitnapper.model` layer (18 files per `implementation-plan.md` §2.1, including `GeneralEquipment` for the JSON `BASE` kind) compiles and enforces INV-1/2/4/5; `Main.java` is still a blank placeholder, and services, persistence and Swing views are not yet written. The scaffold is a NetBeans Ant project at `desktop-app/` on the repository root (`C:\Users\CIIT\Downloads\kitnapper\desktop-app`).
 - Future build order: model → service/persistence → Swing views → demo polish. **Detailed in `docs/implementation-plan.md` (milestones M0–M6) — follow it one milestone at a time; the class inventory, JSON schema, and implementation decisions D1–D6 live there.**
 - Respect `OOP/AGENTS.md`: Java 17 + Swing, NetBeans Ant, no third-party libraries, 200-line file cap, MVC separation.
 - Swift was considered during the scaffold decision and **explicitly rejected**; the repository is Java-only.
