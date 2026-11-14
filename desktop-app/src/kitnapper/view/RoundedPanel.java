@@ -27,6 +27,7 @@ final class RoundedPanel extends JPanel {
 
     @Override
     protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setColor(elevated ? Theme.bgElevated : Theme.bgSurface);
@@ -36,6 +37,5 @@ final class RoundedPanel extends JPanel {
         g2.setColor(Theme.borderSubtle);
         g2.draw(new RoundRectangle2D.Double(0, 0, w - 1, h - 1, radius, radius));
         g2.dispose();
-        super.paintComponent(g);
     }
 }

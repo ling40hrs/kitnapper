@@ -75,6 +75,10 @@ public final class UiFactory {
                 label.setForeground(colorFor((String) role));
             }
         }
+        if (root instanceof JTextField field) {
+            field.setForeground(Theme.textPrimary);
+            field.setCaretColor(Theme.textPrimary);
+        }
         if (root instanceof Container container) {
             for (Component child : container.getComponents()) {
                 refresh(child);

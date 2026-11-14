@@ -35,8 +35,9 @@ public final class WindowChrome {
         frame.setUndecorated(true);
         frame.setMinimumSize(new Dimension(1024, 640));
         frame.getRootPane().setBorder(rootBorder());
-        new ResizeBands(frame).install();
-        return new WindowChrome(frame);
+        WindowChrome chrome = new WindowChrome(frame);
+        new ResizeBands(frame, chrome::isMaximized).install();
+        return chrome;
     }
 
     private static AbstractBorder rootBorder() {
@@ -112,7 +113,8 @@ public final class WindowChrome {
     }
 
     public void close() {
-        frame.dispose();
+        frame.dispatchEvent(new java.awt.event.WindowEvent(
+            frame, java.awt.event.WindowEvent.WINDOW_CLOSING));
     }
 
     public boolean isMaximized() {

@@ -110,8 +110,11 @@ public final class MainFrame extends javax.swing.JFrame {
     }
 
     public void showScreen(String key) {
-        cards.show(content, key);
         ScreenMeta meta = SCREENS.get(key);
+        if (meta == null) {
+            return;
+        }
+        cards.show(content, key);
         titleBar.setScreenTitle(meta.title());
         omnibar.setScreen(meta.title());
         statusBar.setRight("");

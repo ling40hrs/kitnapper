@@ -41,10 +41,10 @@ public final class StatusBar extends JPanel {
 
     @Override
     protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
         g.setColor(Theme.bgApp);
         g.fillRect(0, 0, getWidth(), getHeight());
         g.setColor(Theme.borderSubtle);
         g.fillRect(0, 0, getWidth(), 1);
-        super.paintComponent(g);
     }
 }

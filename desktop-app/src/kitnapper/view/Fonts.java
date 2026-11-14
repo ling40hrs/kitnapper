@@ -30,9 +30,9 @@ public final class Fonts {
 
     /** Probes installed families and registers the bundled Inter fallback. */
     public static void load() {
+        registerInter();
         Set<String> installed = new HashSet<>(Arrays.asList(
             GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()));
-        registerInter();
         if (installed.contains("Inter")) {
             textFamily = "Inter";
         }

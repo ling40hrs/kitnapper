@@ -76,6 +76,7 @@ public final class TitleBar extends javax.swing.JPanel {
 
     @Override
     protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setColor(Theme.bgApp);
@@ -98,7 +99,6 @@ public final class TitleBar extends javax.swing.JPanel {
             g2.drawString(screenTitle, x + metrics.stringWidth("KitNapper") + 12, 21);
         }
         g2.dispose();
-        super.paintComponent(g);
     }
 
     /** Window-control button: flat hover fills, glyph-only content. */

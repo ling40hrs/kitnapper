@@ -9,10 +9,12 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.function.BooleanSupplier;
 
 import javax.swing.JComponent;
-import javax.swing.JLayeredPane;
 import javax.swing.JFrame;
+import javax.swing.JLayeredPane;
+import javax.swing.SwingUtilities;
 
 /**
  * 8 px edge/corner resize bands (design.md §11): invisible strips on the
@@ -24,12 +26,14 @@ final class ResizeBands {
     private static final int BAND = 8;
 
     private final JFrame frame;
+    private final BooleanSupplier maximized;
     private final Point pressPoint = new Point();
     private final Rectangle pressBounds = new Rectangle();
     private Edge edge;
 
-    ResizeBands(JFrame frame) {
+    ResizeBands(JFrame frame, BooleanSupplier maximized) {
         this.frame = frame;
+        this.maximized = maximized;
     }
 
     void install() {
@@ -77,6 +81,9 @@ final class ResizeBands {
 
             @Override
             public void mousePressed(MouseEvent e) {
+                if (maximized.getAsBoolean()) {
+                    return;
+                }
                 if (edge != null) {
                     pressPoint.setLocation(e.getLocationOnScreen());
                     pressBounds.setBounds(frame.getBounds());
@@ -85,6 +92,9 @@ final class ResizeBands {
 
             @Override
             public void mouseDragged(MouseEvent e) {
+                if (maximized.getAsBoolean()) {
+                    return;
+                }
                 if (edge != null) {
                     resizeTo(e.getLocationOnScreen());
                 }
@@ -94,8 +104,11 @@ final class ResizeBands {
 
     private Edge edgeAt(MouseEvent e) {
         JLayeredPane pane = frame.getLayeredPane();
-        int x = e.getX();
-        int y = e.getY();
+        // Convert from the strip's coordinate space to the pane's, since
+        // e.getX()/e.getY() are relative to the strip, not the pane.
+        Point p = SwingUtilities.convertPoint((Component) e.getSource(), e.getPoint(), pane);
+        int x = p.x;
+        int y = p.y;
         boolean n = y < BAND;
         boolean s = y >= pane.getHeight() - BAND;
         boolean w = x < BAND;
