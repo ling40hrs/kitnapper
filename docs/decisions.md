@@ -80,7 +80,7 @@
 | `docs/seed-data.md` | — | Points to PRD §9; save-file/reset behaviour |
 | `docs/logout-tokens.md` | — | Runbook for removing all stored GitHub credentials from the Windows build machine |
 | `docs/decisions.md` | — | This file |
-| `docs/implementation-plan.md` | 1.2.0 | Class/file inventory, JSON persistence spec, milestones M0–M6, implementation decisions D1–D16 (written 2026-11-14 before any code; v1.1.0 retargets the UI to design.md v2.0; v1.2.0 adds GeneralEquipment D14, maintenance-return D15, model exception policy D16) |
+| `docs/implementation-plan.md` | 1.3.0 | Class/file inventory, JSON persistence spec, milestones M0–M6, implementation decisions D1–D23 (written 2026-11-14 before any code; v1.1.0 retargets the UI to design.md v2.0; v1.2.0 adds D14–D16 from M0; v1.3.0 adds D17–D23 post-M0 findings: AppData aggregate, load-fallback scope, kind-vs-category rule, return edge cases, ID/photo safety) |
 
 ## 5. Design Direction
 

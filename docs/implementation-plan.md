@@ -4,7 +4,7 @@ team_name: "YAPPERS"
 course: "CS203 – Object-Oriented Programming"
 artifact_type: "Implementation Plan (structure, persistence format, build order)"
 derived_from: "PRD.md v3.1.0, SRS.md v3.1.0, design.md"
-version: "1.2.0"
+version: "1.3.0"
 ---
 
 # KitNapper — Implementation Plan
@@ -67,19 +67,20 @@ Line estimates are sanity checks against the 200-line cap, not budgets to hit.
 | :--- | :--- | --: |
 | `AuthService.java` | interface: `login(email, password): User`, seeded-credential check (REQ-003) | 20 |
 | `CatalogService.java` | interface: `search(query, category, status): List<Equipment>` (REQ-001) | 25 |
-| `LoanService.java` | interface: `checkout(...)`, `returnLoan(...)` (REQ-004/006), `myLoans(userId)`, `allLoans()`, `overdueLoans()` (REQ-005/008/009) | 40 |
+| `LoanService.java` | interface: `checkout(equipmentId, dueDate)` — borrow date is `LocalDate.now()` (D4) and the borrower comes from the session —, `returnLoan(loanId, returnDate)` (REQ-004/006), `myLoans()`, `allLoans()`, `overdueLoans()`, plus `accruedFee(loanId)` so views never compute fees themselves (D21) | 45 |
 | `PenaltyService.java` | interface: `penaltiesForLoan(loanId)`, `allPenalties()`, `settle(penaltyId, outcome, reason)` (REQ-011) | 25 |
-| `InventoryService.java` | interface: `add/update/decommission/flagMaintenance` (REQ-010) | 25 |
-| `DataStore.java` | interface: `load()`, `save()`, `resetToSeed()` (REQ-012) | 25 |
+| `InventoryService.java` | interface: `add/update/decommission/flagMaintenance`; add/update act on the concrete `Equipment` the controller constructed (D19) | 25 |
+| `DataStore.java` | interface: `load()`, `save()`, `resetToSeed()` plus read accessors over the live aggregate (REQ-012, D17) | 30 |
+| `AppData.java` | the in-memory aggregate: four live lists (`users`, `equipment`, `loans`, `penalties`) that services mutate and `save()` persists (D17) | 50 |
 | `ImageStore.java` | interface: `importPhoto(equipmentId, sourcePath)`, `photoFor(equipmentId)`, `deletePhoto(equipmentId)`; reset/orphan-sweep hooks (design §12) | 30 |
-| `AuthServiceImp.java` | impl against the seeded users | 60 |
+| `AuthServiceImp.java` | impl; authenticates against the users **loaded from `DataStore`**, not a hard-coded list (D23) | 60 |
 | `CatalogServiceImpl.java` | impl | 80 |
-| `LoanServiceImpl.java` | impl; enforces INV-3, INV-6 (3-loan cap) and the 14-day window via `LoanRecord.checkout`; on return, freezes `accruedFee` into one `Penalty` (FR-07) | 150 |
+| `LoanServiceImpl.java` | impl; enforces INV-3, INV-6 (3-loan cap) and the 14-day window via `LoanRecord.checkout`; on return, computes the fee for the **chosen return date**, skips a zero fee, freezes exactly one `Penalty` (FR-07, D20), and only calls `markAvailable()` when the item is `LOANED` (D15) | 150 |
 | `PenaltyServiceImpl.java` | impl | 80 |
 | `InventoryServiceImpl.java` | impl; goes through `Equipment` transition methods only (INV-5) | 100 |
-| `DataStoreImpl.java` | impl; orchestrates load → seed fallback → save-on-mutation | 80 |
+| `DataStoreImpl.java` | impl; orchestrates load → seed fallback → save-on-mutation; fallback covers model-validation and referential failures too (D18); atomic move with a Windows replace-existing fallback | 80 |
 | `ImageStoreImpl.java` | impl: validate extension (png/jpg/jpeg/gif/bmp) and ≤ 20 MB, decode via `ImageIO`, downscale to 1024 px longest edge, re-encode JPEG q0.85, atomic tmp+move write into `kitnapper-images/` (design §12) | 140 |
-| `AppContext.java` | holds the single set of service instances (incl. `ImageStore`), the current session `User`, and the theme toggle; simple `addChangeListener(Runnable)` for views (NFR-02, §5 D2) | 60 |
+| `AppContext.java` | holds the single set of service instances (incl. `ImageStore`), the shared `LateFeeStrategy`, the `DataStore`, the current session `User`, and the theme toggle; simple `addChangeListener(Runnable)` for views (NFR-02, §5 D2) | 60 |
 
 ### 2.3 `kitnapper.service.persistence` (hand-written JSON — no libraries)
 
@@ -89,11 +90,11 @@ Line estimates are sanity checks against the 200-line cap, not budgets to hit.
 | `JsonWriter.java` | writer: pretty-printed, 2-space indent; strings escaped (`\"`, `\\`, `\n`); numbers as plain decimals | 80 |
 | `Json.java` | tiny helpers to build/read the JDK-native representation (`Map<String,Object>`, `List<Object>`, `String`, `Double`, `Boolean`, `null`) | 60 |
 | `UserMapper.java` | `User` ⇄ JSON (role field selects `Borrower`/`Manager` on read) | 70 |
-| `EquipmentMapper.java` | `Equipment` (incl. the two subclasses) ⇄ JSON; subclass discriminator field; optional `photoFile` (null-safe, D8) | 80 |
-| `LoanMapper.java` | `LoanRecord` ⇄ JSON; `returnDate` as `null` when absent | 70 |
+| `EquipmentMapper.java` | `Equipment` ⇄ JSON for all three concrete kinds (DIGITAL/MECHANICAL/BASE); writes `kind` via `instanceof`, restores status by replaying transition methods; optional `photoFile` (null-safe, D8); `Optional` getters via `orElse(null)` | 90 |
+| `LoanMapper.java` | `LoanRecord` ⇄ JSON; `returnDate` as `null` when absent; normalizes a persisted `OVERDUE` to `ACTIVE` (never re-serializes it, D18) | 70 |
 | `PenaltyMapper.java` | `Penalty` ⇄ JSON; `waiveReason` as `null` when not waived | 60 |
-| `RootMapper.java` | top-level document ⇄ the four arrays + `schemaVersion` + `savedAt` | 80 |
-| `SeedData.java` | the PRD §9 dataset, computed **relative to the date seeding runs** (§5 D4); seed items carry no photos (D11) | 130 |
+| `RootMapper.java` | top-level document ⇄ `AppData` (D17): the four arrays + `schemaVersion` + `savedAt` | 80 |
+| `SeedData.java` | the PRD §9 dataset, computed **relative to the date seeding runs** (§5 D4); seed items carry no photos (D11); kinds default by category (D19) | 130 |
 
 ### 2.4 `kitnapper.controller` (thin wiring only)
 
@@ -169,8 +170,9 @@ Dialogs (modal per design §5):
 | :--- | :--- | --: |
 | `Main.java` | exists as a placeholder; becomes: install `Theme`, register fonts, construct services + `AppContext`, show `LoginFrame`. Stays under 60 lines | 60 |
 
-Total ≈ 68 files. Every file above stays under the 200-line cap (`WindowChrome` is the
-tightest — keep behavior and painting split across it and `TitleBar`).
+Total ≈ 70 files (18 model + 52 service/controller/view). Every file above stays under
+the 200-line cap (`WindowChrome` is the tightest — keep behavior and painting split
+across it and `TitleBar`).
 
 ## 3. JSON Persistence Spec (`kitnapper-data.json`)
 
@@ -237,7 +239,12 @@ Field rules:
   (§5 D1), so a loan overdue at save time is still stored as `ACTIVE`.
 - **`kind`** discriminates the `Equipment` subclasses: `DIGITAL` (`DigitalEquipment`,
   `warrantyContact`) / `MECHANICAL` (`MechanicalTool`, `maintenanceIntervalDays`) / `BASE`
-  (no extra fields) — all three load back to the right concrete class.
+  (`GeneralEquipment`, no extra fields) — all three load back to the right concrete class
+  (D14). **Field presence follows the kind:** `warrantyContact` is written only for
+  `DIGITAL`, `maintenanceIntervalDays` only for `MECHANICAL`; mappers write neither for
+  `BASE`. The parser yields all numbers as `double`, so the mapper validates that
+  `maintenanceIntervalDays` is integral before converting (otherwise seed fallback).
+- **Unknown `kind` or `role` values** are treated as corruption → seed fallback (D18).
 - **`waiveReason`** is `null` unless the penalty was waived.
 - **`photoFile`** is `null` when the item has no photo; otherwise the relative filename
   under `kitnapper-images/` (design.md §12). Additive and nullable, so `schemaVersion`
@@ -262,9 +269,16 @@ third-party code:
 1. Every mutation goes through a service; the service calls `DataStore.save()` last
    (single choke point, satisfies REQ-012's "saved on every mutation").
 2. `save()` serializes to `kitnapper-data.json.tmp` then atomically moves it over
-   `kitnapper-data.json` — a mid-write crash can never leave a truncated file.
-3. On startup: file present → parse. Parse error, unknown `schemaVersion`, or missing file
-   → seed fresh (PRD §9) and save immediately. **Never crash** (NFR-07).
+   `kitnapper-data.json` — a mid-write crash can never leave a truncated file. On Windows,
+   `ATOMIC_MOVE` may be unsupported for a replace; try atomic first and fall back to
+   `REPLACE_EXISTING` (same for `ImageStore`).
+3. On startup: file present → parse. Parse error, unknown `schemaVersion`, unknown
+   enum/`kind`/`role` values, or missing file → seed fresh (PRD §9) and save immediately.
+   **Model failures count as corruption too** (D18): a `LoanRecord` that violates INV-2,
+   a `WAIVED` penalty without a reason, or referential breakage (a loan whose borrower or
+   equipment does not exist, a penalty whose loan does not exist, or two penalties on one
+   loan) must also fall back to seed, never crash (NFR-07). Mapping builds into local
+   structures and swaps into `AppData` only when the whole document is valid.
 4. `resetToSeed()` (manager action, FR-12) regenerates the seed dataset relative to *today*
    (§5 D4) and overwrites the file. Deleting the file manually does the same on next launch.
 5. Photos follow the same write discipline (`ImageStore`): tmp file, then atomic move into
@@ -279,11 +293,11 @@ before moving on. **Do not batch milestones.**
 | # | Scope | Files | Verify (SRS §6.2) |
 | :-- | :--- | :--- | :--- |
 | M0 | Domain core | all `model` files | `ant clean jar` compiles; nothing runnable yet |
-| M1 | JSON persistence + seed | `service.persistence` files, `DataStore` + impl, `LoanService` skeleton | scratch entry point (a temporary `main` in a persistence package file, **deleted after M1**) writes the seed, re-reads it, and the round-trip matches; corrupt-file fallback checked by hand |
+| M1 | JSON persistence + seed | `service.persistence` files, `AppData`, `DataStore` + impl, `LoanService` skeleton | scratch entry point (a temporary `main` in a persistence package file, **deleted after M1**) writes the seed, re-reads it, and the round-trip matches — the fixture must also include a `BASE`-kind item, a `RETURNED` loan, a `WAIVED` penalty and an `UNDER_MAINTENANCE` item to exercise every restore path (D14, D18); corrupt-file and model-validation fallbacks checked by hand |
 | M2 | Shell + login (Win11 chrome) | `Main`, `Theme`, `Fonts`, `UiFactory`, `AppContext`, `AuthService(+Impl)`, `WindowChrome`, `TitleBar`, `Omnibar`, `StatusBar`, `LoginFrame`, `MainFrame`, `AppController`, `Formats`, `Dialogs` | steps 1–3: login screen, wrong password rejected, student login lands on catalog shell; chrome drag/resize/maximize checked |
-| M3 | Catalog + checkout | `CatalogScreen`, `EquipmentCard`, `PreviewPane`, `PhotoTile`, `GradientTile`, `SegmentedControl`, `Badges`, `CatalogTableModel`, `CatalogController`, `CatalogService(+Impl)`, `BorrowingController`, `CheckoutDialog`, `LoanService(+Impl)`, `Toasts` | steps 3–6: search/filter, checkout, availability lock, 15-day rejection |
-| M4 | Returns, fees, manager views | `DashboardScreen`, `AllLoansScreen`, `OverdueScreen`, `MyLoansScreen`, `LoansTableModel`, `PenaltiesScreen`, `PenaltiesTableModel`, `ReturnDialog`, `SettlePenaltyDialog`, `PenaltyController`, `PenaltyService(+Impl)`, `Badges` | steps 7–10: persistence round-trip (restart), overdue dashboard ₱200, return freezes penalty, waive |
-| M5 | Inventory, photos + reset | `InventoryScreen`, `InventoryTableModel`, `InventoryController`, `InventoryService(+Impl)`, `ImageStore(+Impl)`, `EquipmentDialog`, `SettingsScreen`, `EmptyState` | steps 11–12: add item **with photo** + decommission, reset restores the §6.1 baseline and wipes `kitnapper-images/` |
+| M3 | Catalog + checkout | `CatalogScreen`, `EquipmentCard`, `PreviewPane`, `PhotoTile`, `GradientTile`, `SegmentedControl`, `Badges`, `CatalogTableModel`, `CatalogController`, `CatalogService(+Impl)`, `BorrowingController`, `CheckoutDialog`, `LoanService(+Impl)`, `Toasts` | steps 3–6: search/filter, checkout, availability lock, 15-day rejection; model exceptions surface as inline messages, never EDT crashes (D16, D21) |
+| M4 | Returns, fees, manager views | `DashboardScreen`, `AllLoansScreen`, `OverdueScreen`, `MyLoansScreen`, `LoansTableModel`, `PenaltiesScreen`, `PenaltiesTableModel`, `ReturnDialog`, `SettlePenaltyDialog`, `PenaltyController`, `PenaltyService(+Impl)`, `Badges` | steps 7–10: persistence round-trip (restart), overdue dashboard ₱200, return freezes penalty, waive; extra checks: a due-date return creates **no** penalty and a maintenance-flagged item stays `UNDER_MAINTENANCE` (D15, D20); tables use `effectiveStatus(now)`, fees come from `LoanService` (D21) |
+| M5 | Inventory, photos + reset | `InventoryScreen`, `InventoryTableModel`, `InventoryController`, `InventoryService(+Impl)`, `ImageStore(+Impl)`, `EquipmentDialog`, `SettingsScreen`, `EmptyState` | steps 11–12: add item **with photo** + decommission, reset restores the §6.1 baseline and wipes `kitnapper-images/`; extra checks: kind preserved on category edit (D19), photo filename safety (D22) |
 | M6 | Polish | `ThinScrollBarUI`, dark/light toggle, Fluent-motion fades (design §7), icon-codepoint verification (§10), HiDPI/text-scale pass, **skeleton states once design §13 is written** | full 12-step walkthrough + design §8 contrast/keyboard checks + gradient spot-check (§3.4) at 1080p and 1366×768 |
 
 M0 → M1 may be committed together; M2 onward commit per milestone (git rules in
@@ -312,6 +326,13 @@ them. Logged here so implementation sessions don't re-litigate them.
 | D14 | What does JSON `kind: "BASE"` instantiate, given that `Equipment` is abstract (D5)? | A third concrete subclass `GeneralEquipment` (no extra fields). `Equipment` stays abstract; the `kind` discriminator round-trips all three concrete classes. |
 | D15 | What happens on the return of an item that was flagged `UNDER_MAINTENANCE` while `LOANED`? | The return closes the loan, but the item stays `UNDER_MAINTENANCE` until a manager completes the repair — the return workflow must not call `markAvailable()` in that case. Clarified in PRD/SRS 3.1.1. |
 | D16 | What exception policy does the model layer use? | Null arguments → `NullPointerException` (`Objects.requireNonNull`); invalid values (blank, negative, 15+-day window) → `IllegalArgumentException`; illegal status transitions or double settlement → `IllegalStateException`. The UI never surfaces these directly; services translate them into user messages. |
+| D17 | Where does the in-memory dataset live? | In an `AppData` aggregate (four live lists) held by `DataStore`. Services obtain the lists through `DataStore` accessors, mutate entities, then call `save()`. `RootMapper` maps the JSON document ⇄ `AppData`. |
+| D18 | What counts as a corrupt save file? | Parse error, unknown `schemaVersion`, unknown enum/`kind`/`role` values, **or any model failure during mapping** (INV-2 violation, `WAIVED` penalty without reason, NPE) plus referential breakage (loan → missing borrower/equipment, penalty → missing loan, two penalties on one loan). All trigger the seed fallback; a persisted `OVERDUE` normalizes to `ACTIVE`. |
+| D19 | How does `kind` relate to `category`? | The concrete kind is chosen **at creation** (default by category: CAMERA/LENS/LAPTOP/AUDIO → `DIGITAL`, TOOL → `MECHANICAL`, OTHER → `BASE`) and is preserved on edit; changing the category never changes the concrete class. The edit dialog shows only the field the existing kind carries. |
+| D20 | What are the return edge cases? | A computed fee of ₱0 creates **no** `Penalty` (SRS FR-07 acceptance); a return date in the future is rejected in the service/UI (the model stays date-agnostic by design); per D15, `markAvailable()` is called only when the item is `LOANED`. |
+| D21 | How do views get derived status and fees? | `LoanService` exposes them (`accruedFee`, overdue listing) computed with `effectiveStatus(LocalDate.now())`. Views never construct a `FeeStrategy` and never call entity mutators directly — services are the only callers of transition/settlement methods. |
+| D22 | How are IDs and photo filenames kept safe? | Equipment and loan IDs are **system-generated** (sequential `e-0NN`/`L-0NN`), never user-typed; `ImageStore` builds `<equipmentId>.jpg`; `Equipment.setPhotoFile` accepts bare file names only. |
+| D23 | Does `AuthService` hard-code credentials? | No — it authenticates against the user list **loaded from `DataStore`** (which the seed and reset populate), so an edited or corrupted save changes what logs in, consistently with the dataset. |
 
 ## 6. Verification Notes
 
@@ -329,3 +350,4 @@ them. Logged here so implementation sessions don't re-litigate them.
 | 1.0.0 | 2026-11-14 | Initial implementation plan: class inventory, JSON spec, milestones M0–M6, decisions D1–D6 — written before any application code |
 | 1.1.0 | 2026-11-14 | Retargeted to design.md v2.0 (Windows 11 / Fluent): chrome/omnibar/status-bar/preview-pane view classes, `ImageStore` + `photoFile` through model and JSON, decisions D7–D13, skeleton plan flagged as blocking |
 | 1.2.0 | 2026-11-14 | M0 decisions: `GeneralEquipment` for the JSON `BASE` kind (D14), maintenance-flag return rule (D15), model exception policy (D16); `LoanStatus` clarified to hold all three constants with only `ACTIVE`/`RETURNED` persisted |
+| 1.3.0 | 2026-11-14 | Post-M0 findings folded in: `AppData` aggregate + `DataStore` accessors (D17), load-fallback scope covers model/referential failures (D18), kind-vs-category rule (D19), return edge cases — zero fee, future dates (D20), derived status/fee display via `LoanService` (D21), ID/photo-filename safety (D22), auth against persisted users (D23); M1 round-trip fixture exercises every restore path |

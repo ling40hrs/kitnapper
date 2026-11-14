@@ -13,7 +13,7 @@
 
 A desktop application for managing equipment loans at a small institution. KitNapper replaces the paper sign-out sheet: staff publish available gear, students check items out, and the app tracks due dates, overdue loans, and late fees.
 
-This repository currently contains the project documentation and a NetBeans Ant scaffold. Application code has not been written yet.
+This repository currently contains the project documentation and a NetBeans Ant scaffold. The M0 domain core (`kitnapper.model`, 18 classes) is implemented and building; services, JSON persistence, and the Swing UI are not yet written.
 
 ## Contents
 
@@ -53,8 +53,8 @@ Finals/
     │   ├── build-impl.xml
     │   └── genfiles.properties
     ├── src/kitnapper/
-    │   ├── Main.java         entry point (placeholder)
-    │   ├── model/
+    │   ├── Main.java         entry point (placeholder until M2)
+    │   ├── model/            domain core — 18 classes (M0)
     │   ├── service/
     │   ├── view/
     │   └── controller/
@@ -105,6 +105,7 @@ Build output is written to `build/` and `dist/`, both of which are ignored by Gi
 | [`docs/SRS.md`](docs/SRS.md) | Numbered requirements, invariants, acceptance criteria, demo script |
 | [`docs/design.md`](docs/design.md) | Windows 11 / Fluent visual spec (v2.0): tokens, custom chrome, components, photo uploads; skeleton-loading plan pending in §13 |
 | [`docs/decisions.md`](docs/decisions.md) | Record of confirmed decisions and known gaps |
+| [`docs/implementation-plan.md`](docs/implementation-plan.md) | Build order, class/file inventory, JSON persistence spec, decisions D1–D23 |
 | [`docs/seed-data.md`](docs/seed-data.md) | Where seed data lives and when to split it out |
 | [`docs/logout-tokens.md`](docs/logout-tokens.md) | Runbook: logging out of every stored GitHub credential on the build machine |
 
@@ -122,4 +123,4 @@ The PRD and SRS are the sources of truth for behavior. If implementation and doc
 
 ## Status
 
-Documentation complete, scaffold in place, implementation pending. See `docs/decisions.md` for the full record of decisions and `docs/design.md` §13 for the open skeleton-loading plan.
+Documentation complete, M0 domain core implemented (18 model classes, invariant-enforced). Services, JSON persistence, and the Swing UI are next (M1–M6). See `docs/decisions.md` for the decision record, `docs/implementation-plan.md` for the build order, and `docs/design.md` §13 for the open skeleton-loading plan.
