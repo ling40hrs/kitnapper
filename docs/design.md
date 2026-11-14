@@ -2,8 +2,8 @@
 
 > **Status:** v2.0 — visual language switched to **Windows 11 / Fluent** on 2026-11-14,
 > superseding the warm dark-dashboard pass of the same date (both recorded in §14).
-> All styling questions are resolved. **§13 (skeleton loading states) is a pending plan
-> and blocks the start of UI implementation.**
+> All styling questions are resolved, including §13 (skeleton loading states,
+> resolved 2026-11-14).
 
 ## 1. Brand
 
@@ -54,6 +54,7 @@ marked for contrast in §8 must be verified in **both** themes.
 | `BG_APP` | `#1F1F1F` | window background — the flat "Mica" stand-in |
 | `BG_SURFACE` | `#272727` | sidebar, panes, cards |
 | `BG_ELEVATED` | `#2D2D2D` | dialogs, hovered surfaces, preview pane |
+| `SKELETON_BLOCK` | `#3A3A3A` | skeleton loading blocks (§13) |
 | `BG_CONTROL` | `#323232` | inputs, secondary buttons, segmented control track |
 | `BG_CONTROL_HOVER` | `#3A3A3A` | control hover |
 | `BORDER_SUBTLE` | `#383838` | pane dividers, card outlines, row separators |
@@ -82,6 +83,7 @@ becomes a gradient (§3.4) and never colors text — amber-as-text is always `AC
 | `BG_APP` | `#F3F3F3` |
 | `BG_SURFACE` | `#FBFBFB` |
 | `BG_ELEVATED` | `#FFFFFF` |
+| `SKELETON_BLOCK` | `#E9E9E9` |
 | `BG_CONTROL` | `#FFFFFF` |
 | `BG_CONTROL_HOVER` | `#F5F5F5` |
 | `BORDER_SUBTLE` | `#E3E3E3` |
@@ -269,7 +271,7 @@ Fluent durations: fast **83 ms**, normal **167 ms**, slow **250 ms**; decelerate
 Allowed: dialog open/close fade + 98→100 % scale (fast), toast slide-up 8 px + fade,
 screen transition fade (120 ms), theme crossfade (167 ms). Hover/press states change
 instantly — no hover animation. No bounce, no overshoot, no animated gradients. Skeleton
-pulse timing is specified in §13 when that plan is written. Destructive actions
+timing and pulse are specified in §13. Destructive actions
 (decommission, waive, reset, photo replace) require confirmation dialogs.
 
 ## 8. Accessibility
@@ -348,6 +350,7 @@ fallback glyph column wins.
 | Per-pixel translucency | Supported but unnecessary | Not used |
 | Window drag / resize / maximize | Manual | `WindowChrome` owns: drag, double-click maximize, 8 px edge resize bands, min size, restore bounds |
 | Multi-monitor / DPI change mid-session | Resize quirks | Accept; verify at 100 / 125 / 150 % |
+| `prefers-reduced-motion` | Not exposed by Java | Session setting in Settings (M5), §13.4 |
 
 Painting notes: custom surfaces use `setOpaque(false)` with cached `RoundRectangle2D`
 shapes; repaint only dirty rows/regions; images decode off the EDT (`SwingWorker`) with
@@ -377,25 +380,95 @@ skeleton placeholders (§13); `UIManager` defaults are set once in `Theme.apply(
   load-time orphan sweep deletes images whose id is not in the dataset.
 - **Privacy:** photos never leave the machine (networking is out of scope).
 
-## 13. Skeleton Loading States — PLAN PENDING (VERY IMPORTANT)
+## 13. Skeleton Loading States
 
-> ⚠ **BLOCKING TODO — this section is a placeholder, not a specification. It must be
-> fully written with the user before UI implementation (M2) starts. It is not optional
-> polish.**
->
-> Minimum scope the plan must cover:
->
-> - Which surfaces get skeletons: photo tiles / preview pane while `ImageIO` decodes;
->   initial launch while the JSON loads; any screen query that can exceed ~100 ms.
-> - Timing thresholds, minimum display duration, and the transition out.
-> - Visual form under the §3.4 gradient ban: flat blocks + subtle opacity pulse —
->   **no shimmer sweep** — 4 px radius, `BG_ELEVATED` at reduced alpha.
-> - Reduced-motion behavior (static blocks, no pulse).
-> - Interaction rules: skeletons are never focusable, never announced as content; an
->   accessible "Loading" state is exposed instead.
-> - Failure/timeout fallback: skeleton → error or empty state, never a permanent skeleton.
-> - Code placement (`SkeletonPanel`, per-component skeleton renderers) and the milestone
->   that activates it.
+Resolved 2026-11-14 with the user; replaces the previous placeholder (D-Skeleton is now
+closed). Activated with the first off-EDT image decode in M3, extended to photo import and
+the reduced-motion switch in M5, audited in M6.
+
+### 13.1 Where skeletons apply
+
+| Surface | Skeleton | What is shown |
+| :--- | :--- | :--- |
+| Launch / `DataStore.load()` | **No** | The save file is a few KB and loads before the first frame paints; the window appears fully populated. Deliberate non-application — not a candidate for "loading theater". |
+| Catalog / dashboard / loan queries | **Gated** | In-memory list scans, applied synchronously on the EDT (`NFR-02` immediacy). A query is only handed to a worker, and its skeleton shown, when it *measures* ≥ 150 ms first. Never speculative. |
+| Photo decode (160 px card thumb, 640 px preview, inventory row) | **Yes** | Media block over the 16:9 area while `ImageIO` runs off the EDT; resolves to the photo or the §12 fallback tile. |
+| Photo import (choose → downscale → re-encode) | **Yes** | Media block for the whole import; the confirming button enters a disabled busy state. |
+| Reset demo data | **No** | Confirmed dialog → synchronous reset → screen refresh + toast. |
+| Anything else | **Gated** | Requires a measured ≥ 150 ms operation; never decorative. |
+
+### 13.2 Timing
+
+| Parameter | Value |
+| :--- | :--- |
+| Delay before appearing | 150 ms |
+| Minimum visible once shown | 300 ms |
+| Fade out | 167 ms (§7 normal, decelerate), content crossfades in beneath |
+| Pulse period | 1,000 ms, ease in-out, block alpha 0.55 ↔ 1.0 |
+| Pulse repaint tick | 40 ms |
+
+Results arriving inside the 150 ms delay show no skeleton at all — no flicker on fast
+decodes. A skeleton that has painted stays for its 300 ms minimum, so it always reads as
+intentional. All timing lives in Swing `Timer`s on the EDT, and the pulse timer does not
+exist while the component is not showing or while reduced motion is on.
+
+### 13.3 Visual form
+
+- **Flat blocks only**: rounded rectangles, 4 px radius, filled with `SKELETON_BLOCK`
+  (dark `#3A3A3A`, light `#E9E9E9` — the §3 ramp has no usable elevated step over
+  `BG_SURFACE`). Media blocks at full token alpha, text bars at 70 %.
+- **No gradient, no shimmer sweep, no travelling highlight, no accent color** — the §3.4
+  gradient ban applies; the skeleton is neutral so it can never be mistaken for the
+  amber-accented fallback tile.
+- Geometry mirrors the content it replaces so nothing shifts on swap: card = 16:9 media +
+  two 12 px text bars (60 % / 40 % width); preview pane = 16:9 media + four metadata bars;
+  table = header bar + six row bars on the 40 px pitch.
+- The skeleton is **not** the empty state and **not** the fallback tile: it means "content
+  is on its way"; failure resolves to §12's category tile or the empty state.
+
+### 13.4 Reduced motion
+
+- `Theme.animateSkeletons` (session-only, default `true`, same precedent as the theme
+  toggle, D3). `SettingsScreen` (M5) exposes it as **"Animate loading placeholders"**.
+- Off → blocks are static, the pulse timer is never created, and the crossfade is an
+  instant swap. The 150 / 300 ms timings still apply, so content still cannot pop in
+  unannounced.
+- No OS detection: Java exposes no cross-platform reduced-motion query, and a registry
+  probe is not worth a Windows-only shell call. Documented as an accepted limitation in
+  §11.
+
+### 13.5 Interaction & accessibility
+
+- Skeletons are **never focusable**, never in the tab order, never clickable, and never
+  announced as content.
+- The host region exposes the state instead: accessible name **"Loading photo" / "Loading
+  items"**, role `PROGRESS_BAR` (indeterminate), and exactly one name-change event when
+  loading starts and one when it ends — no per-tick announcements.
+- Loading never blocks navigation: sidebar, title bar, theme toggle, and window controls
+  stay live. A busy cursor is used only for a user-initiated blocking action (photo
+  import), never for background decode.
+
+### 13.6 Failure and timeout
+
+- Each skeleton runs a **10 s watchdog**. On fire, the skeleton is replaced by the failure
+  outcome: photo decode → §12 category tile (no error surface); import → inline `DANGER`
+  message in the dialog; gated query → empty state with **Retry**.
+- Worker exceptions are caught and routed to the same outcome; nothing reaches the EDT
+  uncaught.
+- **No skeleton may outlive its work** (success, failure, or timeout). This is a standing
+  review item for M3–M6.
+
+### 13.7 Code placement & milestones
+
+| File | Package | Role |
+| :--- | :--- | :--- |
+| `SkeletonPanel.java` | `kitnapper.view` | visual only — block geometry per variant (`CARD`, `PREVIEW`, `TABLE`, `MEDIA`), pulse painting, `isShowing()` gate, reads `Theme.animateSkeletons` |
+| `SkeletonGate.java` | `kitnapper.view` | timing and plumbing — runs work off the EDT, applies 150 / 300 / 167, swaps the host component, owns the watchdog and the accessible loading state |
+
+`PhotoTile`, `PreviewPane`, and the table hosts call `SkeletonGate`; there are no
+per-screen skeleton subclasses. Milestones: **M3** first use (card/preview decode, catalog
+refresh wrapper), **M5** photo import + the reduced-motion switch, **M6** audit
+(reduced-motion, watchdog, no permanent skeletons, gradient spot-check).
 
 ## 14. Decisions Log
 
@@ -434,4 +507,4 @@ added (files.community, shelf.nu); implementation plan written (`M0–M6`, D1–
 | **D-Gradient** | Gradients restricted to the single photo-fallback category tile; every other surface is flat (§3.4). |
 | **D-Photos** | Image uploads moved **into scope**, reversing the PRD §8 non-goal: `kitnapper-images/` beside the save file, 1024 px JPEG q0.85, 20 MB source cap, png/jpg/jpeg/gif/bmp, reset wipes the folder, seed ships without photos (§12). |
 | **D-Schema** | `schemaVersion` stays 1; `photoFile` is a nullable additive field so old saves load unchanged. |
-| **D-Skeleton** | Skeleton loading states are a **blocking open plan** (§13) — must be written before M2 begins. |
+| **D-Skeleton** | Resolved in §13 (2026-11-14): 150 ms delay / 300 ms minimum / 167 ms fade, flat 4 px blocks with a 1,000 ms pulse (`SKELETON_BLOCK` token), no launch skeleton, query skeletons gated behind a measured ≥ 150 ms, reduced motion via a session setting, 10 s watchdog. |

@@ -76,7 +76,7 @@
 | :--- | :--- | :--- |
 | `docs/PRD.md` | 3.1.1 | Product requirements, domain model, state machines, seed data, optional per-item photo; clarified maintenance-flag return behavior |
 | `docs/SRS.md` | 3.1.1 | Verifiable requirements, invariants, demo walkthrough, traceability, image-storage NFR; FR-06 clarification |
-| `docs/design.md` | 2.0.0 | Windows 11 / Fluent direction (Files app): neutral ramp + amber accent, tokens, chrome/shell, components, photo uploads; §13 skeleton plan pending |
+| `docs/design.md` | 2.0.0 | Windows 11 / Fluent direction (Files app): neutral ramp + amber accent, tokens, chrome/shell, components, photo uploads; §13 skeleton loading states resolved (150/300/167 ms, flat pulse, gated queries) |
 | `docs/seed-data.md` | — | Points to PRD §9; save-file/reset behaviour |
 | `docs/logout-tokens.md` | — | Runbook for removing all stored GitHub credentials from the Windows build machine |
 | `docs/decisions.md` | — | This file |
@@ -95,7 +95,7 @@ app as primary reference), superseding the warm dark-dashboard pass of the same 
 - **Status badges:** amber-tinted pill + semantic dot + word (never color alone; wrench glyph on `UNDER_MAINTENANCE`).
 - **Gradients are restricted to the single photo-fallback category tile** — every other surface is flat; no Mica blur, no glows, no shadows.
 - **Image uploads are in scope** (explicit override of the PRD §8 non-goal): optional per-item photo, stored locally under `kitnapper-images/`, downscaled to ≤ 1024 px JPEG, 20 MB source cap, reset demo data wipes the folder, seed ships without photos.
-- **Skeleton loading states are an open blocking plan** — `design.md` §13 must be written with the user before UI implementation (M2) starts.
+- **Skeleton loading states are specified** (`design.md` §13, resolved 2026-11-14): 150 ms delay / 300 ms minimum / 167 ms fade, flat 4 px blocks + 1,000 ms pulse, no launch skeleton, query skeletons gated behind a measured ≥ 150 ms, 10 s watchdog; first use in M3.
 - Microcopy still mixed by role (plain for borrowers, formal for manager surfaces); dashboard still KPIs + overdue list + recent activity; 1080p target with a 1366×768 sanity check; dark + light themes; motion retuned to Fluent durations (83/167/250 ms).
 - Hard constraint unchanged: **no third-party libraries** → custom-painted Swing; system fonts (Segoe UI Variable, Segoe Fluent Icons) are probed, never bundled; the bundled Inter files remain font assets, not libraries.
 
@@ -153,8 +153,8 @@ The attribution rules above now run on the Windows machine, not just the origina
   with seed fallback on missing or corrupt saves (NFR-07, D18), a `LoanService`
   skeleton interface, and the PRD 9 seed dataset computed relative to the seeding
   date (D4). Round-trip and corruption checks (16/16) ran through a scratch `main`
-  deleted before the commit (`fe9ed34`). Next: write `design.md` §13 with the user,
-  then M2 (shell + login) — see `HANDOFF-M2.md`.
+  deleted before the commit (`fe9ed34`). `design.md` §13 (skeleton loading states) was
+  then resolved with the user. Next: M2 (shell + login) — see `HANDOFF-M2.md`.
 - **M0 complete: domain core implemented.** The `kitnapper.model` layer (18 files per `implementation-plan.md` §2.1, including `GeneralEquipment` for the JSON `BASE` kind) compiles and enforces INV-1/2/4/5; `Main.java` is still a blank placeholder, and persistence and Swing views beyond M1 are not yet written. The scaffold is a NetBeans Ant project at `desktop-app/` on the repository root (`C:\Users\CIIT\Downloads\kitnapper\desktop-app`).
 - Future build order: model → service/persistence → Swing views → demo polish. **Detailed in `docs/implementation-plan.md` (milestones M0–M6) — follow it one milestone at a time; the class inventory, JSON schema, and implementation decisions D1–D6 live there.**
 - Respect `OOP/AGENTS.md`: Java 17 + Swing, NetBeans Ant, no third-party libraries, 200-line file cap, MVC separation.

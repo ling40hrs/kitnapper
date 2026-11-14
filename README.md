@@ -103,7 +103,7 @@ Build output is written to `build/` and `dist/`, both of which are ignored by Gi
 | :--- | :--- |
 | [`docs/PRD.md`](docs/PRD.md) | Product scope, domain model, state transitions, seed data |
 | [`docs/SRS.md`](docs/SRS.md) | Numbered requirements, invariants, acceptance criteria, demo script |
-| [`docs/design.md`](docs/design.md) | Windows 11 / Fluent visual spec (v2.0): tokens, custom chrome, components, photo uploads; skeleton-loading plan pending in §13 |
+| [`docs/design.md`](docs/design.md) | Windows 11 / Fluent visual spec (v2.0): tokens, custom chrome, components, photo uploads, skeleton loading states (§13) |
 | [`docs/decisions.md`](docs/decisions.md) | Record of confirmed decisions and known gaps |
 | [`docs/implementation-plan.md`](docs/implementation-plan.md) | Build order, class/file inventory, JSON persistence spec, decisions D1–D23 |
 | [`docs/seed-data.md`](docs/seed-data.md) | Where seed data lives and when to split it out |
@@ -124,4 +124,4 @@ The PRD and SRS are the sources of truth for behavior. If implementation and doc
 
 ## Status
 
-Documentation complete; M0 domain core and M1 JSON persistence implemented and building. The Swing UI is next (M2–M6): `docs/design.md` §13 (skeleton loading states) must be written with the user before M2 (shell + login) starts. See `docs/decisions.md` for the decision record, `docs/implementation-plan.md` for the build order, and `HANDOFF-M2.md` for the next session's working document.
+Documentation complete; M0 domain core and M1 JSON persistence implemented and building. The Swing UI is next (M2–M6); `docs/design.md` is fully resolved including §13 (skeleton loading states). See `docs/decisions.md` for the decision record, `docs/implementation-plan.md` for the build order, and `HANDOFF-M2.md` for the next session's working document.

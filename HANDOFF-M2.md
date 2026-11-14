@@ -2,34 +2,26 @@
 
 > **Working document for the next agent session — not a course deliverable.**
 > Scope: milestone **M2** of `docs/implementation-plan.md` §4 (Windows 11 shell +
-> mock login). Read `AGENTS.md`, then this file, then `docs/design.md` §3–§12 and
+> mock login). Read `AGENTS.md`, then this file, then `docs/design.md` §3–§13 and
 > `docs/implementation-plan.md` §2.2, §2.5–§2.6.
 > `HANDOFF-M1.md` is kept for traceability — M1 already landed.
 
-## 0. BLOCKER — write `design.md` §13 with the user FIRST
+## 0. `design.md` §13 — RESOLVED (was the blocker)
 
-`design.md` §13 (skeleton loading states) is a flagged placeholder and a documented
-blocker: it must be fully written **with the user** before any M2 UI code. Minimum
-scope it must cover (from §13 itself):
-
-- Which surfaces get skeletons: photo tiles / preview pane while `ImageIO` decodes;
-  initial launch while the JSON loads; any screen query over ~100 ms.
-- Timing thresholds, minimum display duration, transition out.
-- Visual form under the §3.4 gradient ban: flat blocks + subtle opacity pulse —
-  **no shimmer sweep** — 4 px radius, `BG_ELEVATED` at reduced alpha.
-- Reduced-motion behavior (static blocks, no pulse).
-- Interaction rules: never focusable, never announced as content; accessible
-  "Loading" state instead.
-- Failure/timeout fallback: skeleton → error or empty state, never permanent.
-- Code placement (`SkeletonPanel`, per-component skeleton renderers) and the
-  milestone that activates it.
-
-Write it into `design.md` §13, commit it (`docs(design): specify skeleton loading
-states`), and only then start the M2 code below.
+The skeleton loading states were written **with the user on 2026-11-14** and committed.
+Read `design.md` §13 before any M3+ UI work that touches loading: 150 ms delay / 300 ms
+minimum / 167 ms fade, flat 4 px `SKELETON_BLOCK` blocks with a 1,000 ms pulse (**no
+shimmer sweep**), no launch skeleton, query skeletons gated behind a measured ≥ 150 ms,
+reduced motion via a session setting (`Theme.animateSkeletons`, switch lands in M5),
+10 s watchdog, and the `SkeletonPanel` + `SkeletonGate` code placement (M3 first use,
+M5 import + switch, M6 audit). M2 needs none of it — there is no async work before
+the first photo decode.
 
 ## 1. Current state (as of 2026-11-14, after M1)
 
-- Repo `https://github.com/ling40hrs/kitnapper`, branch `main`, in sync at `fe9ed34`.
+- Repo `https://github.com/ling40hrs/kitnapper`, branch `main`, in sync with
+  `origin/main` (M1 = `fe9ed34`, status docs = `9df33e7`, §13 spec = the docs commit
+  after this one).
 - **M0 complete** (`7b0a178`): 18 model classes in `desktop-app/src/kitnapper/model/`,
   invariants INV-1/2/4/5 enforced.
 - **M1 complete and pushed** (`fe9ed34`): 14 files — `kitnapper.service` (4) +
