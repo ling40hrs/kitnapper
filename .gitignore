@@ -10,6 +10,9 @@ nbbuild/
 *.class
 *.jar
 
+# Runtime state (never commit the save file)
+kitnapper-data.json
+
 # OS / editor noise
 .DS_Store
 Thumbs.db
