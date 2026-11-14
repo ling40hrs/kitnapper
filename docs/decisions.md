@@ -32,7 +32,7 @@
 | Save location | `kitnapper-data.json` in the **application folder**; deleting it or using "Reset demo data" restores the seed state |
 | Platform | **Java 17+ / Swing** (JavaFX dropped) |
 | Build | **NetBeans Ant application project**, matching Activity 7 |
-| Libraries | **None** — JDK only; JSON and the dark theme are hand-written |
+| Libraries | **None** — JDK only; JSON and the Win11/Fluent theme are hand-written (system fonts are probed, Inter is bundled as an asset) |
 | Tests | **None automated** — verification is a manual demo walkthrough |
 | Click budget | Primary workflows reachable within **4 clicks** |
 | OOP showcase | Pluggable `FeeStrategy` interface with `LateFeeStrategy` (even though only one rule ships) |
@@ -65,7 +65,7 @@
 | Manager visibility limited | **All Loans** view added |
 | Cancel/extend unspecified | **Out of scope** |
 | Save-file location undefined | **App folder**, `kitnapper-data.json` |
-| UI design unspecified | **Dark dashboard**; details deferred to `design.md` §9 |
+| UI design unspecified | Dark dashboard chosen, then **superseded 2026-11-14 by the Windows 11 / Fluent direction** (`design.md` v2.0, §14.2) |
 | `OOP/AGENTS.md` contained wrong Next.js rules | **Rewritten** for Java/Swing + git rules |
 | No `.gitignore` for NetBeans artifacts | **Added** at `OOP/.gitignore` |
 | Slides not planned | Deferred to the very end, generated with the PDF skill |
@@ -74,18 +74,30 @@
 
 | File | Version | Contents |
 | :--- | :--- | :--- |
-| `docs/PRD.md` | 3.0.0 | Product requirements, domain model, state machines, seed data |
-| `docs/SRS.md` | 3.0.0 | Verifiable requirements, invariants, demo walkthrough, traceability |
-| `docs/design.md` | draft | Dark-dashboard direction, color/type tokens, open design questions |
+| `docs/PRD.md` | 3.1.0 | Product requirements, domain model, state machines, seed data, optional per-item photo |
+| `docs/SRS.md` | 3.1.0 | Verifiable requirements, invariants, demo walkthrough, traceability, image-storage NFR |
+| `docs/design.md` | 2.0.0 | Windows 11 / Fluent direction (Files app): neutral ramp + amber accent, tokens, chrome/shell, components, photo uploads; §13 skeleton plan pending |
 | `docs/seed-data.md` | — | Points to PRD §9; save-file/reset behaviour |
 | `docs/logout-tokens.md` | — | Runbook for removing all stored GitHub credentials from the Windows build machine |
 | `docs/decisions.md` | — | This file |
+| `docs/implementation-plan.md` | 1.1.0 | Class/file inventory, JSON persistence spec, milestones M0–M6, implementation decisions D1–D13 (written 2026-11-14, before any code; v1.1.0 retargets the UI to design.md v2.0) |
 
 ## 5. Design Direction
 
-- **Dark dashboard** aesthetic, staff-console tone.
-- **Design pass completed 2026-11-14** — all 12 questions in `docs/design.md` §9 are resolved with the user: amber accent (`#F0A32E`), warm brown-black base (`#2C1E16`, full warm token ramp), Inter bundled in-app (`desktop-app/resources/fonts/`), airy catalog cards + dense data tables, dashboard = KPIs + overdue list + recent activity (derived from loan/penalty records, no new persistence), catalog cards/table toggle (session preference only), custom logo icon (wordmark placeholder until team art lands), microcopy mixed by role (plain for borrowers, formal for manager surfaces), 1080p target, single main window with modal dialogs, dark + light themes, fades on transitions only (≤150 ms Swing `Timer`).
-- Hard constraint: no third-party libraries → custom-painted Swing, Unicode glyph icons.
+**v2.0 rewrite 2026-11-14** — the visual direction is now **Windows 11 / Fluent** (Files
+app as primary reference), superseding the warm dark-dashboard pass of the same date
+(kept as history in `design.md` §14.1). What stands now:
+
+- **Neutral Win11 surface ramp** (`#1F1F1F` app, `#272727` surfaces, `#323232` controls) with the **amber accent `#F0A32E` retained** as the single brand color; square outer window corners.
+- **Typography:** Segoe UI Variable → Segoe UI → bundled Inter (fallback), Segoe Fluent Icons → MDL2 → Unicode glyph fallbacks.
+- **Shell:** custom title bar (**no tabs**) + omnibar row (breadcrumb, commands, search, layout toggle), grouped sidebar, status bar with counts/selection/aggregate.
+- **Catalog + Inventory default to details table + preview pane** (overrides the v1 "defaults to cards" answer); the layout toggle switches the left pane to cards.
+- **Status badges:** amber-tinted pill + semantic dot + word (never color alone; wrench glyph on `UNDER_MAINTENANCE`).
+- **Gradients are restricted to the single photo-fallback category tile** — every other surface is flat; no Mica blur, no glows, no shadows.
+- **Image uploads are in scope** (explicit override of the PRD §8 non-goal): optional per-item photo, stored locally under `kitnapper-images/`, downscaled to ≤ 1024 px JPEG, 20 MB source cap, reset demo data wipes the folder, seed ships without photos.
+- **Skeleton loading states are an open blocking plan** — `design.md` §13 must be written with the user before UI implementation (M2) starts.
+- Microcopy still mixed by role (plain for borrowers, formal for manager surfaces); dashboard still KPIs + overdue list + recent activity; 1080p target with a 1366×768 sanity check; dark + light themes; motion retuned to Fluent durations (83/167/250 ms).
+- Hard constraint unchanged: **no third-party libraries** → custom-painted Swing; system fonts (Segoe UI Variable, Segoe Fluent Icons) are probed, never bundled; the bundled Inter files remain font assets, not libraries.
 
 ## 6. Git & Attribution
 
@@ -129,13 +141,13 @@ The attribution rules above now run on the Windows machine, not just the origina
 
 ## 8. Scope Guardrails
 
-**In scope:** mock login/logout, catalog search/filter, instant checkout with limits, My Loans, return logging, late fees with live accrual, penalty settlement (paid/waived), overdue dashboard, all-loans view, inventory CRUD, JSON persistence, demo reset, seed data.
+**In scope:** mock login/logout, catalog search/filter, instant checkout with limits, My Loans, return logging, late fees with live accrual, penalty settlement (paid/waived), overdue dashboard, all-loans view, inventory CRUD, optional per-item photo upload (local, downscaled JPEG), JSON persistence, demo reset, seed data.
 
-**Out of scope:** networking, real authentication, real payments, damage tracking, manual fee edits, loan cancellation/extension, reservations, barcode/QR, uploads, notifications, mobile/web.
+**Out of scope:** networking, real authentication, real payments, damage tracking, manual fee edits, loan cancellation/extension, reservations, barcode/QR, cloud image hosting (photos are local files only), notifications, mobile/web.
 
 ## 9. Implementation Status
 
 - **Scaffold created; no application code.** `Finals/desktop-app/` is a NetBeans Ant project with `nbproject/`, `build.xml`, `manifest.mf`, empty package folders, and a blank `Main.java` placeholder. Nothing has been implemented. In the current checkout this project sits at `desktop-app/` on the repository root (`C:\Users\CIIT\Downloads\kitnapper\desktop-app`).
-- Future build order: model → service/persistence → Swing views → demo polish.
+- Future build order: model → service/persistence → Swing views → demo polish. **Detailed in `docs/implementation-plan.md` (milestones M0–M6) — follow it one milestone at a time; the class inventory, JSON schema, and implementation decisions D1–D6 live there.**
 - Respect `OOP/AGENTS.md`: Java 17 + Swing, NetBeans Ant, no third-party libraries, 200-line file cap, MVC separation.
 - Swift was considered during the scaffold decision and **explicitly rejected**; the repository is Java-only.

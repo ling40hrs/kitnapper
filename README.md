@@ -41,7 +41,7 @@ Finals/
 ├── docs/
 │   ├── PRD.md                product requirements and domain model
 │   ├── SRS.md                verifiable requirements and demo walkthrough
-│   ├── design.md             visual direction and open design questions
+│   ├── design.md             Windows 11 / Fluent visual specification
 │   ├── decisions.md          decision log
 │   └── seed-data.md          seed data scope note
 └── desktop-app/              NetBeans Ant project
@@ -103,7 +103,7 @@ Build output is written to `build/` and `dist/`, both of which are ignored by Gi
 | :--- | :--- |
 | [`docs/PRD.md`](docs/PRD.md) | Product scope, domain model, state transitions, seed data |
 | [`docs/SRS.md`](docs/SRS.md) | Numbered requirements, invariants, acceptance criteria, demo script |
-| [`docs/design.md`](docs/design.md) | Dark dashboard direction, tokens, unresolved design questions |
+| [`docs/design.md`](docs/design.md) | Windows 11 / Fluent visual spec (v2.0): tokens, custom chrome, components, photo uploads; skeleton-loading plan pending in §13 |
 | [`docs/decisions.md`](docs/decisions.md) | Record of confirmed decisions and known gaps |
 | [`docs/seed-data.md`](docs/seed-data.md) | Where seed data lives and when to split it out |
 | [`docs/logout-tokens.md`](docs/logout-tokens.md) | Runbook: logging out of every stored GitHub credential on the build machine |
@@ -122,4 +122,4 @@ The PRD and SRS are the sources of truth for behavior. If implementation and doc
 
 ## Status
 
-Documentation complete, scaffold in place, implementation pending. See `docs/decisions.md` for the full record of decisions and `docs/design.md` for design questions still open.
+Documentation complete, scaffold in place, implementation pending. See `docs/decisions.md` for the full record of decisions and `docs/design.md` §13 for the open skeleton-loading plan.

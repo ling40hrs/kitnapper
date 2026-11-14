@@ -6,7 +6,7 @@ artifact_type: "Product Requirements Document (PRD) / AI Context File"
 target_platforms:
   - "Desktop (Java 17+ / Swing)"
 architecture_style: "OOP / MVC / Local JSON Persistence"
-version: "3.0.0"
+version: "3.1.0"
 ---
 
 # Project Specification: KitNapper
@@ -77,6 +77,7 @@ Borrowing is **instant**: a borrower checks an item out directly, with no manage
   - `status: EquipmentStatus` (`AVAILABLE`, `LOANED`, `UNDER_MAINTENANCE`, `DECOMMISSIONED`)
   - `serialNumber: String`
   - `replacementValue: Double` (in PHP)
+  - `photoFile: String` *(optional; relative filename under `kitnapper-images/` — see §7.2 and design.md §12)*
 - **Methods:**
   - `markAvailable()`, `markLoaned()`, `markUnderMaintenance()`, `decommission()`
 - **Rule:** every method validates the legal transition for the current status; illegal transitions are rejected in the model layer (see INV-1, §6).
@@ -223,7 +224,7 @@ Borrowing is **instant**: a borrower checks an item out directly, with no manage
 ### 5.4 Monitoring, Inventory & Penalties
 - **REQ-008 (Overdue Dashboard):** Dedicated Manager view highlighting all loans past their `dueDate` (including those auto-transitioned to status `OVERDUE` per §4.2), sorted by longest overdue first, with the live accrued fee.
 - **REQ-009 (All Loans):** Manager view listing every loan (active, overdue, returned) with borrower, item, dates, status, and fee state.
-- **REQ-010 (Inventory CRUD):** Managers can add, update, or decommission items from the pool, and flag items for maintenance.
+- **REQ-010 (Inventory CRUD):** Managers can add, update, or decommission items from the pool, and flag items for maintenance. When adding or editing an item, the manager may attach one photo (optional; local upload, downscaled and stored per design.md §12).
 - **REQ-011 (Penalty Settlement):** Managers can view all penalties attached to a loan and mark each `PAID` or `WAIVED` (with reason). Borrowers see outstanding penalties in "My Loans".
 - **REQ-012 (Local Persistence):** All state (equipment, loans, penalties, users) is saved to `kitnapper-data.json` in the application folder on every mutation. On startup, the app loads that file if present; otherwise it seeds the demo dataset (§9). The manager may reset to the seed dataset at any time.
 
@@ -263,6 +264,7 @@ Borrowing is **instant**: a borrower checks an item out directly, with no manage
 - **Required:** Local JSON file `kitnapper-data.json` in the application folder, written on every state mutation and read at startup.
 - **Constraint:** **No third-party libraries.** The JSON format is written and read using the Java standard library only (no Gson/Jackson or equivalent).
 - **Reset:** The Manager's `resetDemoData()` (also exposed via UI) overwrites the save file with the seed dataset. Deleting the file manually has the same effect on next launch.
+- **Images:** optional item photos (§3.1 `photoFile`) are JPEG files under `kitnapper-images/` beside the JSON save file (downscaled on import per design.md §12); the JSON stores the relative filename only. Reset demo data clears the folder.
 
 ### 7.3 OOP Design Pattern Expectations
 - **Abstraction:** `User` and `Equipment` are abstract; the View layer depends only on service interfaces, never on concrete repositories.
@@ -286,6 +288,7 @@ Borrowing is **instant**: a borrower checks an item out directly, with no manage
 - [x] Overdue dashboard + All Loans view.
 - [x] Inventory CRUD (+ maintenance flag).
 - [x] Local JSON persistence with manager-triggered demo reset.
+- [x] Optional per-item photo upload (local file, downscaled; §3.1, §7.2).
 - [x] Seed data (pre-loaded with at least 10 items, 3 users, 2 active loans, 1 overdue loan).
 
 ### Out-of-Scope (Strict Non-Goals)
@@ -297,7 +300,7 @@ Borrowing is **instant**: a borrower checks an item out directly, with no manage
 - [ ] Loan cancellation or due-date extension.
 - [ ] Future calendar reservations (Immediate checkout only).
 - [ ] Barcode / QR scanning.
-- [ ] Image/file uploads (Use local asset icons or system symbols).
+- [ ] Cloud/hosted image storage (photos are local files only; the "image/file uploads" non-goal was reversed on 2026-11-14 — see design.md §12).
 - [ ] Push/email notifications.
 - [ ] Mobile/Web targets (Desktop only).
 
@@ -315,7 +318,7 @@ On first application startup (with `T` = the startup date), populate the system 
 | Borrower | `student1@institution.edu` | `student123` | Student One |
 | Borrower | `student2@institution.edu` | `student123` | Student Two |
 
-### 9.2 Equipment (10 total — replacement values are example seed values in PHP, kept configurable)
+### 9.2 Equipment (10 total — replacement values are example seed values in PHP, kept configurable; seed items ship **without photos**, the UI falls back to the category tile per design.md §3.5)
 
 | # | Item | Category | Replacement Value |
 | :-- | :--- | :--- | :--- |
@@ -356,3 +359,4 @@ On first application startup (with `T` = the startup date), populate the system 
 | 2.0.0 | 2026-11-11 | Instant checkout — removed manager approval queue, `PENDING`/`PENDING_APPROVAL` states and the approve/reject flow; removed damage tracking, condition assessment, damage fees and maintenance-on-return routing; all amounts converted to Philippine pesos with a ₱50/day late fee (seed late fee now ₱200); local JSON persistence promoted to required scope (with manager-triggered demo reset); Swift track dropped (Java/JavaFX only); fee-rule demo retained as a pluggable single-rule `FeeStrategy` |
 | 2.0.1 | 2026-11-11 | Third-party libraries disallowed — JSON save/load implemented with the Java standard library; click budget relaxed from two to four |
 | 3.0.0 | 2026-11-11 | UI toolkit switched from JavaFX to **Swing** (NetBeans Ant project, matching course activities); added mock login with fixed demo passwords (REQ-003); live fee accrual frozen into a penalty on return; added borrow limits (3 active loans, 14-day window) with invariants; added All Loans manager view (REQ-009); save file pinned to `kitnapper-data.json` in the app folder; cancellation/extension explicitly out of scope |
+| 3.1.0 | 2026-11-14 | Windows 11 / Fluent visual direction (design.md v2.0); image uploads moved into scope — optional per-item `photoFile` (§3.1), stored under `kitnapper-images/` (§7.2), seed ships without photos; JSON persistence unchanged (`schemaVersion` stays 1, field is nullable/additive) |

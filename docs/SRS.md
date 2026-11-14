@@ -2,8 +2,8 @@
 project_name: "KitNapper"
 course: "CS203 – Object-Oriented Programming"
 artifact_type: "Software Requirements Specification (SRS)"
-derived_from: "PRD.md v3.0.0"
-version: "3.0.0"
+derived_from: "PRD.md v3.1.0"
+version: "3.1.0"
 ---
 
 # Software Requirements Specification — KitNapper
@@ -23,6 +23,7 @@ KitNapper replaces physical equipment logbooks for institutions (universities, s
 | LoanRecord | A single borrow transaction from checkout to return |
 | Penalty | A late fee attached to a LoanRecord |
 | Accrued fee | The live, not-yet-frozen late-fee total for an outstanding loan |
+| Category tile | The placeholder image block shown when an item has no readable photo (design.md §3.5) |
 | T | Application startup date (seed-data reference point) |
 | ₱ | Philippine peso |
 
@@ -84,9 +85,11 @@ Priority scale: **H** = must-have, **M** = should-have, **L** = nice-to-have. Al
 | :--- | :--- | :--- |
 | FR-08 | Overdue dashboard: all loans past their `dueDate` (including auto-`OVERDUE` transitions), sorted by longest overdue first, with live accrued fees. | H |
 | FR-09 | All Loans view: every loan (active, overdue, returned) with borrower, item, dates, status, and fee state. | H |
-| FR-10 | Inventory CRUD: managers add, update, and decommission items, and flag items for maintenance. `DECOMMISSIONED` is terminal; decommissioned items remain visible for audit but are not borrowable. | H |
+| FR-10 | Inventory CRUD: managers add, update, and decommission items, and flag items for maintenance. `DECOMMISSIONED` is terminal; decommissioned items remain visible for audit but are not borrowable. When adding or editing an item, the manager may attach one local photo (≤ 20 MB source, downscaled to ≤ 1024 px JPEG per design.md §12); a missing or corrupt photo file falls back to the category tile without errors. | H |
 | FR-11 | Penalty settlement: managers view all penalties per loan and mark each `PAID` or `WAIVED` (with reason). Borrowers see outstanding penalties in "My Loans". | H |
 | FR-12 | Persistence: every state mutation is written to `kitnapper-data.json`; startup loads the file if present, otherwise seeds the demo dataset. Managers can reset to seed data. | H |
+
+**Acceptance (FR-10):** adding an item with a photo shows the photo on the card/preview immediately; restarting keeps it; a corrupted or missing photo file shows the category tile instead; reset demo data removes uploaded photos (NFR-08).
 
 **Acceptance (FR-12):** create a loan, close and reopen the app — the loan is still present. Trigger reset — the dataset returns to the PRD §9 baseline.
 
@@ -101,6 +104,7 @@ Priority scale: **H** = must-have, **M** = should-have, **L** = nice-to-have. Al
 | NFR-05 | Demonstrability: seed data reproduces the Overdue Dashboard scenario at startup with zero manual setup. | Startup inspection (see §6) |
 | NFR-06 | Maintainability: fee rate and enums defined exactly once; adding a `FeeStrategy` requires no changes to `LoanRecord`. | Code review (Open/Closed) |
 | NFR-07 | Durability: state survives restarts; a missing or corrupted save file falls back to seed data without crashing. | Delete/corrupt file test |
+| NFR-08 | Image storage: photos are local files under `kitnapper-images/` (never networked), downscaled to ≤ 1024 px JPEG; a missing or corrupt image falls back to the category tile without crashing; reset demo data clears the folder. | Manual walkthrough + corrupt-file test |
 
 ## 5. Class Invariants (Model-Layer Enforced)
 
@@ -138,7 +142,7 @@ Run in order; each step lists the requirement it proves.
 8. **Log in as manager** → Overdue Dashboard shows L-003 first with **₱200.00 accrued** (FR-08); All Loans lists every loan (FR-09).
 9. **Log the return of L-003** with return date `T` → loan becomes `RETURNED`; exactly one ₱200.00 `LATE_FEE` penalty is created; item returns to `AVAILABLE` (FR-06, FR-07).
 10. **Open the penalty and mark it WAIVED** with a reason → status updates immediately (FR-11, NFR-02).
-11. **Add a new inventory item** and decommission it → retired item remains listed but cannot be checked out (FR-10).
+11. **Add a new inventory item with a photo, then decommission it** → the photo shows on the card/preview; the retired item remains listed but cannot be checked out (FR-10, NFR-08).
 12. **Trigger "Reset demo data"** → state returns to the §6.1 baseline (FR-12).
 
 Seed dataset details: PRD §9; rationale and file placement: `seed-data.md`.
@@ -168,3 +172,4 @@ Seed dataset details: PRD §9; rationale and file placement: `seed-data.md`.
 | 2.0.0 | 2026-11-11 | Regenerated for PRD v2.0.0: instant checkout, no damage tracking, PHP/₱50-per-day fees, required JSON persistence, Java-only stack |
 | 2.1.0 | 2026-11-11 | Inventory CRUD promoted to must-have; click budget relaxed to ≤ 4; third-party libraries disallowed (hand-written JSON); automated tests removed in favour of manual verification; added full demo walkthrough and PRD traceability table |
 | 3.0.0 | 2026-11-11 | Swing + NetBeans Ant (replacing JavaFX); fixed-password mock login (FR-03); live accrual + freeze-on-return (FR-07); borrow limits (FR-04, INV-2, INV-6); All Loans view (FR-09); save file pinned to app folder; cancellation/extension explicitly out of scope |
+| 3.1.0 | 2026-11-14 | Windows 11 / Fluent direction (design.md v2.0); photo upload added to inventory scope (FR-10 + acceptance), image-storage NFR-08, walkthrough step 11 covers photo + decommission, category-tile definition in §1.3 |
