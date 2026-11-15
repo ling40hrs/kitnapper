@@ -83,21 +83,47 @@ public final class FrameProbe {
         }
     }
 
+    /**
+     * Drains the EDT and paints once into a throwaway image: the first paint of
+     * a freshly realized frame can be blank under xvfb (font metrics still
+     * resolving), which made the first paint check flaky.
+     */
+    private static void settle(JFrame frame) {
+        try {
+            javax.swing.SwingUtilities.invokeAndWait(frame::validate);
+            javax.swing.SwingUtilities.invokeAndWait(() -> { });
+            BufferedImage warm = new BufferedImage(Math.max(1, frame.getWidth()),
+                Math.max(1, frame.getHeight()), BufferedImage.TYPE_INT_RGB);
+            Graphics2D g = warm.createGraphics();
+            frame.paint(g);
+            g.dispose();
+            java.awt.Toolkit.getDefaultToolkit().sync();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            throw new IllegalStateException("EDT settle failed", e);
+        }
+    }
+
     /** Applies the theme, repaints through the frame, and paints it offscreen. */
     private static void paintCheck(JFrame frame, Runnable refresh,
                                    String name, boolean dark) {
         Theme.apply(dark);
         refresh.run();
+        settle(frame);
         BufferedImage image = new BufferedImage(frame.getWidth(), frame.getHeight(),
             BufferedImage.TYPE_INT_RGB);
         Graphics2D g = image.createGraphics();
         frame.paint(g);
         g.dispose();
-        check(name, nonBlank(image));
+        int different = nonBlank(image);
+        if (!check(name, different > 750)) {
+            System.out.println("  " + name + " different=" + different + " (need >750)");
+        }
     }
 
-    /** More than a flat fill: sampled pixels must leave the corner color. */
-    private static boolean nonBlank(BufferedImage image) {
+    /** Sampled pixels that leave the corner color; 0 means a flat fill. */
+    private static int nonBlank(BufferedImage image) {
         int corner = image.getRGB(0, 0);
         int different = 0;
         for (int y = 0; y < image.getHeight(); y += 2) {
@@ -107,7 +133,7 @@ public final class FrameProbe {
                 }
             }
         }
-        return different > 750;
+        return different;
     }
 
     private static String screenTitle(MainFrame frame) throws Exception {
@@ -124,12 +150,13 @@ public final class FrameProbe {
         return f.get(target);
     }
 
-    private static void check(String name, boolean ok) {
+    private static boolean check(String name, boolean ok) {
         if (ok) {
             passed++;
         } else {
             failed++;
             System.out.println("FAIL " + name);
         }
+        return ok;
     }
 }

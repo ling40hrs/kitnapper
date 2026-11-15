@@ -61,7 +61,7 @@ final class ScreenCatalog {
 
     static List<String> navKeys(UserRole role) {
         return role == UserRole.MANAGER
-            ? List.of("dashboard", "allloans", "overdue", "penalties", "inventory")
+            ? List.of("dashboard", "catalog", "allloans", "overdue", "penalties", "inventory")
             : List.of("catalog", "myloans");
     }
 }

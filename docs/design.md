@@ -199,8 +199,9 @@ The login screen uses the same title bar but hides omnibar, sidebar, and status 
   right-aligned search (240 px, expands to 320 px on focus) and, on screens that have
   both, the table/cards layout toggle as a segmented control.
 - **Sidebar (240 px):** grouped nav — Home group (Catalog, My Loans) for borrowers;
-  Manager group (Dashboard, All Loans, Overdue, Penalties, Inventory) for managers;
-  footer holds Settings / Data, the signed-in user chip (name + role), and Sign out.
+  Manager group (Dashboard, Catalog, All Loans, Overdue, Penalties, Inventory) for
+  managers; footer holds Settings / Data, the signed-in user chip (name + role), and
+  Sign out.
   Selected item: 3 px amber left bar + `ACCENT_TINT` fill; hover `BG_ELEVATED`.
 - **Status bar (32 px):** left = item/loan counts, then selection summary; right =
   aggregate in monospace (total replacement value on catalog/inventory, accrued-fee total

@@ -4,17 +4,16 @@
 > Repository: the KitNapper checkout — `OOP/Finals/` (`github.com/ling40hrs/kitnapper`)
 > Plan baseline: `main` @ `745ae28` (`fix(ui): repair M2 field, resize, and exit bugs`)
 > Written: 2026-11-14 · last refresh: 2026-11-15 (see the §17 log for the tip)
-> Status: approved plan; **WP0.5 complete (probe harness green); WP2 (shell split + mounting) next**
+> Status: approved plan; **WP0.5 and WP2 complete (mounting API in place); WP3 (shared view infrastructure) next**
 
 > **Resume here (fresh session):** this plan *is* the handoff — no separate
 > handoff doc is needed. Read `AGENTS.md`, then `docs/preferences.md`, then §7
-> **WP2** (shell split and mounting API) and continue the §17 execution log.
-> Current state: WP0, WP1, and WP0.5 verified and committed (`19a1e1b`,
-> `ebf3452`, `8428639`, probe rebuild at the tip — `git log -1` is the truth).
-> The probe harness is **rebuilt and green** under `desktop-app/test/` with the
-> §9.4 baselines recorded; `test/run-all.sh` is the verification gate for every
-> following work package. Service/controller layer exists, no catalog UI yet,
-> working tree clean after the probe commit.
+> **WP3** (shared view infrastructure) and continue the §17 execution log.
+> Current state: WP0, WP1, WP0.5, and WP2 verified and committed (`19a1e1b`,
+> `ebf3452`, `8428639`, probe rebuild, mounting API — `git log -1` is the truth).
+> The shell exposes `mount`/`setStatus`/`searchField` and managers now route to
+> the read-only catalog; no catalog screen exists yet and mounting is not yet
+> exercised (that is `CatalogUiProbe` in WP4).
 >
 > **Machine paths (refreshed 2026-11-15):** the original sessions ran on a macOS
 > checkout at `/Users/student/kitnapper` with the probe harness at
@@ -475,10 +474,10 @@ changes yet. This is the point where the risky rules are proven.
       *(done in the 2026-11-15 debt pass)*
 - [x] Extract `PlaceholderScreen.create(meta)`.
       *(done in the 2026-11-15 debt pass)*
-- [ ] `MainFrame`: `mount`, `setStatus`, `searchField`, onShown/commands maps;
+- [x] `MainFrame`: `mount`, `setStatus`, `searchField`, onShown/commands maps;
       manager `navKeys` = `dashboard, catalog, allloans, overdue, penalties, inventory`.
-- [ ] `Omnibar.setCommands` (null clears).
-- [ ] Keep the existing `MainFrame` constructor signature for `FrameProbe`.
+- [x] `Omnibar.setCommands` (null clears).
+- [x] Keep the existing `MainFrame` constructor signature for `FrameProbe`.
 
 **Exit:** build green; `test/run-all.sh` green (WP0.5 gate); `FrameProbe` 12/12,
 `SizeProbe` sane; mounting is exercised by `CatalogUiProbe` in WP4.
@@ -755,7 +754,7 @@ was recorded at `PASS=28 FAIL=0` in WP1; UI probes land in WP4/WP5.
 | `EdgeProbe` | `PASS=4 FAIL=0` |
 | `FrameProbe` | `PASS=12 FAIL=0` (5 structural + 7 paint checks) |
 | `FontProbe` | `PASS=2 FAIL=0`; `text=Inter display=SansSerif mono=Monospaced icon=Inter` |
-| `SizeProbe` | `PASS=2 FAIL=0`; key heights (32/48/240/32), manager sidebar 6 |
+| `SizeProbe` | `PASS=3 FAIL=0`; key heights (32/48/240/32), manager sidebar 7, route order pinned |
 | `CloseProbe` | `PASS=1 FAIL=0` + `EXITED_OK` |
 | `CatalogProbe` | `PASS=28 FAIL=0` (WP1 baseline) |
 | `CatalogUiProbe` | new `PASS=10 FAIL=0` |
@@ -1164,6 +1163,53 @@ so every file stays under the 200-line cap.
 
 ---
 
+### WP2 — shell mounting API (2026-11-15)
+
+**Status:** complete. Starting HEAD `4940747` (tree clean, local = remote).
+
+`ScreenCatalog` and `PlaceholderScreen` had already been extracted in the
+`1e4909f` debt pass, so WP2 was the API half only — the earlier note that
+`MainFrame` needed a pre-split was stale (123 lines, not 182).
+
+Found and fixed a real routing defect: `ScreenCatalog.navKeys(MANAGER)` omitted
+`catalog`, so managers had no sidebar route to the read-only catalog that
+`AGENTS.md`, PRD §5.1, and the design screen inventory all require. `design.md`
+§5 listed the same wrong group and is corrected in this commit.
+
+- `MainFrame`: `mount(key, screen, commands, onShown)`, `setStatus(left, right)`,
+  `searchField()`, plus `commandsByKey`/`onShownByKey` maps. `mount` reuses the
+  `CardLayout` key so the screen replaces its placeholder in place and unknown
+  keys are ignored; `showScreen` now clears status-right, applies the screen's
+  commands (null clears the omnibar slot), then runs `onShown`. Constructor
+  signature untouched — `FrameProbe` still reflects `titleBar`/`statusBar`.
+- `Omnibar.setCommands(JComponent)`: null clears; the slot is a field instead of
+  `getComponent(1)`; `commandSlot()` kept.
+- `SizeProbe` gains a third check pinning both roles' route order (the count-only
+  check would not have caught the missing `catalog`); manager sidebar 6 → 7.
+- `FrameProbe` hardened: `paintCheck` settles the EDT and warms one throwaway
+  paint before measuring. The suite was intermittently failing `paint-login-*`
+  (1 run in 5, cold first paint under xvfb); after the fix 22 consecutive suite
+  runs were green. Failures now print the measured pixel count.
+
+| Check | Result |
+| :--- | :--- |
+| `./build.sh` | `BUILD OK`, 92 classes, zero `-Xlint:all` warnings |
+| `test/run-all.sh` | `ALL PROBES GREEN` (8/8), 22 consecutive runs |
+| `FrameProbe` (xvfb) | `PASS=12 FAIL=0` |
+| `SizeProbe` | `PASS=3 FAIL=0` (32/48/240/32; manager sidebar 7; route order) |
+| `DataProbe`/`CatalogProbe`/`SkinProbe`/`FontProbe`/`EdgeProbe`/`CloseProbe` | unchanged, green |
+| Line caps | no file > 200 (`MainFrame` 161, `Omnibar` 126, `FrameProbe` 160) |
+| Hex outside `Theme` | none |
+| `view` → `service`/`controller` imports | none |
+| `@SuppressWarnings` | none |
+
+Mounting itself is not exercised here on purpose: §7 puts that in
+`CatalogUiProbe` (WP4).
+
+**Next:** WP3 — shared view infrastructure.
+
+---
+
 ## Appendix A — Implementation checklist (copy into the working session)
 
 ```
@@ -1172,7 +1218,7 @@ so every file stays under the 200-line cap.
 [x] CatalogController + BorrowingController
 [x] CatalogProbe green; DataProbe still 26
 [x] WP0.5 probe harness rebuilt under desktop-app/test; run-all.sh green
-[ ] MainFrame split + mount/status/commands; manager nav
+[x] MainFrame split + mount/status/commands; manager nav
 [ ] Badges, SegmentedControl, GradientTile, Toasts, TableSkins, DialogSkin
 [ ] PreviewPane, EquipmentCard, CatalogTable(Model), CatalogCards,
     CatalogFilters, CatalogScreen

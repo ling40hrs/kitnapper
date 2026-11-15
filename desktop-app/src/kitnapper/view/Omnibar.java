@@ -9,14 +9,15 @@ import java.awt.event.FocusEvent;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 /**
  * 48 px omnibar row (design.md §5): breadcrumb (Home returns to the role's
- * default screen), a command slot for M3, and the right-aligned search
- * field (240 px, widening to 320 px on focus). Search is an inert
- * placeholder in M2; filtering arrives with the catalog in M3.
+ * default screen), a command slot screens fill through {@link #setCommands},
+ * and the right-aligned search field (240 px, widening to 320 px on focus).
+ * Search itself is inert until the catalog screen wires filtering.
  */
 public final class Omnibar extends JPanel {
 
@@ -27,6 +28,7 @@ public final class Omnibar extends JPanel {
 
     private final JLabel crumb = UiFactory.label("", "accent");
     private final javax.swing.JTextField search = UiFactory.textField("Search");
+    private final JPanel commands = new JPanel();
 
     public Omnibar() {
         setOpaque(false);
@@ -48,8 +50,7 @@ public final class Omnibar extends JPanel {
         breadcrumb.add(crumb);
         add(breadcrumb, BorderLayout.WEST);
 
-        // Command slot: M3 mounts "+ New" and "Filters" here.
-        JPanel commands = new JPanel();
+        // Command slot: screens mount their contextual commands here (M3).
         commands.setOpaque(false);
         add(commands, BorderLayout.CENTER);
 
@@ -88,7 +89,17 @@ public final class Omnibar extends JPanel {
 
     /** M3 mounts contextual commands into this slot. */
     public JPanel commandSlot() {
-        return (JPanel) getComponent(1);
+        return commands;
+    }
+
+    /** Replaces the contextual commands; null clears the slot. */
+    public void setCommands(JComponent commands) {
+        this.commands.removeAll();
+        if (commands != null) {
+            this.commands.add(commands);
+        }
+        this.commands.revalidate();
+        this.commands.repaint();
     }
 
     /** The search field, for the Ctrl+F binding and M3 filtering. */

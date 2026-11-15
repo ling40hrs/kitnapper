@@ -1,12 +1,15 @@
 package kitnapper.view;
 
+import java.util.List;
+
 import kitnapper.model.UserRole;
 
 /**
- * Chrome metrics probe (plan §6.4, §9.4): the 32/48/240/32 chrome heights
- * and the role-based sidebar button counts (manager 6 including Settings).
- * Kept thin by design (WP0.5 note): WP3 rewrites the theme surface and this
- * is one of its two guards. Runs headless.
+ * Chrome metrics probe (plan §6.4, §9.4): the 32/48/240/32 chrome heights,
+ * the role-based sidebar button counts (manager 7 including Settings), and
+ * the documented route order of {@link ScreenCatalog#navKeys}. Kept thin by
+ * design (WP0.5 note): WP3 rewrites the theme surface and this is one of its
+ * two guards. Runs headless.
  */
 public final class SizeProbe {
 
@@ -28,8 +31,14 @@ public final class SizeProbe {
             ScreenCatalog.titles(), ScreenCatalog.navKeys(UserRole.BORROWER),
             stubCallbacks());
         check("sidebar-buttons", manager.getPreferredSize().width == 240
-            && countNavButtons(manager) == 6
+            && countNavButtons(manager) == 7
             && countNavButtons(borrower) == 2);
+
+        check("nav-keys",
+            ScreenCatalog.navKeys(UserRole.MANAGER).equals(List.of(
+                "dashboard", "catalog", "allloans", "overdue", "penalties", "inventory"))
+            && ScreenCatalog.navKeys(UserRole.BORROWER)
+                .equals(List.of("catalog", "myloans")));
 
         System.out.println("PASS=" + passed + " FAIL=" + failed);
         if (failed > 0) {

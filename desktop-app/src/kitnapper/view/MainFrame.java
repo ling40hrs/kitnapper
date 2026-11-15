@@ -3,6 +3,8 @@ package kitnapper.view;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.event.ActionEvent;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import javax.swing.AbstractAction;
@@ -11,6 +13,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
@@ -22,6 +25,8 @@ import kitnapper.model.UserRole;
  * real page headers + a muted empty state — no fake controls. All behavior is
  * controller callbacks; the view holds no logic. Route metadata lives in
  * {@link ScreenCatalog}, placeholder surfaces in {@link PlaceholderScreen}.
+ * A screen replaces its placeholder through {@link #mount}; its omnibar
+ * commands and refresh hook are then applied by {@link #showScreen}.
  */
 public final class MainFrame extends JFrame {
 
@@ -34,6 +39,8 @@ public final class MainFrame extends JFrame {
     private final Sidebar sidebar;
     private final CardLayout cards = new CardLayout();
     private final JPanel content = new JPanel(cards);
+    private final Map<String, JComponent> commands = new HashMap<>();
+    private final Map<String, Runnable> onShown = new HashMap<>();
 
     public MainFrame(UserRole role, String userLabel, String statusLeft,
         Consumer<String> onNavigate, Runnable onSignOut, Runnable onThemeToggle) {
@@ -87,6 +94,32 @@ public final class MainFrame extends JFrame {
         });
     }
 
+    /** Replaces a routed screen and records its commands and refresh hook. */
+    public void mount(String key, JComponent screen, JComponent screenCommands,
+        Runnable onShow) {
+        if (ScreenCatalog.meta(key) == null) {
+            return;
+        }
+        content.add(screen, key);
+        if (screenCommands != null) {
+            commands.put(key, screenCommands);
+        }
+        if (onShow != null) {
+            onShown.put(key, onShow);
+        }
+    }
+
+    /** "N items · M selected" on the left, the aggregate on the right. */
+    public void setStatus(String left, String right) {
+        statusBar.setLeft(left);
+        statusBar.setRight(right);
+    }
+
+    /** The omnibar search field, for Ctrl+F and screen filtering. */
+    public JTextField searchField() {
+        return omnibar.searchField();
+    }
+
     public void showScreen(String key) {
         ScreenCatalog.Meta meta = ScreenCatalog.meta(key);
         if (meta == null) {
@@ -96,7 +129,12 @@ public final class MainFrame extends JFrame {
         titleBar.setScreenTitle(meta.title());
         omnibar.setScreen(meta.title());
         statusBar.setRight("");
+        omnibar.setCommands(commands.get(key));
         sidebar.select(key);
+        Runnable onShow = onShown.get(key);
+        if (onShow != null) {
+            onShow.run();
+        }
     }
 
     /** Ctrl+F focuses the search field (design §8). */
