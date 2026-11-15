@@ -2,6 +2,8 @@ package kitnapper.service.persistence;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,19 +20,24 @@ public final class Json {
 
     /** @param what field name or context used in the error message */
     public static Map<String, Object> asObject(Object value, String what) {
-        if (!(value instanceof Map)) {
+        if (!(value instanceof Map<?, ?> source)) {
             throw new IllegalArgumentException(what + " must be a JSON object");
         }
-        @SuppressWarnings("unchecked")
-        Map<String, Object> map = (Map<String, Object>) value;
+        Map<String, Object> map = new LinkedHashMap<>();
+        for (Map.Entry<?, ?> entry : source.entrySet()) {
+            if (!(entry.getKey() instanceof String key)) {
+                throw new IllegalArgumentException(what + " has a non-string key");
+            }
+            map.put(key, entry.getValue());
+        }
         return map;
     }
 
     public static List<Object> asList(Object value, String what) {
-        if (!(value instanceof List)) {
+        if (!(value instanceof List<?> source)) {
             throw new IllegalArgumentException(what + " must be a JSON array");
         }
-        return (List<Object>) value;
+        return new ArrayList<>(source);
     }
 
     /** Array field that must be present. */
