@@ -2,7 +2,6 @@ package kitnapper.service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -21,21 +20,18 @@ import kitnapper.model.User;
 /**
  * Borrowing workflows (REQ-004/005/006, FR-04 to FR-07). The borrower comes
  * from the session supplier and the clock is injectable (D4); every mutation
- * saves through {@link DataStore} and then notifies the app context.
+ * saves through {@link DataStore} and then notifies the app context. Reads
+ * and lookups are delegated to {@link LoanQueries}.
  */
 public final class LoanServiceImpl implements LoanService {
 
     private static final int LOAN_CAP = 3;
 
-    private static final Comparator<LoanRecord> BORROW_DATE_DESC =
-            Comparator.comparing(LoanRecord::getBorrowDate).reversed()
-                    .thenComparing(LoanRecord::getLoanId);
-
     private final DataStore store;
     private final FeeStrategy feeStrategy;
     private final Supplier<User> session;
-    private final Supplier<LocalDate> today;
     private final Runnable onChange;
+    private final LoanQueries queries;
 
     public LoanServiceImpl(DataStore store, FeeStrategy feeStrategy,
                            Supplier<User> session, Supplier<LocalDate> today,
@@ -43,13 +39,13 @@ public final class LoanServiceImpl implements LoanService {
         this.store = Objects.requireNonNull(store, "store");
         this.feeStrategy = Objects.requireNonNull(feeStrategy, "feeStrategy");
         this.session = Objects.requireNonNull(session, "session");
-        this.today = Objects.requireNonNull(today, "today");
         this.onChange = Objects.requireNonNull(onChange, "onChange");
+        this.queries = new LoanQueries(store, Objects.requireNonNull(today, "today"));
     }
 
     @Override
     public LoanRecord checkout(String equipmentId, LocalDate dueDate) {
-        LocalDate borrowDate = requireToday();
+        LocalDate borrowDate = queries.today();
         User user = session.get();
         if (!(user instanceof Borrower)) {
             throw new IllegalStateException(LoanMessages.BORROWER_ONLY);
@@ -57,7 +53,7 @@ public final class LoanServiceImpl implements LoanService {
         if (dueDate == null) {
             throw new IllegalArgumentException(LoanMessages.window(borrowDate));
         }
-        Equipment item = equipmentOrNull(equipmentId);
+        Equipment item = queries.equipmentOrNull(equipmentId);
         if (item == null) {
             throw new IllegalArgumentException(LoanMessages.ITEM_MISSING);
         }
@@ -87,12 +83,12 @@ public final class LoanServiceImpl implements LoanService {
 
     @Override
     public void returnLoan(String loanId, LocalDate returnDate) {
-        LocalDate asOf = requireToday();
+        LocalDate asOf = queries.today();
         User user = session.get();
         if (!(user instanceof Manager)) {
             throw new IllegalStateException(LoanMessages.MANAGER_ONLY);
         }
-        LoanRecord loan = findLoan(loanId);
+        LoanRecord loan = queries.findLoan(loanId);
         if (loan.getLoanStatus() == LoanStatus.RETURNED) {
             throw new IllegalStateException(LoanMessages.ALREADY_RETURNED);
         }
@@ -105,7 +101,7 @@ public final class LoanServiceImpl implements LoanService {
         if (returnDate.isBefore(loan.getBorrowDate())) {
             throw new IllegalArgumentException(LoanMessages.RETURN_BEFORE_BORROW);
         }
-        Equipment item = equipmentOrNull(loan.getEquipmentId());
+        Equipment item = queries.equipmentOrNull(loan.getEquipmentId());
         if (item == null) {
             throw new IllegalStateException(LoanMessages.EQUIPMENT_MISSING);
         }
@@ -131,58 +127,21 @@ public final class LoanServiceImpl implements LoanService {
         if (user == null) {
             return new ArrayList<>();
         }
-        return store.loans().stream()
-                .filter(loan -> loan.getBorrowerId().equals(user.getUserId()))
-                .sorted(BORROW_DATE_DESC)
-                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+        return queries.myLoans(user.getUserId());
     }
 
     @Override
     public List<LoanRecord> allLoans() {
-        return store.loans().stream()
-                .sorted(BORROW_DATE_DESC)
-                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+        return queries.allLoans();
     }
 
     @Override
     public List<LoanRecord> overdueLoans() {
-        LocalDate asOf = requireToday();
-        return store.loans().stream()
-                .filter(loan -> loan.isOverdue(asOf))
-                .sorted(Comparator.comparingLong((LoanRecord loan) -> loan.daysOverdue(asOf))
-                        .reversed()
-                        .thenComparing(LoanRecord::getDueDate)
-                        .thenComparing(LoanRecord::getLoanId))
-                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+        return queries.overdueLoans();
     }
 
     @Override
     public double accruedFee(String loanId) {
-        return findLoan(loanId).accruedFee(requireToday(), feeStrategy);
+        return queries.accruedFee(loanId, feeStrategy);
     }
-
-    private Equipment equipmentOrNull(String equipmentId) {
-        if (equipmentId == null || equipmentId.isBlank()) {
-            return null;
-        }
-        return store.equipment().stream()
-                .filter(item -> item.getId().equals(equipmentId))
-                .findFirst()
-                .orElse(null);
-    }
-
-    private LoanRecord findLoan(String loanId) {
-        if (loanId == null || loanId.isBlank()) {
-            throw new IllegalArgumentException(LoanMessages.LOAN_MISSING);
-        }
-        return store.loans().stream()
-                .filter(loan -> loan.getLoanId().equals(loanId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException(LoanMessages.LOAN_MISSING));
-    }
-
-    private LocalDate requireToday() {
-        return Objects.requireNonNull(today.get(), "today");
-    }
-
 }

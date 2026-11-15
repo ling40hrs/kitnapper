@@ -1,12 +1,12 @@
 package kitnapper.view;
 
-import java.awt.BasicStroke;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.function.BooleanSupplier;
@@ -19,7 +19,8 @@ import javax.swing.SwingUtilities;
 /**
  * 8 px edge/corner resize bands (design.md §11): invisible strips on the
  * frame's layered pane carry the resize cursors and drag math, and enforce
- * the frame minimum size. Disabled while maximized.
+ * the frame minimum size. Disabled while maximized. Edge geometry lives in
+ * {@link ResizeEdge}.
  */
 final class ResizeBands {
 
@@ -29,7 +30,7 @@ final class ResizeBands {
     private final BooleanSupplier maximized;
     private final Point pressPoint = new Point();
     private final Rectangle pressBounds = new Rectangle();
-    private Edge edge;
+    private ResizeEdge edge;
 
     ResizeBands(JFrame frame, BooleanSupplier maximized) {
         this.frame = frame;
@@ -47,9 +48,9 @@ final class ResizeBands {
             pane.add(strip, JLayeredPane.PALETTE_LAYER);
         }
         Component[] strips = pane.getComponentsInLayer(JLayeredPane.PALETTE_LAYER);
-        pane.addComponentListener(new java.awt.event.ComponentAdapter() {
+        pane.addComponentListener(new ComponentAdapter() {
             @Override
-            public void componentResized(java.awt.event.ComponentEvent e) {
+            public void componentResized(ComponentEvent e) {
                 layout(strips, pane);
             }
         });
@@ -102,98 +103,22 @@ final class ResizeBands {
         };
     }
 
-    private Edge edgeAt(MouseEvent e) {
+    private ResizeEdge edgeAt(MouseEvent e) {
         JLayeredPane pane = frame.getLayeredPane();
         // Convert from the strip's coordinate space to the pane's, since
         // e.getX()/e.getY() are relative to the strip, not the pane.
         Point p = SwingUtilities.convertPoint((Component) e.getSource(), e.getPoint(), pane);
-        int x = p.x;
-        int y = p.y;
-        boolean n = y < BAND;
-        boolean s = y >= pane.getHeight() - BAND;
-        boolean w = x < BAND;
-        boolean east = x >= pane.getWidth() - BAND;
-        if (n && w) {
-            return Edge.NW;
-        }
-        if (n && east) {
-            return Edge.NE;
-        }
-        if (s && w) {
-            return Edge.SW;
-        }
-        if (s && east) {
-            return Edge.SE;
-        }
-        if (n) {
-            return Edge.N;
-        }
-        if (s) {
-            return Edge.S;
-        }
-        if (w) {
-            return Edge.W;
-        }
-        if (east) {
-            return Edge.E;
-        }
-        return null;
+        return ResizeEdge.at(p.x, p.y, pane.getWidth(), pane.getHeight(), BAND);
     }
 
     private void resizeTo(Point screen) {
-        int dx = screen.x - pressPoint.x;
-        int dy = screen.y - pressPoint.y;
-        int minW = frame.getMinimumSize().width;
-        int minH = frame.getMinimumSize().height;
-        int x = pressBounds.x;
-        int y = pressBounds.y;
-        int w = pressBounds.width;
-        int h = pressBounds.height;
-        if (edge.west) {
-            int shift = Math.min(dx, pressBounds.width - minW);
-            x = pressBounds.x + shift;
-            w = pressBounds.width - shift;
-        }
-        if (edge.east) {
-            w = Math.max(minW, pressBounds.width + dx);
-        }
-        if (edge.north) {
-            int shift = Math.min(dy, pressBounds.height - minH);
-            y = pressBounds.y + shift;
-            h = pressBounds.height - shift;
-        }
-        if (edge.south) {
-            h = Math.max(minH, pressBounds.height + dy);
-        }
-        frame.setBounds(x, y, w, h);
+        Rectangle next = edge.dragTo(pressBounds,
+            screen.x - pressPoint.x, screen.y - pressPoint.y,
+            frame.getMinimumSize().width, frame.getMinimumSize().height);
+        frame.setBounds(next);
     }
 
     private enum Side { NORTH, SOUTH, WEST, EAST }
-
-    private enum Edge {
-        N(false, false, true, false, Cursor.N_RESIZE_CURSOR),
-        S(false, false, false, true, Cursor.S_RESIZE_CURSOR),
-        W(true, false, false, false, Cursor.W_RESIZE_CURSOR),
-        E(false, true, false, false, Cursor.E_RESIZE_CURSOR),
-        NW(true, false, true, false, Cursor.NW_RESIZE_CURSOR),
-        NE(false, true, true, false, Cursor.NE_RESIZE_CURSOR),
-        SW(true, false, false, true, Cursor.SW_RESIZE_CURSOR),
-        SE(false, true, false, true, Cursor.SE_RESIZE_CURSOR);
-
-        final boolean west;
-        final boolean east;
-        final boolean north;
-        final boolean south;
-        final Cursor cursor;
-
-        Edge(boolean west, boolean east, boolean north, boolean south, int cursorType) {
-            this.west = west;
-            this.east = east;
-            this.north = north;
-            this.south = south;
-            this.cursor = Cursor.getPredefinedCursor(cursorType);
-        }
-    }
 
     /** Strip body: paints BG_APP so it blends into the window. */
     private static final class BandStrip extends JComponent {
