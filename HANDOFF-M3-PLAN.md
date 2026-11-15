@@ -4,16 +4,17 @@
 > Repository: the KitNapper checkout — `OOP/Finals/` (`github.com/ling40hrs/kitnapper`)
 > Plan baseline: `main` @ `745ae28` (`fix(ui): repair M2 field, resize, and exit bugs`)
 > Written: 2026-11-14 · last refresh: 2026-11-15 (see the §17 log for the tip)
-> Status: approved plan; **WP0.5 and WP2 complete (mounting API in place); WP3 (shared view infrastructure) next**
+> Status: approved plan; **WP0.5, WP2, and WP3 complete (shared view components in place); WP4 (catalog screen) next**
 
 > **Resume here (fresh session):** this plan *is* the handoff — no separate
 > handoff doc is needed. Read `AGENTS.md`, then `docs/preferences.md`, then §7
-> **WP3** (shared view infrastructure) and continue the §17 execution log.
-> Current state: WP0, WP1, WP0.5, and WP2 verified and committed (`19a1e1b`,
-> `ebf3452`, `8428639`, probe rebuild, mounting API — `git log -1` is the truth).
-> The shell exposes `mount`/`setStatus`/`searchField` and managers now route to
-> the read-only catalog; no catalog screen exists yet and mounting is not yet
-> exercised (that is `CatalogUiProbe` in WP4).
+> **WP4** (catalog screen) and continue the §17 execution log.
+> Current state: WP0, WP1, WP0.5, WP2, and WP3 verified and committed (`git log
+> -1` is the truth). The shell exposes `mount`/`setStatus`/`searchField`, managers
+> route to the read-only catalog, and the shared view pieces exist: `Badges`,
+> `SegmentedControl`, `GradientTile`, `TableSkins`/`TableCells`, `Toasts`/
+> `ToastView`, `DialogSkin` behind `Dialogs`. No catalog screen exists yet and
+> mounting is not yet exercised (that is `CatalogUiProbe` in WP4).
 >
 > **Machine paths (refreshed 2026-11-15):** the original sessions ran on a macOS
 > checkout at `/Users/student/kitnapper` with the probe harness at
@@ -330,21 +331,23 @@ public static void paint(Graphics2D g, int x, int y, EquipmentStatus status);
 | :--- | :--- | --: |
 | `ScreenCatalog.java` | Extracted `SCREENS` metadata, nav keys, titles *(done)* | 80 |
 | `PlaceholderScreen.java` | Extracted M2 placeholder panel *(done)* | 45 |
-| `Badges.java` | 20 px pill + dot + word; wrench on maintenance | 120 |
-| `SegmentedControl.java` | Table/Cards (and later My Loans tabs) | 90 |
-| `GradientTile.java` | The one permitted gradient fallback | 90 |
+| `Badges.java` *(done)* | 20 px pill + dot + word; wrench on maintenance | 130 |
+| `SegmentedControl.java` *(done)* | Table/Cards (and later My Loans tabs) | 189 |
+| `GradientTile.java` *(done)* | The one permitted gradient fallback | 78 |
 | `PreviewPane.java` | 280 px detail pane + pinned action | 160 |
 | `EquipmentCard.java` | Cards-view tile | 110 |
 | `CatalogTableModel.java` | 5 typed columns | 90 |
-| `TableSkins.java` | Row/header/renderers reused by M4 | 120 |
+| `TableSkins.java` *(done)* | Table look + header + renderer factories | 129 |
+| `TableCells.java` *(done)* | Text/mono/money/status cell renderers | 130 |
 | `CatalogTable.java` | JTable + scroll + selection + sorter | 120 |
 | `CatalogCards.java` | Card grid + selection | 90 |
 | `CatalogFilters.java` | Category/status combos + layout toggle | 110 |
 | `CatalogScreen.java` | Page layout, query, selection, status | 160 |
 | `DatePicker.java` | Non-editable `T..T+14` combo | 70 |
 | `CheckoutDialog.java` | Item summary + picker + inline error | 120 |
-| `DialogSkin.java` | Shared scrim/card/footer/error shell | 130 |
-| `Toasts.java` | POPUP_LAYER stack, 4 s, max 3 | 100 |
+| `DialogSkin.java` *(done)* | Shared scrim/card/footer/error shell | 151 |
+| `Toasts.java` *(done)* | POPUP_LAYER stack, 4 s, max 3 | 110 |
+| `ToastView.java` *(done)* | One animated toast surface (slide + fade) | 117 |
 
 **Deferred to M5 (D27)** — photos and skeleton loading do not ship in M3. Seed
 items carry no photos (D11), so a decode path and a loading skeleton have
@@ -370,7 +373,7 @@ under 150 ms).
 | `view/Omnibar.java` | `setCommands`, keep search/slot APIs | 125 |
 | `view/Theme.java` | UIManager table/combo/scroll defaults | 185 |
 | `view/UiFactory.java` | `comboBox`, refresh tables/combos/header | 125 |
-| `view/Dialogs.java` | Facade over `DialogSkin`; keep old methods | 85 |
+| `view/Dialogs.java` | Facade over `DialogSkin`; keep old methods | 40 |
 
 ### 6.4 Probe harness (committed under `desktop-app/test/`)
 
@@ -484,12 +487,12 @@ changes yet. This is the point where the risky rules are proven.
 
 ### WP3 — Shared view infrastructure
 
-- [ ] `Badges` (equipment statuses now; penalty mapping optional).
-- [ ] `SegmentedControl`.
-- [ ] `GradientTile` (the only media surface M3 needs — see D27).
-- [ ] `TableSkins`.
-- [ ] `Toasts`.
-- [ ] `DialogSkin` + refactor `Dialogs` to a facade; keep `showMessage` and
+- [x] `Badges` (equipment statuses now; penalty mapping optional).
+- [x] `SegmentedControl`.
+- [x] `GradientTile` (the only media surface M3 needs — see D27).
+- [x] `TableSkins`.
+- [x] `Toasts`.
+- [x] `DialogSkin` + refactor `Dialogs` to a facade; keep `showMessage` and
       `confirmDestructive` behaviour.
 
 **Exit:** components paint in dark/light; existing frame paints unaffected;
@@ -1210,6 +1213,79 @@ Mounting itself is not exercised here on purpose: §7 puts that in
 
 ---
 
+### WP3 — shared view infrastructure (2026-11-15)
+
+**Status:** complete. Starting HEAD `7439497` (tree clean, local = remote).
+
+Six new components plus a much smaller `Dialogs`. Two of them landed over the
+200-line cap on the first pass and were split before commit: `TableSkins` →
+`TableSkins` + `TableCells`, and `Toasts` → `Toasts` + `ToastView`. The plan's
+inventory is updated above; the split is a line-cap fix, not a design change.
+
+- `Badges`: 20 px `ACCENT_TINT` pill, 6 px dot, 12 px semibold word, wrench
+  glyph before "Under maintenance". Two forms — a component for panes and
+  `paint(Graphics2D, x, y, status)` for table cells. Dots map to the §3.3 tokens;
+  `OVERDUE` is absent because `EquipmentStatus` has no such value (loan and
+  penalty badges are M4).
+- `SegmentedControl`: 32 px, `BG_CONTROL` container, `BG_ELEVATED` +
+  `BORDER_STRONG` selected segment, 2 px gap, flat hover, mouse + arrow/Space
+  selection, §6 focus rectangle, accessible name. 189 lines — under the cap but
+  above the 150 target; split geometry out if WP4 grows it.
+- `GradientTile`: the only gradient in the app (§3.4/§3.5), 8 px radius, 16:9
+  height from a given width, category glyph at 48 px, `TEXT_PRIMARY` at 55 %/45 %
+  alpha. Reads `Theme.tileGradient` at paint time so a theme switch is a repaint.
+- `TableSkins`/`TableCells`: 40 px rows, 36 px header, 1 px separators drawn by
+  the cells so they stay continuous, `ACCENT_TINT` selection, right-aligned
+  monospace money, badge status cell, sort chevron on the active column. Row
+  hover deliberately stays in WP4's `CatalogTable`, the `JTable` subclass that
+  can paint it.
+- `Toasts`/`ToastView`: 320 × 48 on `POPUP_LAYER`, bottom-right, 4 s, max 3
+  (the oldest is evicted instantly so no third timer is needed). **Requested
+  animation is in**: slide-up 8 px + fade over 167 ms on open, reverse fade on
+  dismiss. The surface paints itself (no child labels) so the fade composite
+  covers the text.
+- `DialogSkin` + `Dialogs`: scrim, undecorated 480 px `BG_ELEVATED` card,
+  right-aligned footer, Enter/Esc, and the §8.7 inline DANGER line that keeps the
+  dialog open. `Dialogs.showMessage`/`confirmDestructive` keep their old
+  behaviour (Cancel + OK, boolean result) and now delegate; `showForm` is the
+  WP5 entry point.
+
+Decisions taken below doc granularity (recorded here so they are not re-derived):
+
+- Badge words are **title case** ("Under maintenance") — §4 forbids all-caps;
+  enum spelling is converted, not shown.
+- The maintenance wrench is `TEXT_SECONDARY`, not amber — the dot already
+  carries maintenance amber, and amber on the amber tint loses contrast.
+- `GradientTile` radius is **8 px** per §9 (cards/tiles 8), not the 6 first
+  sketched.
+- `showMessage` still shows Cancel + OK (its M2 behaviour); a single-button
+  info dialog would be nicer but is a follow-up, not M3.
+
+**Gotcha found (worth remembering):** in a `JPanel`/`JComponent` subclass, the
+inherited `java.awt.image.ImageObserver.HEIGHT` constant (**2**) shadows an
+*enclosing* class's `HEIGHT`. `Badges.HEIGHT` therefore compiled to 2 and the
+pill had a 2 px preferred height. Fixed by naming it `PILL_HEIGHT`; `WIDTH` has
+the same trap (`ImageObserver.WIDTH` is 1). Constants declared in the component
+class itself are unaffected.
+
+| Check | Result |
+| :--- | :--- |
+| `./build.sh clean && ./build.sh` | `BUILD OK`, 109 classes, zero `-Xlint:all` warnings |
+| `test/run-all.sh` | `ALL PROBES GREEN` (8/8); `SkinProbe`/`SizeProbe` numbers unchanged |
+| Offscreen WP3 harness (ephemeral, `xvfb-run`) | `PASS=52 FAIL=0` — badge geometry/dot/wrench in both themes, segment click+listener+paint, tile two-stop gradient+glyph, table 40/36 + money text + status dot + separator, toast bounds/stack-3/auto-dismiss/slide-in, dialog 480/scrim/error-stays-open/cancel-returns-false |
+| Line caps | no file > 200 (`SegmentedControl` 189 is the tallest) |
+| Hex outside `Theme` | none |
+| `view` → `service`/`controller` imports | none |
+| `@SuppressWarnings` | none |
+
+The WP3 harness is deliberately **not** committed: the §6.4 inventory has no WP3
+probe, and WP4's `CatalogUiProbe` exercises these components through the real
+screen. If a committed component probe is wanted later, it belongs in §6.4 first.
+
+**Next:** WP4 — catalog screen.
+
+---
+
 ## Appendix A — Implementation checklist (copy into the working session)
 
 ```
@@ -1219,7 +1295,7 @@ Mounting itself is not exercised here on purpose: §7 puts that in
 [x] CatalogProbe green; DataProbe still 26
 [x] WP0.5 probe harness rebuilt under desktop-app/test; run-all.sh green
 [x] MainFrame split + mount/status/commands; manager nav
-[ ] Badges, SegmentedControl, GradientTile, Toasts, TableSkins, DialogSkin
+[x] Badges, SegmentedControl, GradientTile, Toasts, TableSkins, DialogSkin
 [ ] PreviewPane, EquipmentCard, CatalogTable(Model), CatalogCards,
     CatalogFilters, CatalogScreen
 [ ] DatePicker + CheckoutDialog; toasts; inline errors
