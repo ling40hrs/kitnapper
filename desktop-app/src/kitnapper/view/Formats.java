@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
+import kitnapper.model.EquipmentCategory;
+
 /**
  * The single place money and date formatting are defined (design.md §8):
  * money always {@code ₱1,234.00}, dates always {@code yyyy-MM-dd}.
@@ -29,5 +31,17 @@ public final class Formats {
     /** {@code yyyy-MM-dd}, the only date format in the app. */
     public static String date(LocalDate value) {
         return DATE.format(value);
+    }
+
+    /** Title-case category word (§4: no all-caps styling anywhere). */
+    public static String category(EquipmentCategory category) {
+        return switch (category) {
+            case CAMERA -> "Camera";
+            case LENS -> "Lens";
+            case LAPTOP -> "Laptop";
+            case AUDIO -> "Audio";
+            case TOOL -> "Tool";
+            case OTHER -> "Other";
+        };
     }
 }

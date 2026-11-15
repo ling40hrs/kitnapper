@@ -17,7 +17,7 @@ import javax.swing.JPanel;
  * 48 px omnibar row (design.md §5): breadcrumb (Home returns to the role's
  * default screen), a command slot screens fill through {@link #setCommands},
  * and the right-aligned search field (240 px, widening to 320 px on focus).
- * Search itself is inert until the catalog screen wires filtering.
+ * Screens attach their own document listeners; the catalog filters on keystroke.
  */
 public final class Omnibar extends JPanel {
 
@@ -69,7 +69,7 @@ public final class Omnibar extends JPanel {
                 revalidate();
             }
         });
-        search.setToolTipText("Search arrives with the catalog");
+        search.setToolTipText("Search the catalog");
         JPanel right = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 0, 8));
         right.setOpaque(false);
         right.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 12));

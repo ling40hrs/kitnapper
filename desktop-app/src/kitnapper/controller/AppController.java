@@ -1,10 +1,16 @@
 package kitnapper.controller;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
+import kitnapper.model.Equipment;
+import kitnapper.model.EquipmentCategory;
+import kitnapper.model.EquipmentStatus;
 import kitnapper.model.User;
 import kitnapper.model.UserRole;
 import kitnapper.service.AppContext;
+import kitnapper.view.CatalogScreen;
 import kitnapper.view.LoginFrame;
 import kitnapper.view.MainFrame;
 import kitnapper.view.Theme;
@@ -12,14 +18,18 @@ import kitnapper.view.Theme;
 /**
  * Session and routing wiring (implementation plan §2.4): owns the
  * {@link AppContext}, runs login/logout, builds the main shell for the
- * signed-in role, routes sidebar navigation, and applies the theme
- * toggle. Controllers may import views; views never import controllers.
+ * signed-in role, mounts the catalog screen, routes sidebar navigation, and
+ * applies the theme toggle. Controllers may import views; views never import
+ * controllers.
  */
 public final class AppController {
 
     private final AppContext context;
     private LoginFrame loginFrame;
     private MainFrame mainFrame;
+    private CatalogController catalog;
+    private BorrowingController borrowing;
+    private CatalogScreen catalogScreen;
 
     public AppController(AppContext context) {
         this.context = context;
@@ -45,8 +55,14 @@ public final class AppController {
     }
 
     private void openMain(User user) {
+        catalog = new CatalogController(context);
+        borrowing = new BorrowingController(context);
         mainFrame = new MainFrame(user.getRole(), user.getFullName(), statusLeft(),
             this::navigate, this::signOut, this::toggleTheme);
+        catalogScreen = new CatalogScreen(actions(), mainFrame.searchField());
+        catalog.setOnChanged(catalogScreen::reload);
+        mainFrame.mount("catalog", catalogScreen, catalogScreen.commands(),
+            catalogScreen::onShown);
         mainFrame.showScreen(defaultKey(user.getRole()));
         mainFrame.setVisible(true);
         if (loginFrame != null) {
@@ -55,8 +71,53 @@ public final class AppController {
         }
     }
 
+    /** The §5.7 view contract, backed by the two M3 controllers. */
+    private CatalogScreen.Actions actions() {
+        return new CatalogScreen.Actions() {
+            @Override
+            public List<Equipment> search(String query, EquipmentCategory category,
+                EquipmentStatus status) {
+                catalog.setQuery(query);
+                catalog.setCategory(category);
+                catalog.setStatus(status);
+                return catalog.results();
+            }
+
+            @Override
+            public boolean isManager() {
+                return catalog.isManager();
+            }
+
+            @Override
+            public boolean canCheckout(Equipment item) {
+                return catalog.canCheckout(item);
+            }
+
+            @Override
+            public String checkoutHint(Equipment item) {
+                return catalog.checkoutHint(item);
+            }
+
+            @Override
+            public List<LocalDate> dueDates() {
+                return borrowing.dueDateChoices();
+            }
+
+            @Override
+            public Optional<String> checkout(Equipment item, LocalDate dueDate) {
+                return borrowing.checkout(item, dueDate);
+            }
+
+            @Override
+            public void setStatus(String left, String right) {
+                mainFrame.setStatus(left, right);
+            }
+        };
+    }
+
     private void navigate(String key) {
         if (mainFrame != null) {
+            mainFrame.setStatus("", "");
             mainFrame.showScreen(key);
         }
     }
@@ -67,6 +128,9 @@ public final class AppController {
             mainFrame.dispose();
             mainFrame = null;
         }
+        catalog = null;
+        borrowing = null;
+        catalogScreen = null;
         start();
     }
 
@@ -78,6 +142,9 @@ public final class AppController {
         if (mainFrame != null) {
             mainFrame.refreshTheme();
         }
+        if (catalogScreen != null) {
+            catalogScreen.refreshTheme();
+        }
         if (loginFrame != null) {
             loginFrame.refreshTheme();
         }
@@ -87,7 +154,7 @@ public final class AppController {
         return role == UserRole.MANAGER ? "dashboard" : "catalog";
     }
 
-    /** Provisional M2 status text; M3 screens own the real counts. */
+    /** Pre-mount status text; the catalog screen replaces it on its first reload. */
     private String statusLeft() {
         return context.dataStore().equipment().size() + " items · 0 selected";
     }

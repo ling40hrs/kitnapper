@@ -154,6 +154,10 @@ public final class Theme {
         UIManager.put("Table.background", bgSurface);
         UIManager.put("Table.foreground", textPrimary);
         UIManager.put("Table.gridColor", borderSubtle);
+        UIManager.put("ComboBox.background", bgControl);
+        UIManager.put("ComboBox.foreground", textPrimary);
+        UIManager.put("ComboBox.font", ui);
+        UIManager.put("ScrollPane.background", bgApp);
         UIManager.put("ToolTip.background", bgElevated);
         UIManager.put("ToolTip.foreground", textPrimary);
         UIManager.put("OptionPane.background", bgApp);

@@ -4,17 +4,17 @@
 > Repository: the KitNapper checkout — `OOP/Finals/` (`github.com/ling40hrs/kitnapper`)
 > Plan baseline: `main` @ `745ae28` (`fix(ui): repair M2 field, resize, and exit bugs`)
 > Written: 2026-11-14 · last refresh: 2026-11-15 (see the §17 log for the tip)
-> Status: approved plan; **WP0.5, WP2, and WP3 complete (shared view components in place); WP4 (catalog screen) next**
+> Status: approved plan; **WP0–WP5 complete (catalog screen + instant checkout landed); WP6 (verification, docs, handoff) next**
 
 > **Resume here (fresh session):** this plan *is* the handoff — no separate
 > handoff doc is needed. Read `AGENTS.md`, then `docs/preferences.md`, then §7
-> **WP4** (catalog screen) and continue the §17 execution log.
-> Current state: WP0, WP1, WP0.5, WP2, and WP3 verified and committed (`git log
-> -1` is the truth). The shell exposes `mount`/`setStatus`/`searchField`, managers
-> route to the read-only catalog, and the shared view pieces exist: `Badges`,
-> `SegmentedControl`, `GradientTile`, `TableSkins`/`TableCells`, `Toasts`/
-> `ToastView`, `DialogSkin` behind `Dialogs`. No catalog screen exists yet and
-> mounting is not yet exercised (that is `CatalogUiProbe` in WP4).
+> **WP6** (verification, docs, handoff) and continue the §17 execution log.
+> Current state: WP0, WP1, WP0.5, WP2, WP3, WP4, and WP5 verified and committed
+> (`git log -1` is the truth). Catalog is a real screen — table + cards, filters,
+> empty state, preview pane, checkout dialog, theme refresh — mounted through
+> `MainFrame.mount("catalog", …)` and driven by `CatalogUiProbe` (`PASS=13`).
+> WP6 is the milestone close-out: full suite, manual SRS §6.2 walkthrough, doc
+> updates (README, decisions, implementation-plan, design, SRS), `HANDOFF-M4.md`.
 >
 > **Machine paths (refreshed 2026-11-15):** the original sessions ran on a macOS
 > checkout at `/Users/student/kitnapper` with the probe harness at
@@ -325,29 +325,32 @@ public static void paint(Graphics2D g, int x, int y, EquipmentStatus status);
 | `CatalogController.java` | `kitnapper.controller` | Query state + role/action hints | 90 |
 | `BorrowingController.java` | `kitnapper.controller` | Due-date choices, checkout errors | 70 |
 
-### 6.2 New — view (17 files)
+### 6.2 View files landed in M3 (22)
 
-| File | Purpose | Est. |
+| File | Purpose | Lines |
 | :--- | :--- | --: |
-| `ScreenCatalog.java` | Extracted `SCREENS` metadata, nav keys, titles *(done)* | 80 |
-| `PlaceholderScreen.java` | Extracted M2 placeholder panel *(done)* | 45 |
-| `Badges.java` *(done)* | 20 px pill + dot + word; wrench on maintenance | 130 |
-| `SegmentedControl.java` *(done)* | Table/Cards (and later My Loans tabs) | 189 |
-| `GradientTile.java` *(done)* | The one permitted gradient fallback | 78 |
-| `PreviewPane.java` | 280 px detail pane + pinned action | 160 |
-| `EquipmentCard.java` | Cards-view tile | 110 |
-| `CatalogTableModel.java` | 5 typed columns | 90 |
-| `TableSkins.java` *(done)* | Table look + header + renderer factories | 129 |
-| `TableCells.java` *(done)* | Text/mono/money/status cell renderers | 130 |
-| `CatalogTable.java` | JTable + scroll + selection + sorter | 120 |
-| `CatalogCards.java` | Card grid + selection | 90 |
-| `CatalogFilters.java` | Category/status combos + layout toggle | 110 |
-| `CatalogScreen.java` | Page layout, query, selection, status | 160 |
-| `DatePicker.java` | Non-editable `T..T+14` combo | 70 |
-| `CheckoutDialog.java` | Item summary + picker + inline error | 120 |
-| `DialogSkin.java` *(done)* | Shared scrim/card/footer/error shell | 151 |
-| `Toasts.java` *(done)* | POPUP_LAYER stack, 4 s, max 3 | 110 |
-| `ToastView.java` *(done)* | One animated toast surface (slide + fade) | 117 |
+| `ScreenCatalog.java` | Extracted `SCREENS` metadata, nav keys, titles *(WP2)* | 67 |
+| `PlaceholderScreen.java` | Extracted M2 placeholder panel *(WP2)* | 40 |
+| `Badges.java` | 20 px pill + dot + word; wrench on maintenance *(WP3)* | 130 |
+| `SegmentedControl.java` | Table/Cards (and later My Loans tabs) *(WP3)* | 189 |
+| `GradientTile.java` | The one permitted gradient fallback *(WP3)* | 78 |
+| `PreviewPane.java` *(WP4)* | 280 px detail pane + pinned action | 184 |
+| `EquipmentCard.java` *(WP4)* | Cards-view tile | 144 |
+| `CatalogTableModel.java` *(WP4)* | 5 typed columns | 87 |
+| `TableSkins.java` | Table look + header + renderer factories *(WP3)* | 129 |
+| `TableCells.java` | Text/mono/money/status cell renderers *(WP3)* | 130 |
+| `CatalogTable.java` *(WP4)* | JTable + hover band + selection + sorter | 183 |
+| `CatalogCards.java` *(WP4)* | Card grid + width tracking + selection | 125 |
+| `CatalogFilters.java` *(WP4)* | Category/status combos + layout toggle | 118 |
+| `CatalogScreen.java` *(WP4)* | Page layout + wiring | 199 |
+| `CatalogPresenter.java` *(WP4, not planned)* | Query/selection/status state | 118 |
+| `EmptyState.java` *(WP4, not planned)* | Shared §6 empty state | 53 |
+| `PageHeader.java` *(WP4, not planned)* | Shared §8.1 title/subtitle block | 24 |
+| `DatePicker.java` *(WP5)* | Non-editable `T..T+14` combo | 54 |
+| `CheckoutDialog.java` *(WP5)* | Item summary + picker + inline error | 77 |
+| `DialogSkin.java` | Shared scrim/card/footer/error shell *(WP3)* | 151 |
+| `Toasts.java` | POPUP_LAYER stack, 4 s, max 3 *(WP3)* | 110 |
+| `ToastView.java` | One animated toast surface (slide + fade) *(WP3)* | 117 |
 
 **Deferred to M5 (D27)** — photos and skeleton loading do not ship in M3. Seed
 items carry no photos (D11), so a decode path and a loading skeleton have
@@ -395,7 +398,10 @@ code. Nothing under `desktop-app/test/` is compiled into the app jar; only
 | `test/kitnapper/CloseProbe.java` | `kitnapper` | `EXIT_ON_CLOSE` + window-closing hook |
 | `test/kitnapper/CatalogProbe.java` | `kitnapper` | §9.2 service/controller rules and persistence |
 | `test/kitnapper/CatalogSearchChecks.java` | `kitnapper` | The §9.2 search section of `CatalogProbe` (same tally) |
-| `test/kitnapper/view/CatalogUiProbe.java` | `kitnapper.view` | §9.3 catalog mount/search/filter/preview/render |
+| `test/kitnapper/view/CatalogUiProbe.java` | `kitnapper.view` | §9.3 catalog mount/search/filter/preview/render + manager check |
+| `test/kitnapper/view/CatalogUiChecks.java` | `kitnapper.view` | The borrower-flow §9.3 checks (same tally as `CatalogUiProbe`) |
+| `test/kitnapper/view/CatalogUiActions.java` | `kitnapper.view` | `CatalogScreen.Actions` double wired to the real controllers |
+| `test/kitnapper/view/UiProbeSupport.java` | `kitnapper.view` | Tree walking, offscreen paint, label/accessible-name lookups |
 | `test/run-all.sh` | — | Compile + run every probe, print `PASS=n FAIL=k`, exit non-zero on failure |
 
 `SkeletonProbe` and `PhotoTileProbe` travel with their components to M5 (D27);
@@ -498,25 +504,27 @@ changes yet. This is the point where the risky rules are proven.
 **Exit:** components paint in dark/light; existing frame paints unaffected;
 `SkinProbe`/`SizeProbe` unchanged.
 
-### WP4 — Catalog screen
+### WP4 — Catalog screen — DONE 2026-11-15
 
-- [ ] `PreviewPane`, `EquipmentCard`, `CatalogTableModel`, `CatalogTable`,
+- [x] `PreviewPane`, `EquipmentCard`, `CatalogTableModel`, `CatalogTable`,
       `CatalogCards`, `CatalogFilters`, `CatalogScreen`.
-- [ ] `AppController.openMain`: construct controllers/screen, implement
+- [x] `AppController.openMain`: construct controllers/screen, implement
       `Actions`, `mount("catalog", ...)`, subscribe `CatalogController.setOnChanged`
       to `screen.reload`, refresh theme.
-- [ ] Search field, filters, table/cards toggle, selection, empty state, status bar.
+- [x] Search field, filters, table/cards toggle, selection, empty state, status bar.
+- [x] Split out `CatalogPresenter`, `EmptyState`, `PageHeader`, `CatalogCards.WidthTracking`
+      to keep every view file under the 200-line ceiling.
 
 **Exit:** `CatalogUiProbe` green; offscreen 1280×800 paint in both themes;
 10 rows initially, 7 AVAILABLE / 3 LOANED, total ₱872,000.00.
 
-### WP5 — Checkout
+### WP5 — Checkout — DONE 2026-11-15
 
-- [ ] `DatePicker` (`T..T+14`, default `T+3`).
-- [ ] `CheckoutDialog` via `Dialogs.showForm`; inline DANGER error stays open.
-- [ ] Preview checkout action enabled only for borrower + AVAILABLE.
-- [ ] Success → toast + refresh + status update; failure → inline dialog error.
-- [ ] Manager catalog: no checkout button, hint text.
+- [x] `DatePicker` (`T..T+14`, default `T+3`).
+- [x] `CheckoutDialog` via `Dialogs.showForm`; inline DANGER error stays open.
+- [x] Preview checkout action enabled only for borrower + AVAILABLE.
+- [x] Success → toast + refresh + status update; failure → inline dialog error.
+- [x] Manager catalog: no checkout button, hint text.
 
 **Exit:** checkout persists (reload sees it); item becomes LOANED; selection
 updates; 4-click budget holds (select → Check out → confirm).
@@ -715,10 +723,12 @@ Controller:
 
 ### 9.3 UI/render probes
 
-`CatalogUiProbe` (headless, offscreen 1280×800):
+`CatalogUiProbe` (needs a display — `xvfb-run -a` via `test/run-all.sh`; offscreen
+1280×800). Checks live in `CatalogUiChecks` (borrower flow) and
+`CatalogUiProbe.managerCheck`, with `CatalogUiActions` as the `Actions` double:
 1. Mount `CatalogScreen` in `MainFrame`; table row count 10.
 2. Status-left contains “10 items”; status-right `₱872,000.00`.
-3. Search “Sony” → 2 rows; status LENS → 2; composed LENS+LOANED → 1.
+3. Search “Sony” → 2 rows; category LENS → 2; composed “Sony”+LENS → 1.
 4. Select Canon EOS R6 → preview title/badge/value update.
 5. Controller checkout succeeds → badge LOANED, AVAILABLE count 6, preview
    action disabled.
@@ -760,7 +770,7 @@ was recorded at `PASS=28 FAIL=0` in WP1; UI probes land in WP4/WP5.
 | `SizeProbe` | `PASS=3 FAIL=0`; key heights (32/48/240/32), manager sidebar 7, route order pinned |
 | `CloseProbe` | `PASS=1 FAIL=0` + `EXITED_OK` |
 | `CatalogProbe` | `PASS=28 FAIL=0` (WP1 baseline) |
-| `CatalogUiProbe` | new `PASS=10 FAIL=0` |
+| `CatalogUiProbe` | `PASS=13 FAIL=0`; `dark_pixels≈253k light_pixels≈253k`, `query_ms<1` |
 
 `SkeletonProbe`/`PhotoTileProbe` are M5 (D27) and are not part of the M3 baseline.
 
@@ -1286,6 +1296,65 @@ screen. If a committed component probe is wanted later, it belongs in §6.4 firs
 
 ---
 
+### WP4 — Catalog screen (2026-11-15)
+
+**Status:** complete. Starting HEAD `f3883523b…` (tree clean, local = remote).
+
+The placeholder `CatalogScreen` is replaced by a working one, and `CatalogFilters`,
+`CatalogTable(Model)`, `CatalogCards`, `EquipmentCard`, `PreviewPane`, plus three
+shared pieces the spec needed (`EmptyState` §6, `PageHeader` §8.1) and
+`CatalogPresenter` (query/selection/status state) all landed. `AppController`
+now builds both controllers, implements `CatalogScreen.Actions`, mounts the
+screen, and refreshes it on `CatalogController.setOnChanged`.
+
+- `CatalogPresenter` owns query/selection/status-left/status-right so
+  `CatalogScreen` stays layout-only and under 199 lines.
+- `CatalogTable` is a non-opaque `JTable` that fills its own background and
+  paints the hover band **before** `super.paintComponent`, so rows and the
+  selection tint composite correctly; `TableSkins`/`TableCells` still draw the
+  40 px rows, 36 px header, separators and money columns.
+- Combos are styled through `UiFactory.comboBox` + `ComboCell`; the arrow button
+  repaints on theme change (`Formats.category` supplies the display words, so
+  `LENS` shows as "Lens" without leaking enum spelling).
+- Cards view is a 3-column `WrapLayout`-free `WidthTracking` holder inside
+  `CatalogCards`; selection is shared with the table through `selectedId`, so
+  toggling keeps the highlighted item.
+
+Two bugs found during screenshot review and fixed before commit: the
+`statusSlot` bar painted opaque (light band in dark theme), and money columns
+were clipped at 1280 px. The 2-column trial grid also clipped card titles, so
+the grid uses 3 columns.
+
+### WP5 — Checkout (2026-11-15)
+
+**Status:** complete, committed with WP4 in the same turn (two commits).
+
+- `DatePicker` offers `T … T+14` only, defaults to `T+3`; the text field rejects
+  anything outside the window before the service sees it.
+- `CheckoutDialog` is built on `Dialogs.showForm`; a service failure lands in the
+  inline DANGER line and the dialog stays open.
+- `CheckoutDialog.show(...)` keeps the plan-pinned `boolean` return; the chosen
+  date travels through the confirm lambda (`CatalogPresenter.checkout` returns
+  `Optional<LocalDate>`), so the view still never sees a service type.
+- Success → toast, `CatalogController` change event, reload, status update.
+- Managers get the caption "Manager view — checkout is borrower-only." and no
+  button at all (`CatalogUiProbe.manager-readonly` / `manager-hint`).
+
+| Check | Result |
+| :--- | :--- |
+| `./build.sh build` | `BUILD OK`, 131 classes, zero `-Xlint:all` warnings |
+| `test/run-all.sh` | `ALL PROBES GREEN` (9/9) |
+| `CatalogUiProbe` (xvfb) | `PASS=13 FAIL=0`; `dark_pixels=252987 light_pixels=252985`; `query_ms=0.043` |
+| §9.3 wording fix | item 3 is "Sony"+LENS → **1** (the seed has no LOANED lens; the old "→ 2" could never pass) |
+| Line caps | no file > 200 (`CatalogScreen` 199 is the tallest); the 245-line `CatalogUiProbe` was split into probe + `CatalogUiChecks` + `CatalogUiActions` |
+| Hex outside `Theme` | none |
+| `view` → `service`/`controller` imports | none |
+| `@SuppressWarnings` | none |
+
+**Next:** WP6 — verification, docs, handoff.
+
+---
+
 ## Appendix A — Implementation checklist (copy into the working session)
 
 ```
@@ -1296,10 +1365,10 @@ screen. If a committed component probe is wanted later, it belongs in §6.4 firs
 [x] WP0.5 probe harness rebuilt under desktop-app/test; run-all.sh green
 [x] MainFrame split + mount/status/commands; manager nav
 [x] Badges, SegmentedControl, GradientTile, Toasts, TableSkins, DialogSkin
-[ ] PreviewPane, EquipmentCard, CatalogTable(Model), CatalogCards,
+[x] PreviewPane, EquipmentCard, CatalogTable(Model), CatalogCards,
     CatalogFilters, CatalogScreen
-[ ] DatePicker + CheckoutDialog; toasts; inline errors
-[ ] CatalogUiProbe green (SkeletonProbe/PhotoTileProbe are M5, D27)
+[x] DatePicker + CheckoutDialog; toasts; inline errors
+[x] CatalogUiProbe green (SkeletonProbe/PhotoTileProbe are M5, D27)
 [ ] Manual SRS 1–6 + manager/theme/cards/empty/Ctrl+F/restart
 [ ] line-cap/hex/view-import audits
 [ ] docs + HANDOFF-M4
