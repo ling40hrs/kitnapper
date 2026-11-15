@@ -1,0 +1,16 @@
+# Line endings: the repository standard is LF everywhere.
+# Normalize on commit and check out with LF so a Windows clone cannot
+# rewrite files and produce whole-file diffs.
+* text=auto eol=lf
+
+# Binary assets: never normalize, never diff as text.
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.gif binary
+*.ico binary
+*.jar binary
