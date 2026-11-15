@@ -13,7 +13,7 @@
 
 A desktop application for managing equipment loans at a small institution. KitNapper replaces the paper sign-out sheet: staff publish available gear, students check items out, and the app tracks due dates, overdue loans, and late fees.
 
-This repository contains the project documentation and a NetBeans Ant scaffold. The M0 domain core (`kitnapper.model`, 18 classes) and the M1 persistence layer (`kitnapper.service` + `kitnapper.service.persistence`, 14 classes — hand-written JSON with seed fallback) are implemented and building; the Swing UI (M2–M6) is not yet written.
+The domain core, the hand-written JSON persistence layer, the Windows 11 application shell with mock login, and the catalog/loan service layer are implemented and building. The real catalog screen, the loan/penalty views, inventory and photo uploads, and the polish pass are still to come (M3 WP2–WP6, M4–M6).
 
 ## Contents
 
@@ -32,8 +32,13 @@ This repository contains the project documentation and a NetBeans Ant scaffold. 
 ## Repository structure
 
 ```
-Finals/
+Finals/                       (the repository root)
 ├── README.md
+├── HANDOFF-M1.md             working docs for finished milestones
+├── HANDOFF-M2.md
+├── HANDOFF-M3.md
+├── HANDOFF-M3-PLAN.md        active M3 plan and execution log
+├── HANDOFF-SESSION-2026-11-14.md
 ├── .editorconfig             shared formatting
 ├── .gitignore
 ├── assets/
@@ -43,6 +48,9 @@ Finals/
 │   ├── SRS.md                verifiable requirements and demo walkthrough
 │   ├── design.md             Windows 11 / Fluent visual specification
 │   ├── decisions.md          decision log
+│   ├── implementation-plan.md  class inventory, JSON schema, milestones M0–M6
+│   ├── preferences.md        tracked working preferences
+│   ├── logout-tokens.md      credential runbook for the retired build machine
 │   └── seed-data.md          seed data scope note
 └── desktop-app/              NetBeans Ant project
     ├── build.xml
@@ -53,11 +61,12 @@ Finals/
     │   ├── build-impl.xml
     │   └── genfiles.properties
     ├── src/kitnapper/
-    │   ├── Main.java         entry point (placeholder until M2)
+    │   ├── Main.java         entry point — installs theme/fonts, shows LoginFrame
     │   ├── model/            domain core — 18 classes (M0)
-    │   ├── service/           services + JSON persistence layer (M1)
-    │   ├── view/
-    │   └── controller/
+    │   ├── service/          services, AppContext, ID/seed helpers (M1–M3)
+    │   │   └── persistence/  hand-written JSON parser, writer, mappers (M1)
+    │   ├── controller/       AppController, CatalogController, BorrowingController
+    │   └── view/             theme, chrome, shell, login — catalog still a placeholder
     ├── test/
     └── resources/
         └── fonts/              bundled Inter (Regular, SemiBold, Bold)
@@ -65,7 +74,7 @@ Finals/
 
 `desktop-app/` is a separate project root because NetBeans identifies an Ant project by the presence of `nbproject/` next to `build.xml`. Keeping the Java project in its own directory allows the repository root to hold documentation and shared configuration without confusing the IDE.
 
-On the NetBeans machine this repository lives at `OOP/Finals/`, so its paths carry `OOP/Finals/` prefixes (for example `OOP/Finals/desktop-app`). This checkout is the same tree with the repository root standing in for `Finals/` — `desktop-app/` here is `OOP/Finals/desktop-app` there, and `docs/` here is `Finals/docs/` in `docs/decisions.md`.
+This repository is checked out under `OOP/Finals/` in the course tree. Some handoff docs were written on machines where the repository root was a bare `kitnapper/` folder (or a NetBeans project at `OOP/Finals/`), so they carry machine-specific path prefixes; treat those as history and use paths relative to this repository root.
 
 ## Getting started
 
@@ -75,27 +84,31 @@ On the NetBeans machine this repository lives at `OOP/Finals/`, so its paths car
 2. Select `desktop-app/`, the directory containing `build.xml`.
 3. Press **F6** to run or **F11** to build.
 
-The main class is set to `kitnapper.Main` in `nbproject/project.properties`. `Main.java` is intentionally empty; the run target will fail until an entry point is added.
+The main class is set to `kitnapper.Main` in `nbproject/project.properties`. It installs the theme and bundled fonts, builds `AppContext`, and shows `LoginFrame` on the EDT.
 
 ### Command line
 
-The command-line Ant depends on the machine:
-
-**NetBeans machine.** NetBeans bundles its own copy under `OOP/netbeans/extide/ant/bin/ant`:
+Apache Ant is not installed on every machine, so use whichever of these is available:
 
 ```bash
-cd OOP/Finals/desktop-app
-../../netbeans/extide/ant/bin/ant clean jar
-```
-
-**Windows machine.** Apache Ant 1.10.18 is installed at `C:\Users\CIIT\tools\apache-ant-1.10.18` (on the user PATH, with `ANT_HOME` set). Repository checkout: `C:\Users\CIIT\Downloads\kitnapper`:
-
-```bash
-cd C:\Users\CIIT\Downloads\kitnapper\desktop-app
+# Ant on the PATH
+cd desktop-app
 ant clean jar
+ant run
+
+# Ant bundled with NetBeans (adjust the path to your install)
+cd desktop-app
+../../netbeans/extide/ant/bin/ant clean jar
+
+# No Ant at all — plain javac against the JDK
+cd desktop-app
+mkdir -p build/classes
+find src -name '*.java' > /tmp/kn-sources.txt
+javac -encoding UTF-8 -d build/classes @/tmp/kn-sources.txt
+java -cp build/classes kitnapper.Main
 ```
 
-Build output is written to `build/` and `dist/`, both of which are ignored by Git.
+Build output is written to `build/` and `dist/`, both of which are ignored by Git. The runtime save file (`kitnapper-data.json`) and photo folder (`kitnapper-images/`) are created in the working directory and are ignored too.
 
 ## Documentation
 
@@ -109,7 +122,8 @@ Build output is written to `build/` and `dist/`, both of which are ignored by Gi
 | [`docs/seed-data.md`](docs/seed-data.md) | Where seed data lives and when to split it out |
 | [`docs/logout-tokens.md`](docs/logout-tokens.md) | Runbook: logging out of every stored GitHub credential on the build machine |
 | [`docs/preferences.md`](docs/preferences.md) | Tracked, machine-independent working preferences: planning, one-phase execution, document-commit-push, verification |
-| [`HANDOFF-M2.md`](HANDOFF-M2.md) | Next session's execution doc (M2 shell + login); `HANDOFF-M1.md` kept for traceability |
+| [`HANDOFF-M3-PLAN.md`](HANDOFF-M3-PLAN.md) | **Active working document:** M3 plan, work packages, probe plan, execution log |
+| [`HANDOFF-M3.md`](HANDOFF-M3.md), [`HANDOFF-M2.md`](HANDOFF-M2.md), [`HANDOFF-M1.md`](HANDOFF-M1.md), [`HANDOFF-SESSION-2026-11-14.md`](HANDOFF-SESSION-2026-11-14.md) | Historical records of finished milestones (machine-specific paths and probe commands are stale) |
 
 The PRD and SRS are the sources of truth for behavior. If implementation and documentation disagree, the documentation takes precedence until both are updated together.
 
@@ -125,4 +139,6 @@ The PRD and SRS are the sources of truth for behavior. If implementation and doc
 
 ## Status
 
-Documentation complete; M0 domain core, M1 JSON persistence, and M2 Win11 shell + mock login implemented. **M2 caveat:** the final 200-line-cap file split was not re-compiled on the machine it was written on — run `ant clean jar` and the login smoke test before M3 work (see `HANDOFF-M3.md`). The remaining milestones are M3–M6 (catalog, loans, penalties, polish). See `docs/decisions.md` for the decision record, `docs/implementation-plan.md` for the build order, and `HANDOFF-M3.md` for the next session's working document.
+Documentation complete; M0 domain core, M1 JSON persistence, and M2 Win11 shell + mock login are implemented, audited, and building. M3 WP1 (catalog search/filter, checkout and return services, sequential IDs, controllers) landed in `19a1e1b`; **M3 WP2–WP6 are still open**, so the Catalog screen is an M2 placeholder. Then come M4 (loans, returns, penalties), M5 (inventory, photos, reset) and M6 (polish). See `docs/decisions.md` for the decision record, `docs/implementation-plan.md` for the build order, and `HANDOFF-M3-PLAN.md` for the current work plan.
+
+Automated verification lives outside the repository and is not part of this checkout; milestone verification is the SRS §6.2 walkthrough plus local probes.

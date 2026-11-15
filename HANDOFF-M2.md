@@ -1,5 +1,10 @@
 # Handoff — M2 Execution (KitNapper)
 
+> **Historical record (kept for traceability).** M2 landed and was audited; this
+> file is not a live instruction. Paths in it belong to retired machines (Windows
+> `C:\Users\CIIT\…`, macOS `/Users/student/…`). The active working document is
+> `HANDOFF-M3-PLAN.md`; current state lives in `AGENTS.md`.
+
 > **Working document for the next agent session — not a course deliverable.**
 > Scope: milestone **M2** of `docs/implementation-plan.md` §4 (Windows 11 shell +
 > mock login). Read `AGENTS.md`, then this file, then `docs/design.md` §3–§13 and

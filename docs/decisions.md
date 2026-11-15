@@ -1,6 +1,6 @@
 # KitNapper — Decision Log
 
-> Single source of truth for every decision made during the requirements interviews and repository audit. When this file and a design guess conflict, this file wins. Application code is intentionally **not** written yet; see §9.
+> Single source of truth for every decision made during the requirements interviews and repository audit. When this file and a design guess conflict, this file wins. Implementation progress and milestone status live in §9.
 
 ## 1. Project Identity
 
@@ -10,7 +10,7 @@
 | Problem | Replace physical sign-out logbooks for schools/studios |
 | Team | **YAPPERS** (group project): Casiano, Cudia, Villacorza |
 | Course | CS203 – Object-Oriented Programming |
-| Current phase | Implementation (M1 persistence complete) |
+| Current phase | Implementation — M3 (catalog + checkout); WP1 services landed at `19a1e1b`, catalog UI next |
 
 ## 2. Product Decisions (from PRD interview)
 
@@ -80,7 +80,7 @@
 | `docs/seed-data.md` | — | Points to PRD §9; save-file/reset behaviour |
 | `docs/logout-tokens.md` | — | Runbook for removing all stored GitHub credentials from the Windows build machine |
 | `docs/decisions.md` | — | This file |
-| `docs/implementation-plan.md` | 1.3.0 | Class/file inventory, JSON persistence spec, milestones M0–M6, implementation decisions D1–D23 (written 2026-11-14 before any code; v1.1.0 retargets the UI to design.md v2.0; v1.2.0 adds D14–D16 from M0; v1.3.0 adds D17–D23 post-M0 findings: AppData aggregate, load-fallback scope, kind-vs-category rule, return edge cases, ID/photo safety) |
+| `docs/implementation-plan.md` | 1.4.0 | Class/file inventory, JSON persistence spec, milestones M0–M6, implementation decisions D1–D23 (written 2026-11-14 before any code; v1.1.0 retargets the UI to design.md v2.0; v1.2.0 adds D14–D16 from M0; v1.3.0 adds D17–D23 post-M0 findings: AppData aggregate, load-fallback scope, kind-vs-category rule, return edge cases, ID/photo safety; v1.4.0 adds the `SkeletonPanel`/`SkeletonGate` inventory from design.md §13) |
 
 ## 5. Design Direction
 
@@ -147,6 +147,18 @@ The attribution rules above now run on the Windows machine, not just the origina
 
 ## 9. Implementation Status
 
+- **M3 WP1 complete: catalog/loan services and controllers** (2026-11-14,
+  `19a1e1b`). `CatalogService(+Impl)` (name/serial search, category and status
+  filters, deterministic sort), `LoanServiceImpl` (role, availability, 3-loan cap
+  and 14-day window checks; return freezes at most one `LATE_FEE`, rejects future
+  return dates, preserves `UNDER_MAINTENANCE` per D15), `Ids` (max-suffix
+  `L-`/`p-`/`e-` generation), `LoanMessages`, `CatalogController` and
+  `BorrowingController`; `AppContext` gained catalog/loan getters, an injectable
+  clock and a package-private `fireChanged()`. `LoanServiceImpl` was extracted at
+  210 lines into 188 + `LoanMessages`. Verified with `CatalogProbe` (28 checks)
+  plus the full existing probe suite; no `kitnapper.view` file changed. **The
+  catalog UI (WP2–WP6) is not written** — Catalog is still the M2 placeholder, and
+  the probe harness is outside the repository. See `HANDOFF-M3-PLAN.md` §17.
 - **M2 complete: Win11 shell + mock login implemented** (2026-11-14). Two-frame
   flow (`LoginFrame` ↔ `MainFrame`) with custom-painted chrome (drag, resize
   bands, manual maximize to the work area), role-grouped sidebar, omnibar with
@@ -169,7 +181,7 @@ The attribution rules above now run on the Windows machine, not just the origina
   date (D4). Round-trip and corruption checks (16/16) ran through a scratch `main`
   deleted before the commit (`fe9ed34`). `design.md` §13 (skeleton loading states) was
   then resolved with the user. Next: M2 (shell + login) — see `HANDOFF-M2.md`.
-- **M0 complete: domain core implemented.** The `kitnapper.model` layer (18 files per `implementation-plan.md` §2.1, including `GeneralEquipment` for the JSON `BASE` kind) compiles and enforces INV-1/2/4/5; `Main.java` is still a blank placeholder, and persistence and Swing views beyond M1 are not yet written. The scaffold is a NetBeans Ant project at `desktop-app/` on the repository root (`C:\Users\CIIT\Downloads\kitnapper\desktop-app`).
+- **M0 complete: domain core implemented.** The `kitnapper.model` layer (18 files per `implementation-plan.md` §2.1, including `GeneralEquipment` for the JSON `BASE` kind) compiled and enforced INV-1/2/4/5; at that point `Main.java` was still a blank placeholder and nothing was runnable. The scaffold is the NetBeans Ant project at `desktop-app/` (`C:\Users\CIIT\Downloads\kitnapper\desktop-app` on that retired machine).
 - Future build order: model → service/persistence → Swing views → demo polish. **Detailed in `docs/implementation-plan.md` (milestones M0–M6) — follow it one milestone at a time; the class inventory, JSON schema, and implementation decisions D1–D6 live there.**
 - Respect `OOP/AGENTS.md`: Java 17 + Swing, NetBeans Ant, no third-party libraries, 200-line file cap, MVC separation.
 - Swift was considered during the scaffold decision and **explicitly rejected**; the repository is Java-only.

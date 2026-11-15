@@ -4,22 +4,29 @@ team_name: "YAPPERS"
 course: "CS203 – Object-Oriented Programming"
 artifact_type: "Implementation Plan (structure, persistence format, build order)"
 derived_from: "PRD.md v3.1.0, SRS.md v3.1.0, design.md"
-version: "1.3.0"
+version: "1.4.0"
 ---
 
 # KitNapper — Implementation Plan
 
-> **Status:** Written 2026-11-14, before any application code exists. This document is the
-> structure reference for implementation sessions: it maps PRD/SRS requirements and the
-> design tokens onto concrete Java files, defines the hand-written JSON format, and fixes
-> the build order. It adds no new features and changes no behavior — if it ever disagrees
-> with `PRD.md`/`SRS.md`, those win and this file is updated.
+> **Status:** Written 2026-11-14 as the structure reference, and still the map from
+> PRD/SRS requirements and design tokens onto concrete Java files: it defines the
+> hand-written JSON format and fixes the build order. It adds no new features and changes
+> no behavior — if it ever disagrees with `PRD.md`/`SRS.md`, those win and this file is
+> updated.
 >
-> **No code exists yet.** Follow the milestones in §4 one at a time; do not implement
-> everything at once. Each milestone must end with the project compiling (`ant clean jar`)
-> and, from M2 on, launching.
+> **Implementation progress:** M0 (model), M1 (persistence + seed), M2 (shell + login) and
+> M3 WP1 (catalog/loan services + controllers) are implemented; the catalog UI and
+> everything after it are not. Follow the milestones in §4 one at a time; do not
+> implement everything at once. Each milestone must end with the project compiling
+> (`ant clean jar` or the `javac` fallback) and, from M2 on, launching.
 >
-> **design.md is now v2.0 (Windows 11 / Fluent), §13 resolved.** The M2–M6 UI work
+> **Deviations from this inventory** are tracked in `docs/decisions.md` §9 and
+> `HANDOFF-M3-PLAN.md` §6 (the 200-line cap forced extra `view` files: `FlatButton`,
+> `FieldSkin`, `RoundedPanel`, `ResizeBands`, `Sidebar`, `LoanMessages`, and the M3
+> screen splits), so the per-package counts below are a floor, not a fixed contract.
+>
+> **design.md is v2.0 (Windows 11 / Fluent), §13 resolved.** The M2–M6 UI work
 > implements its §3–§13.
 
 ## 1. Ground Rules (restated, from AGENTS.md + docs)
@@ -170,7 +177,7 @@ Dialogs (modal per design §5):
 
 | File | Contents | Est. lines |
 | :--- | :--- | --: |
-| `Main.java` | exists as a placeholder; becomes: install `Theme`, register fonts, construct services + `AppContext`, show `LoginFrame`. Stays under 60 lines | 60 |
+| `Main.java` | entry point (41 lines, M2): installs `Theme`, registers fonts, constructs services + `AppContext`, shows `LoginFrame` on the EDT. Stays under 60 lines | 60 |
 
 Total ≈ 70 files (18 model + 52 service/controller/view). Every file above stays under
 the 200-line cap (`WindowChrome` is the tightest — keep behavior and painting split

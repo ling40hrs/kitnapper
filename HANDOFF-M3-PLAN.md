@@ -1,16 +1,25 @@
 # KitNapper M3 — Implementation Backbone
 
 > Scope: milestone **M3 — Catalog + Checkout**
-> Repository: `/Users/student/kitnapper`
-> Baseline: `main` @ `745ae28` (`fix(ui): repair M2 field, resize, and exit bugs`)
-> Written: 2026-11-14
+> Repository: the KitNapper checkout — `OOP/Finals/` (`github.com/ling40hrs/kitnapper`)
+> Plan baseline: `main` @ `745ae28` (`fix(ui): repair M2 field, resize, and exit bugs`)
+> Written: 2026-11-14 · last path refresh: 2026-11-15 (`main` @ `19a1e1b`)
 > Status: approved plan; **WP1 complete, WP2 next**
 
 > **Resume here (fresh session):** this plan *is* the handoff — no separate
-> handoff doc is needed. Read `docs/preferences.md`, then §7 **WP1** and §9.2
-> `CatalogProbe`, and continue the §17 execution log. Current state: WP0 and
-> WP1 verified and committed; working tree clean; service/controller layer
-> exists, no catalog UI yet.
+> handoff doc is needed. Read `AGENTS.md`, then `docs/preferences.md`, then §7
+> **WP2** and §9.2 `CatalogProbe`, and continue the §17 execution log. Current
+> state: WP0 and WP1 verified and committed (`19a1e1b`); working tree clean;
+> service/controller layer exists, no catalog UI yet.
+>
+> **Machine paths (refreshed 2026-11-15):** the original sessions ran on a macOS
+> checkout at `/Users/student/kitnapper` with the probe harness at
+> `/Users/student/kitnapper-probes`. That harness is **outside the repository and
+> is not present on the current checkout**. Every `run-all.sh` command below is
+> therefore stale: rebuild the probes (or an equivalent check) before claiming a
+> verification result, and record where they live in §9.1. The repository itself
+> is at `OOP/Finals/` on the current machine; use paths relative to the repo root
+> (`desktop-app/`, `docs/`) rather than absolute ones.
 
 ---
 
@@ -69,7 +78,7 @@ Inventory, and Settings remain placeholders until M4/M5.
 | Item | State |
 | :--- | :--- |
 | Build | `ant clean jar` green per `HANDOFF-SESSION-2026-11-14.md`; **re-prove first** |
-| Probes | `sh /Users/student/kitnapper-probes/run-all.sh` → `PASS=26`, `light_pixels=175`, `4/4`, `5/5`, `text=Inter`, `EXITED_OK` |
+| Probes | `run-all.sh` → `PASS=26`, `light_pixels=175`, `4/4`, `5/5`, `text=Inter`, `EXITED_OK` (harness was at `/Users/student/kitnapper-probes`; **not present on the current checkout** — see the path note above) |
 | Model | 18 classes; INV-1/2/4/5 enforced; `LoanRecord.effectiveStatus` derives OVERDUE |
 | Persistence | 9 classes; seed fallback D18; `DataStore.save()` atomic tmp+move |
 | Services | `AppContext`, `AuthService(+Impl)`, `DataStore(+Impl)`, `LoanService` interface only |
@@ -376,7 +385,7 @@ public static void paint(Graphics2D g, int x, int y, EquipmentStatus status);
 ### WP0 — Preflight (read-only)
 
 - [ ] `git status --short`, `git log -3 --oneline`; record HEAD.
-- [ ] Run `sh /Users/student/kitnapper-probes/run-all.sh`; save the output.
+- [ ] Run the probe suite (`run-all.sh` on the old machine; rebuild it here first if it is missing); save the output.
 - [ ] Confirm `ant clean jar` is green and JDK 17/Ant paths work.
 
 **Exit:** baseline probes green; any pre-existing failure is reported before code.
@@ -573,9 +582,11 @@ status bar: "N items · 0/1 selected"           right: ₱ total
 
 ## 9. Probe plan
 
-Probes live outside the repo at `/Users/student/kitnapper-probes/` and are run by
-`run-all.sh`. They are plain `main` classes with a `check(name, ok)` counter — no
-test framework.
+Probes live **outside the repo** (`/Users/student/kitnapper-probes/` when this plan
+was written) and are run by `run-all.sh`. That harness is not on the current
+checkout: recreate it under a path you record here before WP2 verification, or
+substitute an equivalent automated check. They are plain `main` classes with a
+`check(name, ok)` counter — no test framework.
 
 ### 9.1 Harness updates
 

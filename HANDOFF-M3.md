@@ -1,5 +1,11 @@
 # HANDOFF — M2 done, next: M3 (Catalog + Loans)
 
+> **Historical record (kept for traceability).** Written on the retired Windows
+> CIIT machine; its build paths and "verify first" caveat are already resolved — the
+> post-split build was compiled, audited, and fixed on 2026-11-14 (see
+> `HANDOFF-SESSION-2026-11-14.md` and `decisions.md` §9). The active working
+> document is `HANDOFF-M3-PLAN.md`.
+
 Written 2026-11-14 on the Windows CIIT machine, which is being retired. Read
 this whole file before touching code.
 

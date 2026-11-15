@@ -1,5 +1,11 @@
 # Handoff — M1 Execution (KitNapper)
 
+> **Historical record (kept for traceability).** M1 landed long ago; this file is
+> not a live instruction. Paths in it belong to retired machines (macOS
+> `/Users/student/…`, Windows `C:\Users\CIIT\…`) and the probe harness it references
+> no longer exists on the current checkout. The active working document is
+> `HANDOFF-M3-PLAN.md`; current state lives in `AGENTS.md`.
+
 > **Working document for the next agent session — not a course deliverable.**
 > Scope: execute milestone **M1** of `docs/implementation-plan.md` §4 (JSON persistence +
 > seed data). Read `AGENTS.md`, then this file, then `docs/implementation-plan.md` §3–§5.

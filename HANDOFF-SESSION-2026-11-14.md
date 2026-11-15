@@ -1,5 +1,11 @@
 # SESSION HANDOFF — 2026-11-14 (M2 re-audit + repo/tooling setup)
 
+> **Historical record (2026-11-15).** This describes the retired macOS machine:
+> toolchain paths (`/Users/student/…`), the SSH key fingerprints, and the probe
+> harness at `/Users/student/kitnapper-probes` no longer apply and the harness is
+> not on the current checkout. The M2 findings it supersedes are still valid. For
+> live state read `AGENTS.md`; for the next milestone read `HANDOFF-M3-PLAN.md`.
+
 Supersedes the "NOT verified after final refactor" warning in
 `HANDOFF-M3.md` §2: the post-split build has now been compiled, audited,
 fixed, verified, committed, and pushed. Read this file first, then
