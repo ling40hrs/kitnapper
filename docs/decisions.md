@@ -155,6 +155,15 @@ The attribution rules above now run on the Windows machine, not just the origina
   view inventory, revision 1.6.0), `design.md` §13/§14.2, and
   `HANDOFF-M3-PLAN.md` §6.2/§8.9/§9/§14. Also synced the plan's commit wording
   with `preferences.md` §3 (documented tasks ship without asking).
+- **Probe harness rebuilt in-repo (WP0.5)** (2026-11-15, base `60df95d`). Eight
+  probes under `desktop-app/test/kitnapper/` (`DataProbe` 26, `CatalogProbe` 28,
+  `EdgeProbe` 4, `FrameProbe` 12, `SizeProbe` 2, `SkinProbe` 2, `FontProbe` 2,
+  `CloseProbe` `EXITED_OK`) run by `test/run-all.sh` — headless for logic
+  probes, `xvfb-run -a` for paint probes; `EdgeProbe`/`SizeProbe` live in
+  `kitnapper.view` because `ResizeEdge`, `Sidebar`, and `ScreenCatalog` are
+  package-private. Nothing under `test/` compiles into the app jar.
+  `test/run-all.sh` is the verification gate for every remaining M3 work
+  package; baselines recorded in `HANDOFF-M3-PLAN.md` §9.4/§17.
 - **Debt cleanup + probe-rebuild plan** (2026-11-15, `77e900e` base). All
   line-cap violations cleared: `JsonParser` 202 → `JsonParser`/`JsonScanner`,
   `ResizeBands` 213 → `ResizeBands`/`ResizeEdge`, `MainFrame` 182 →
