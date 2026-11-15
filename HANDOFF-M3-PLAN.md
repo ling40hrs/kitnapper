@@ -3,14 +3,15 @@
 > Scope: milestone **M3 — Catalog + Checkout**
 > Repository: the KitNapper checkout — `OOP/Finals/` (`github.com/ling40hrs/kitnapper`)
 > Plan baseline: `main` @ `745ae28` (`fix(ui): repair M2 field, resize, and exit bugs`)
-> Written: 2026-11-14 · last refresh: 2026-11-15 (`main` @ `ebf3452`)
+> Written: 2026-11-14 · last refresh: 2026-11-15 (`main` @ `8428639`)
 > Status: approved plan; **WP1 complete, WP0.5 (probe harness) next**
 
 > **Resume here (fresh session):** this plan *is* the handoff — no separate
 > handoff doc is needed. Read `AGENTS.md`, then `docs/preferences.md`, then §7
 > **WP0.5** (rebuild the probe harness) and §9.2 `CatalogProbe`, and continue the
 > §17 execution log. Current state: WP0 and WP1 verified and committed
-> (`19a1e1b`), debt cleanup at `ebf3452`; working tree clean; service/controller
+> (`19a1e1b`), debt cleanup at `ebf3452`, scope correction (photos →
+> M5) at `8428639`; working tree clean; service/controller
 > layer exists, no catalog UI yet, and no probe harness on disk.
 >
 > **Machine paths (refreshed 2026-11-15):** the original sessions ran on a macOS
