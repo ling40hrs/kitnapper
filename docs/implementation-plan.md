@@ -136,12 +136,12 @@ Shared infrastructure:
 | `Omnibar.java` | breadcrumb + contextual command row + search field + layout toggle (design §5) | 160 |
 | `StatusBar.java` | counts, selection summary, monospace aggregate (design §5) | 70 |
 | `PreviewPane.java` | right detail pane: 16:9 media, metadata rows, pinned primary action (design §6) | 150 |
-| `PhotoTile.java` | off-EDT image decode + cache; skeleton placeholder; falls back to `GradientTile` (design §12) | 120 |
+| `PhotoTile.java` | **(M5, D27)** off-EDT image decode + cache; skeleton placeholder; falls back to `GradientTile` (design §12) | 120 |
 | `GradientTile.java` | category fallback tile — the single permitted gradient (design §3.4/§3.5) | 80 |
 | `SegmentedControl.java` | segmented control + toggle switch per design §6 | 90 |
 | `ThinScrollBarUI.java` | thin 4 px-thumb scrollbar UI (design §6) | 80 |
-| `SkeletonPanel.java` | skeleton loading blocks — visual only, timing in `SkeletonGate` (design §13) | 110 |
-| `SkeletonGate.java` | skeleton timing/plumbing: off-EDT work, 150/300/167 ms, 10 s watchdog, accessible loading state (design §13) | 120 |
+| `SkeletonPanel.java` | **(M5, D27)** skeleton loading blocks — visual only, timing in `SkeletonGate` (design §13) | 110 |
+| `SkeletonGate.java` | **(M5, D27)** skeleton timing/plumbing: off-EDT work, 150/300/167 ms, 10 s watchdog, accessible loading state (design §13) | 120 |
 
 Window & screens (design §5 inventory):
 
@@ -312,9 +312,9 @@ before moving on. **Do not batch milestones.**
 | M0 | Domain core | all `model` files | `ant clean jar` compiles; nothing runnable yet |
 | M1 | JSON persistence + seed | `service.persistence` files, `AppData`, `DataStore` + impl, `LoanService` skeleton | scratch entry point (a temporary `main` in a persistence package file, **deleted after M1**) writes the seed, re-reads it, and the round-trip matches — the fixture must also include a `BASE`-kind item, a `RETURNED` loan, a `WAIVED` penalty and an `UNDER_MAINTENANCE` item to exercise every restore path (D14, D18); corrupt-file and model-validation fallbacks checked by hand |
 | M2 | Shell + login (Win11 chrome) | `Main`, `Theme`, `Fonts`, `UiFactory`, `AppContext`, `AuthService(+Impl)`, `WindowChrome`, `TitleBar`, `Omnibar`, `StatusBar`, `LoginFrame`, `MainFrame`, `AppController`, `Formats`, `Dialogs` | steps 1–3: login screen, wrong password rejected, student login lands on catalog shell; chrome drag/resize/maximize checked |
-| M3 | Catalog + checkout | `CatalogScreen`, `EquipmentCard`, `PreviewPane`, `PhotoTile`, `GradientTile`, `SegmentedControl`, `Badges`, `CatalogTableModel`, `CatalogController`, `CatalogService(+Impl)`, `BorrowingController`, `CheckoutDialog`, `LoanService(+Impl)`, `Toasts`, `SkeletonPanel`, `SkeletonGate` | steps 3–6: search/filter, checkout, availability lock, 15-day rejection; model exceptions surface as inline messages, never EDT crashes (D16, D21); first skeleton use — card/preview decode + gated catalog refresh (design §13) |
+| M3 | Catalog + checkout | `CatalogScreen`, `EquipmentCard`, `PreviewPane`, `GradientTile`, `SegmentedControl`, `Badges`, `CatalogTableModel`, `CatalogController`, `CatalogService(+Impl)`, `BorrowingController`, `CheckoutDialog`, `LoanService(+Impl)`, `Toasts` | steps 3–6: search/filter, checkout, availability lock, 15-day rejection; model exceptions surface as inline messages, never EDT crashes (D16, D21); media is the gradient tile only — photos and skeletons are M5 (D27) |
 | M4 | Returns, fees, manager views | `DashboardScreen`, `AllLoansScreen`, `OverdueScreen`, `MyLoansScreen`, `LoansTableModel`, `PenaltiesScreen`, `PenaltiesTableModel`, `ReturnDialog`, `SettlePenaltyDialog`, `PenaltyController`, `PenaltyService(+Impl)`, `Badges` | steps 7–10: persistence round-trip (restart), overdue dashboard ₱200, return freezes penalty, waive; extra checks: a due-date return creates **no** penalty and a maintenance-flagged item stays `UNDER_MAINTENANCE` (D15, D20); tables use `effectiveStatus(now)`, fees come from `LoanService` (D21) |
-| M5 | Inventory, photos + reset | `InventoryScreen`, `InventoryTableModel`, `InventoryController`, `InventoryService(+Impl)`, `ImageStore(+Impl)`, `EquipmentDialog`, `SettingsScreen`, `EmptyState` | steps 11–12: add item **with photo** + decommission, reset restores the §6.1 baseline and wipes `kitnapper-images/`; extra checks: kind preserved on category edit (D19), photo filename safety (D22); photo import skeleton + "Animate loading placeholders" switch land here (design §13.4) |
+| M5 | Inventory, photos + reset | `InventoryScreen`, `InventoryTableModel`, `InventoryController`, `InventoryService(+Impl)`, `ImageStore(+Impl)`, `EquipmentDialog`, `SettingsScreen`, `EmptyState` | steps 11–12: add item **with photo** + decommission, reset restores the §6.1 baseline and wipes `kitnapper-images/`; extra checks: kind preserved on category edit (D19), photo filename safety (D22); `PhotoTile`, `SkeletonPanel`/`SkeletonGate` and photo import skeleton land here (D27), plus the "Animate loading placeholders" switch (design §13.4) |
 | M6 | Polish | `ThinScrollBarUI`, dark/light toggle, Fluent-motion fades (design §7), icon-codepoint verification (§10), HiDPI/text-scale pass, **skeleton audit per design §13** | full 12-step walkthrough + design §8 contrast/keyboard checks + gradient spot-check (§3.4) at 1080p and 1366×768; skeleton audit: reduced-motion, watchdog, no permanent skeletons |
 
 M0 → M1 may be committed together; M2 onward commit per milestone (git rules in
@@ -350,6 +350,7 @@ them. Logged here so implementation sessions don't re-litigate them.
 | D21 | How do views get derived status and fees? | `LoanService` exposes them (`accruedFee`, overdue listing) computed with `effectiveStatus(LocalDate.now())`. Views never construct a `FeeStrategy` and never call entity mutators directly — services are the only callers of transition/settlement methods. |
 | D22 | How are IDs and photo filenames kept safe? | Equipment and loan IDs are **system-generated** (sequential `e-0NN`/`L-0NN`), never user-typed; `ImageStore` builds `<equipmentId>.jpg`; `Equipment.setPhotoFile` accepts bare file names only. |
 | D23 | Does `AuthService` hard-code credentials? | No — it authenticates against the user list **loaded from `DataStore`** (which the seed and reset populate), so an edited or corrupted save changes what logs in, consistently with the dataset. |
+| D27 | Do photos and skeleton loading ship in M3? | **No — deferred to M5.** Seed items carry no photos (D11), so a decode path and a loading skeleton have nothing to exercise until the inventory photo picker exists. M3's catalog uses `GradientTile` for every card and preview and keeps queries synchronous (design §13.1); `PhotoTile`, `SkeletonPanel`, `SkeletonGate` and their two probes ship with M5. |
 
 ## 6. Verification Notes
 
@@ -369,4 +370,5 @@ them. Logged here so implementation sessions don't re-litigate them.
 | 1.2.0 | 2026-11-14 | M0 decisions: `GeneralEquipment` for the JSON `BASE` kind (D14), maintenance-flag return rule (D15), model exception policy (D16); `LoanStatus` clarified to hold all three constants with only `ACTIVE`/`RETURNED` persisted |
 | 1.3.0 | 2026-11-14 | Post-M0 findings folded in: `AppData` aggregate + `DataStore` accessors (D17), load-fallback scope covers model/referential failures (D18), kind-vs-category rule (D19), return edge cases — zero fee, future dates (D20), derived status/fee display via `LoanService` (D21), ID/photo-filename safety (D22), auth against persisted users (D23); M1 round-trip fixture exercises every restore path |
 | 1.4.0 | 2026-11-14 | design.md §13 resolved: `SkeletonPanel` + `SkeletonGate` added to the view inventory, first use in M3 (card/preview decode + gated catalog refresh), photo import + reduced-motion switch in M5, skeleton audit in M6 |
+| 1.6.0 | 2026-11-15 | Photos and skeleton loading deferred from M3 to M5 (D27): the M3 catalog renders `GradientTile` only; M3/M5 milestone rows and the view inventory adjusted |
 | 1.5.0 | 2026-11-15 | Debt cleanup: line-cap splits recorded in the inventory (`JsonScanner`, `ResizeEdge`, `ScreenCatalog`, `PlaceholderScreen`, `LoginCard`, `LoanQueries`), `Json` documented as unchecked-cast free, `-Xlint:all` build, 65-file count; probe harness relocated to `desktop-app/test/kitnapper/` (WP0.5, planned) |

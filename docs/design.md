@@ -383,8 +383,10 @@ skeleton placeholders (§13); `UIManager` defaults are set once in `Theme.apply(
 ## 13. Skeleton Loading States
 
 Resolved 2026-11-14 with the user; replaces the previous placeholder (D-Skeleton is now
-closed). Activated with the first off-EDT image decode in M3, extended to photo import and
-the reduced-motion switch in M5, audited in M6.
+closed). **First use is M5 (D27)** — M3's catalog has no photos to decode and its queries
+are synchronous, so the plan defers `PhotoTile`, `SkeletonPanel`, and `SkeletonGate` to
+the inventory milestone. Activated with the inventory photo picker, extended to photo
+import and the reduced-motion switch later in M5, audited in M6.
 
 ### 13.1 Where skeletons apply
 
@@ -466,9 +468,9 @@ exist while the component is not showing or while reduced motion is on.
 | `SkeletonGate.java` | `kitnapper.view` | timing and plumbing — runs work off the EDT, applies 150 / 300 / 167, swaps the host component, owns the watchdog and the accessible loading state |
 
 `PhotoTile`, `PreviewPane`, and the table hosts call `SkeletonGate`; there are no
-per-screen skeleton subclasses. Milestones: **M3** first use (card/preview decode, catalog
-refresh wrapper), **M5** photo import + the reduced-motion switch, **M6** audit
-(reduced-motion, watchdog, no permanent skeletons, gradient spot-check).
+per-screen skeleton subclasses. Milestones: **M5** first use (card/preview decode, photo
+import, reduced-motion switch — deferred from M3 by D27), **M6** audit (reduced-motion,
+watchdog, no permanent skeletons, gradient spot-check).
 
 ## 14. Decisions Log
 
@@ -508,3 +510,4 @@ added (files.community, shelf.nu); implementation plan written (`M0–M6`, D1–
 | **D-Photos** | Image uploads moved **into scope**, reversing the PRD §8 non-goal: `kitnapper-images/` beside the save file, 1024 px JPEG q0.85, 20 MB source cap, png/jpg/jpeg/gif/bmp, reset wipes the folder, seed ships without photos (§12). |
 | **D-Schema** | `schemaVersion` stays 1; `photoFile` is a nullable additive field so old saves load unchanged. |
 | **D-Skeleton** | Resolved in §13 (2026-11-14): 150 ms delay / 300 ms minimum / 167 ms fade, flat 4 px blocks with a 1,000 ms pulse (`SKELETON_BLOCK` token), no launch skeleton, query skeletons gated behind a measured ≥ 150 ms, reduced motion via a session setting, 10 s watchdog. |
+| **D-Skeleton-M5** | Deferred to M5 (2026-11-15): seed items carry no photos and catalog queries are synchronous, so `PhotoTile`, `SkeletonPanel`, and `SkeletonGate` ship with the inventory photo picker instead of M3. Recorded as D27 in `implementation-plan.md`. |

@@ -147,6 +147,14 @@ The attribution rules above now run on the Windows machine, not just the origina
 
 ## 9. Implementation Status
 
+- **Scope: photos + skeleton loading moved to M5** (2026-11-15, D27). Seed items
+  carry no photos (D11) and catalog queries are synchronous, so `PhotoTile`,
+  `SkeletonPanel`, `SkeletonGate`, `SkeletonProbe`, and `PhotoTileProbe` ship
+  with the inventory photo picker instead of M3. M3's catalog renders
+  `GradientTile` only. Updated in `implementation-plan.md` (D27, M3/M5 rows,
+  view inventory, revision 1.6.0), `design.md` §13/§14.2, and
+  `HANDOFF-M3-PLAN.md` §6.2/§8.9/§9/§14. Also synced the plan's commit wording
+  with `preferences.md` §3 (documented tasks ship without asking).
 - **Debt cleanup + probe-rebuild plan** (2026-11-15, `77e900e` base). All
   line-cap violations cleared: `JsonParser` 202 → `JsonParser`/`JsonScanner`,
   `ResizeBands` 213 → `ResizeBands`/`ResizeEdge`, `MainFrame` 182 →

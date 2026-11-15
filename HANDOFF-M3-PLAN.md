@@ -3,23 +3,24 @@
 > Scope: milestone **M3 — Catalog + Checkout**
 > Repository: the KitNapper checkout — `OOP/Finals/` (`github.com/ling40hrs/kitnapper`)
 > Plan baseline: `main` @ `745ae28` (`fix(ui): repair M2 field, resize, and exit bugs`)
-> Written: 2026-11-14 · last path refresh: 2026-11-15 (`main` @ `19a1e1b`)
-> Status: approved plan; **WP1 complete, WP2 next**
+> Written: 2026-11-14 · last refresh: 2026-11-15 (`main` @ `ebf3452`)
+> Status: approved plan; **WP1 complete, WP0.5 (probe harness) next**
 
 > **Resume here (fresh session):** this plan *is* the handoff — no separate
 > handoff doc is needed. Read `AGENTS.md`, then `docs/preferences.md`, then §7
-> **WP2** and §9.2 `CatalogProbe`, and continue the §17 execution log. Current
-> state: WP0 and WP1 verified and committed (`19a1e1b`); working tree clean;
-> service/controller layer exists, no catalog UI yet.
+> **WP0.5** (rebuild the probe harness) and §9.2 `CatalogProbe`, and continue the
+> §17 execution log. Current state: WP0 and WP1 verified and committed
+> (`19a1e1b`), debt cleanup at `ebf3452`; working tree clean; service/controller
+> layer exists, no catalog UI yet, and no probe harness on disk.
 >
 > **Machine paths (refreshed 2026-11-15):** the original sessions ran on a macOS
 > checkout at `/Users/student/kitnapper` with the probe harness at
-> `/Users/student/kitnapper-probes`. That harness is **outside the repository and
-> is not present on the current checkout**. Every `run-all.sh` command below is
-> therefore stale: rebuild the probes (or an equivalent check) before claiming a
-> verification result, and record where they live in §9.1. The repository itself
-> is at `OOP/Finals/` on the current machine; use paths relative to the repo root
-> (`desktop-app/`, `docs/`) rather than absolute ones.
+> `/Users/student/kitnapper-probes`. That harness is **gone with the old
+> machine**. WP0.5 rebuilds it inside the repository at
+> `desktop-app/test/kitnapper/` with a `test/run-all.sh` runner; until then every
+> `run-all.sh` command below is stale and no verification claim may cite it. The
+> repository itself is at `OOP/Finals/` on the current machine; use paths
+> relative to the repo root (`desktop-app/`, `docs/`) rather than absolute ones.
 
 ---
 
@@ -33,7 +34,7 @@ Ship the first real feature milestone on top of the M2 shell:
 - Instant checkout with the documented limits, availability lock, persistence,
   and user-facing validation.
 - The shared view infrastructure M4/M5 will reuse: badges, tables, preview pane,
-  skeleton gate, photo tile, toasts, dialog skin.
+  toasts, dialog skin. (`PhotoTile` and the skeleton gate are M5 — D27.)
 
 M3 is **not** a loans milestone. My Loans, All Loans, Overdue, Penalties,
 Inventory, and Settings remain placeholders until M4/M5.
@@ -106,7 +107,7 @@ LoginFrame ── AppController ── MainFrame (chrome, sidebar, omnibar, stat
                                   ▼
                             CatalogScreen  ── CheckoutDialog
                               │      │
-                    Actions  │      │  Toasts / PhotoTile / PreviewPane
+                    Actions  │      │  Toasts / GradientTile / PreviewPane
                               ▼      ▼
                     CatalogController  BorrowingController
                               │              │
@@ -293,7 +294,7 @@ public static boolean showForm(Window owner, String title, JComponent body,
 public static boolean show(Window owner, Equipment item, List<LocalDate> dueDates,
     Function<LocalDate, Optional<String>> checkout); // true = checked out
 
-// SkeletonGate (package-private timings constructor for probes)
+// SkeletonGate (M5 — D27; package-private timings constructor for probes)
 public interface Work<T> { T run() throws Exception; }
 public static <T> void run(SkeletonPanel panel, String loadingName,
     Work<T> work, Consumer<T> success, Consumer<Throwable> failure);
@@ -321,18 +322,15 @@ public static void paint(Graphics2D g, int x, int y, EquipmentStatus status);
 | `CatalogController.java` | `kitnapper.controller` | Query state + role/action hints | 90 |
 | `BorrowingController.java` | `kitnapper.controller` | Due-date choices, checkout errors | 70 |
 
-### 6.2 New — view (20 files)
+### 6.2 New — view (17 files)
 
 | File | Purpose | Est. |
 | :--- | :--- | --: |
-| `ScreenCatalog.java` | Extracted `SCREENS` metadata, nav keys, titles | 80 |
-| `PlaceholderScreen.java` | Extracted M2 placeholder panel | 45 |
+| `ScreenCatalog.java` | Extracted `SCREENS` metadata, nav keys, titles *(done)* | 80 |
+| `PlaceholderScreen.java` | Extracted M2 placeholder panel *(done)* | 45 |
 | `Badges.java` | 20 px pill + dot + word; wrench on maintenance | 120 |
 | `SegmentedControl.java` | Table/Cards (and later My Loans tabs) | 90 |
 | `GradientTile.java` | The one permitted gradient fallback | 90 |
-| `SkeletonPanel.java` | Flat blocks + pulse, MEDIA/CARD/PREVIEW/TABLE | 120 |
-| `SkeletonGate.java` | 150/300/167 ms, watchdog, accessibility | 140 |
-| `PhotoTile.java` | Off-EDT decode, cache, gradient fallback | 130 |
 | `PreviewPane.java` | 280 px detail pane + pinned action | 160 |
 | `EquipmentCard.java` | Cards-view tile | 110 |
 | `CatalogTableModel.java` | 5 typed columns | 90 |
@@ -345,6 +343,20 @@ public static void paint(Graphics2D g, int x, int y, EquipmentStatus status);
 | `CheckoutDialog.java` | Item summary + picker + inline error | 120 |
 | `DialogSkin.java` | Shared scrim/card/footer/error shell | 130 |
 | `Toasts.java` | POPUP_LAYER stack, 4 s, max 3 | 100 |
+
+**Deferred to M5 (D27)** — photos and skeleton loading do not ship in M3. Seed
+items carry no photos (D11), so a decode path and a loading skeleton have
+nothing to exercise until the inventory photo picker exists:
+
+| File | Purpose | Est. |
+| :--- | :--- | --: |
+| `SkeletonPanel.java` | Flat blocks + pulse, MEDIA/CARD/PREVIEW/TABLE | 120 |
+| `SkeletonGate.java` | 150/300/167 ms, watchdog, accessibility | 140 |
+| `PhotoTile.java` | Off-EDT decode, cache, gradient fallback | 130 |
+
+M3's catalog renders `GradientTile` for every card and preview, and queries stay
+synchronous (design §13.1 "gated, never speculative"; at seed scale they are well
+under 150 ms).
 
 ### 6.3 Modified
 
@@ -376,14 +388,15 @@ code. Nothing under `desktop-app/test/` is compiled into the app jar; only
 | `test/kitnapper/CloseProbe.java` | `kitnapper` | `EXIT_ON_CLOSE` + window-closing hook |
 | `test/kitnapper/CatalogProbe.java` | `kitnapper` | §9.2 service/controller rules and persistence |
 | `test/kitnapper/view/CatalogUiProbe.java` | `kitnapper.view` | §9.3 catalog mount/search/filter/preview/render |
-| `test/kitnapper/view/SkeletonProbe.java` | `kitnapper.view` | §9.3 timing, failure, watchdog, reduced motion |
-| `test/kitnapper/view/PhotoTileProbe.java` | `kitnapper.view` | §9.3 temp image decode, fallback, cache, traversal |
 | `test/run-all.sh` | — | Compile + run every probe, print `PASS=n FAIL=k`, exit non-zero on failure |
 
+`SkeletonProbe` and `PhotoTileProbe` travel with their components to M5 (D27);
+the §9.3 specs stay here for whoever builds them.
+
 Probes are plain `main` classes with a `check(name, ok)` counter — no test
-framework, no third-party library. Package-private view probes (`SkeletonProbe`,
-`PhotoTileProbe`, `CatalogUiProbe`) must live in `kitnapper.view` and be compiled
-against `build/classes` with `-d test/out`.
+framework, no third-party library. Package-private view probes (`CatalogUiProbe`)
+must live in `kitnapper.view` and be compiled against `build/classes` with
+`-d test/out`.
 
 ### 6.5 Line-cap strategy
 
@@ -467,16 +480,14 @@ changes yet. This is the point where the risky rules are proven.
 
 - [ ] `Badges` (equipment statuses now; penalty mapping optional).
 - [ ] `SegmentedControl`.
-- [ ] `GradientTile`.
-- [ ] `SkeletonPanel` + `SkeletonGate` (timings injectable).
-- [ ] `PhotoTile` (default `kitnapper-images/`, package-private `Path` ctor).
+- [ ] `GradientTile` (the only media surface M3 needs — see D27).
 - [ ] `TableSkins`.
 - [ ] `Toasts`.
 - [ ] `DialogSkin` + refactor `Dialogs` to a facade; keep `showMessage` and
       `confirmDestructive` behaviour.
 
-**Exit:** components paint in dark/light; `SkeletonProbe` and
-`PhotoTileProbe` green; existing frame paints unaffected.
+**Exit:** components paint in dark/light; existing frame paints unaffected;
+`SkinProbe`/`SizeProbe` unchanged.
 
 ### WP4 — Catalog screen
 
@@ -507,10 +518,11 @@ updates; 4-click budget holds (select → Check out → confirm).
 - [ ] Manual SRS §6.2 steps 1–6 + manager/theme/cards/empty/Ctrl+F/restart.
 - [ ] Line-cap, hex, and “no service imports in view” audits.
 - [ ] Docs: README, decisions §5/§9, implementation-plan (M3 row, inventory,
-      D24–D26, revision 1.5.0), design §5 sidebar, SRS §6.2 note, `HANDOFF-M4.md`.
+      D24–D26, revision 1.7.0), design §5 sidebar, SRS §6.2 note, `HANDOFF-M4.md`.
 - [ ] Decide on committing the untracked session handoff.
-- [ ] Ask for approval before staging/committing/pushing; verify signed +
-      remote `verified: true` after push.
+- [ ] Commit and push per `docs/preferences.md` §3 (a documented task ships
+      without asking; report the SHAs afterwards); verify signed + remote
+      `verified: true`.
 
 **Exit:** Definition of Done (§14) fully checked.
 
@@ -549,7 +561,8 @@ status bar: "N items · 0/1 selected"           right: ₱ total
 ### 8.3 Preview pane
 
 - Fixed 280 px, `BG_ELEVATED`, 1 px left border.
-- 16:9 media at the top: `PhotoTile` (falls back to `GradientTile`).
+- 16:9 media at the top: `GradientTile` in M3; `PhotoTile` (falling back to
+  `GradientTile`) from M5 — see D27.
 - Title 16 px semibold; metadata rows (12 px secondary label / 14 px value):
   Status badge, Category, Serial (mono), Replacement value (mono), ID (mono).
 - Primary action pinned at the bottom:
@@ -604,17 +617,18 @@ status bar: "N items · 0/1 selected"           right: ₱ total
   `Dialogs`.
 - Theme-aware; no shadow, no accent fill.
 
-### 8.9 Photos and skeletons
+### 8.9 Photos and skeletons (M5 — D27)
 
-- Seed items have no photos → gradient tile for every card/preview in M3.
-- `PhotoTile` still decodes `kitnapper-images/<file>` when present (M5 will write
-  them): skeleton MEDIA while decoding off-EDT, then image; failure → gradient.
-- Skeleton timing: 150 ms delay, 300 ms minimum, 167 ms fade, 1,000 ms pulse,
-  10 s watchdog; reduced motion (`Theme.animateSkeletons=false`) = static blocks
-  + instant swap.
-- Catalog queries stay synchronous: at seed scale they are far below 150 ms, so
-  no query skeleton is shown (design §13.1 “gated, never speculative”). Record
-  the measured time in the probe output.
+- M3 renders `GradientTile` for every card and preview; seed items have no
+  photos (D11), so no decode path and no loading skeleton ship in M3.
+- `PhotoTile` (M5) decodes `kitnapper-images/<file>` when present: skeleton
+  MEDIA while decoding off-EDT, then image; failure → gradient.
+- Skeleton timing (M5): 150 ms delay, 300 ms minimum, 167 ms fade, 1,000 ms
+  pulse, 10 s watchdog; reduced motion (`Theme.animateSkeletons=false`) = static
+  blocks + instant swap.
+- Catalog queries stay synchronous in M3: at seed scale they are far below
+  150 ms, so no query skeleton is shown (design §13.1 “gated, never
+  speculative”). Record the measured time in `CatalogUiProbe` output.
 - Skeletons are never focusable/clickable; host exposes “Loading photo” /
   `PROGRESS_BAR` and one start/end name event.
 
@@ -646,7 +660,8 @@ counter — no test framework.
   paint probes run under `xvfb-run -a` when `DISPLAY` is absent.
 - Exit non-zero on any failure; print `PASS=n FAIL=0` per probe.
 - Keep existing sections and add:
-  `CatalogProbe`, `CatalogUiProbe`, `SkeletonProbe`, `PhotoTileProbe`.
+  `CatalogProbe`, `CatalogUiProbe`. The `SkeletonProbe` and `PhotoTileProbe`
+  sections below stay in the plan but ship with M5 (D27).
 
 ### 9.2 `CatalogProbe` — rules and persistence (temp dir each scenario)
 
@@ -705,14 +720,16 @@ Controller:
    above a threshold (catalog is not blank).
 10. Query timing printed; assert < 150 ms (documents “no query skeleton”).
 
-`SkeletonProbe` (package `kitnapper.view`, package-private timings):
+`SkeletonProbe` (M5 — not built in M3, D27; package `kitnapper.view`,
+package-private timings):
 1. Work 0 ms → skeleton never becomes visible.
 2. Work 400 ms → skeleton visible, stays ≥ 300 ms.
 3. Work throws → failure callback, no skeleton left behind.
 4. Watchdog 50 ms on a 500 ms task → failure callback fires, skeleton removed.
 5. `Theme.animateSkeletons=false` → no pulse timer, instant swap.
 
-`PhotoTileProbe` (package `kitnapper.view`, temp image dir):
+`PhotoTileProbe` (M5 — not built in M3, D27; package `kitnapper.view`,
+temp image dir):
 1. Missing file → gradient fallback, no exception.
 2. Valid JPEG → decoded, cached, painted (pixel diff from gradient).
 3. Corrupt file → gradient fallback.
@@ -734,8 +751,8 @@ was recorded at `PASS=28 FAIL=0` in WP1; UI probes land in WP4/WP5.
 | `CloseProbe` | `EXITED_OK` |
 | `CatalogProbe` | `PASS=28 FAIL=0` (WP1 baseline) |
 | `CatalogUiProbe` | new `PASS=10 FAIL=0` |
-| `SkeletonProbe` | new `PASS=5 FAIL=0` |
-| `PhotoTileProbe` | new `PASS=4 FAIL=0` |
+
+`SkeletonProbe`/`PhotoTileProbe` are M5 (D27) and are not part of the M3 baseline.
 
 ---
 
@@ -782,7 +799,7 @@ was recorded at `PASS=28 FAIL=0` in WP1; UI probes land in WP4/WP5.
 | :--- | :--- |
 | `README.md` | Status: M3 delivered; remove the M2 “not verified after split” caveat; mention manager read-only catalog; add `HANDOFF-M4.md` to contents |
 | `docs/decisions.md` | §5 add manager Catalog nav + read-only decision; §9 add M3 status; §4 document version rows |
-| `docs/implementation-plan.md` | M3 row (catalog + checkout only, manager read-only, picker); §2.5 inventory additions; decisions **D24** (manager read-only catalog), **D25** (picker + probe verification of INV-2), **D26** (screen mounting + file splits); revision 1.5.0 |
+| `docs/implementation-plan.md` | M3 row (catalog + checkout only, manager read-only, picker); §2.5 inventory additions; decisions **D24** (manager read-only catalog), **D25** (picker + probe verification of INV-2), **D26** (screen mounting + file splits); revision 1.7.0 |
 | `docs/design.md` | §5 sidebar manager group adds Catalog; screen inventory role “both (manager read-only)” |
 | `docs/SRS.md` | §6.2 step 6 note: picker constrains the UI, service/probe proves rejection; revision 3.1.2 |
 | `HANDOFF-M4.md` (new) | Current state, M4 scope (returns/fees/manager views), gotchas, probe commands |
@@ -791,12 +808,17 @@ was recorded at `PASS=28 FAIL=0` in WP1; UI probes land in WP4/WP5.
 
 Rule: no code commit without the matching doc update (repo convention).
 
+**Already recorded (2026-11-15):** D27 in `implementation-plan.md` §5 defers
+photos and skeleton loading to M5, so WP6 writes D24–D26 only.
+
 ---
 
 ## 12. Git plan
 
-All writes need **explicit approval**, per `AGENTS.md`; approval for a commit does
-not approve its push.
+All writes follow `docs/preferences.md` §3: a **documented task** (plan, work
+package, execution-log phase, or explicit user task list) commits and pushes
+without asking and reports the SHAs afterwards; anything else still needs
+approval, and approval to commit is not approval to push.
 
 ### Proposed commits
 
@@ -826,8 +848,7 @@ Replace the catalog placeholder with a real Win11 catalog: a
 details table plus preview pane by default, a cards toggle,
 search and filters in the omnibar, and instant checkout.
 
-- Shared badge, table, preview, photo-tile, skeleton, toast, and
-  dialog infrastructure for M4/M5
+- Shared badge, table, preview, toast, and dialog infrastructure for M4/M5
 - Managers get a read-only catalog; checkout stays borrower-only
 - Successful checkout persists, refreshes the row, and shows a
   toast; validation errors stay inline in the dialog
@@ -909,8 +930,9 @@ checkout, and add the M4 handoff.
 - **M4**: My Loans / All Loans / Overdue / Penalties views, return and settle
   dialogs, loan row view-models (borrower/item names), table reuse via
   `TableSkins`.
-- **M5**: Inventory CRUD, `ImageStore`, photo picker, settings/reset, reduced-
-  motion switch.
+- **M5**: Inventory CRUD, `ImageStore`, photo picker, `PhotoTile` +
+  `SkeletonPanel`/`SkeletonGate` (deferred from M3, D27), settings/reset,
+  reduced-motion switch.
 - **M6**: `ThinScrollBarUI`, Fluent motion, 1080p/1366×768 passes, skeleton
   audit, gradient spot-check.
 - **Debt**: `Dialogs` facade cleanup, `UiFactory` refresh coverage, manager
@@ -1062,6 +1084,32 @@ runner. That work is planned, not executed; it blocks WP2 verification.
 
 **Next:** WP0.5 — rebuild the probe harness.
 
+### Scope correction: photos and skeletons to M5 (2026-11-15)
+
+**Status:** complete; docs only. Starting HEAD `ebf3452`.
+
+Decision **D27**: `PhotoTile`, `SkeletonPanel`, `SkeletonGate`, `SkeletonProbe`,
+and `PhotoTileProbe` move from M3 to M5. Reasoning: seed items carry no photos
+(D11), so only the probe would exercise a decode path, and catalogue queries at
+seed scale are far below the 150 ms skeleton gate. M3 renders `GradientTile` for
+every card and preview. The §9.3 probe specs stay in this plan for whoever
+builds them in M5.
+
+Docs updated:
+
+- this plan §6.2 (deferred block), WP3 checklist + exit, §6.4, §8.9, §9.1,
+  §9.3, §9.4, §16, Appendix A
+- `docs/implementation-plan.md`: D27, M3/M5 milestone rows, view inventory,
+  revision 1.6.0
+- `docs/design.md` §13 preamble and §13.7 milestones, §14.2 decision row
+- `docs/decisions.md` §9
+
+Also fixed the stale commit wording in this plan (§12, WP6, Appendix A): the
+plan said every write needs explicit approval, which contradicted
+`preferences.md` §3 after the 2026-11-15 policy change.
+
+**Next:** WP0.5 — rebuild the probe harness.
+
 ---
 
 ## Appendix A — Implementation checklist (copy into the working session)
@@ -1073,14 +1121,13 @@ runner. That work is planned, not executed; it blocks WP2 verification.
 [x] CatalogProbe green; DataProbe still 26
 [ ] WP0.5 probe harness rebuilt under desktop-app/test; run-all.sh green
 [ ] MainFrame split + mount/status/commands; manager nav
-[ ] Badges, SegmentedControl, GradientTile, skeletons, PhotoTile, Toasts,
-    TableSkins, DialogSkin
+[ ] Badges, SegmentedControl, GradientTile, Toasts, TableSkins, DialogSkin
 [ ] PreviewPane, EquipmentCard, CatalogTable(Model), CatalogCards,
     CatalogFilters, CatalogScreen
 [ ] DatePicker + CheckoutDialog; toasts; inline errors
-[ ] CatalogUiProbe + SkeletonProbe + PhotoTileProbe green
+[ ] CatalogUiProbe green (SkeletonProbe/PhotoTileProbe are M5, D27)
 [ ] Manual SRS 1–6 + manager/theme/cards/empty/Ctrl+F/restart
 [ ] line-cap/hex/view-import audits
 [ ] docs + HANDOFF-M4
-[ ] ask approval → commit A/B/C → push → verify remote
+[ ] commit A/B/C → push → verify remote (documented task, preferences §3)
 ```
