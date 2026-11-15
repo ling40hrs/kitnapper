@@ -40,6 +40,7 @@ Finals/                       (the repository root)
 ├── HANDOFF-M3-PLAN.md        active M3 plan and execution log
 ├── HANDOFF-SESSION-2026-11-14.md
 ├── .editorconfig             shared formatting
+├── .gitattributes            LF everywhere; binary assets not normalized
 ├── .gitignore
 ├── assets/
 │   └── banner.jpg            README banner image
@@ -50,9 +51,9 @@ Finals/                       (the repository root)
 │   ├── decisions.md          decision log
 │   ├── implementation-plan.md  class inventory, JSON schema, milestones M0–M6
 │   ├── preferences.md        tracked working preferences
-│   ├── logout-tokens.md      credential runbook for the retired build machine
 │   └── seed-data.md          seed data scope note
 └── desktop-app/              NetBeans Ant project
+    ├── build.sh              JDK-only clean/build/run helper (no Ant needed)
     ├── build.xml
     ├── manifest.mf
     ├── nbproject/
@@ -67,7 +68,7 @@ Finals/                       (the repository root)
     │   │   └── persistence/  hand-written JSON parser, writer, mappers (M1)
     │   ├── controller/       AppController, CatalogController, BorrowingController
     │   └── view/             theme, chrome, shell, login — catalog still a placeholder
-    ├── test/
+    ├── test/                 probe harness (WP0.5 — planned, not built yet)
     └── resources/
         └── fonts/              bundled Inter (Regular, SemiBold, Bold)
 ```
@@ -100,7 +101,12 @@ ant run
 cd desktop-app
 ../../netbeans/extide/ant/bin/ant clean jar
 
-# No Ant at all — plain javac against the JDK
+# No Ant at all — the helper script (JDK only)
+cd desktop-app
+./build.sh build      # clean | build | run
+./build.sh run
+
+# ...or plain javac by hand
 cd desktop-app
 mkdir -p build/classes
 find src -name '*.java' > /tmp/kn-sources.txt
@@ -120,7 +126,6 @@ Build output is written to `build/` and `dist/`, both of which are ignored by Gi
 | [`docs/decisions.md`](docs/decisions.md) | Record of confirmed decisions and known gaps |
 | [`docs/implementation-plan.md`](docs/implementation-plan.md) | Build order, class/file inventory, JSON persistence spec, decisions D1–D23 |
 | [`docs/seed-data.md`](docs/seed-data.md) | Where seed data lives and when to split it out |
-| [`docs/logout-tokens.md`](docs/logout-tokens.md) | Runbook: logging out of every stored GitHub credential on the build machine |
 | [`docs/preferences.md`](docs/preferences.md) | Tracked, machine-independent working preferences: planning, one-phase execution, document-commit-push, verification |
 | [`HANDOFF-M3-PLAN.md`](HANDOFF-M3-PLAN.md) | **Active working document:** M3 plan, work packages, probe plan, execution log |
 | [`HANDOFF-M3.md`](HANDOFF-M3.md), [`HANDOFF-M2.md`](HANDOFF-M2.md), [`HANDOFF-M1.md`](HANDOFF-M1.md), [`HANDOFF-SESSION-2026-11-14.md`](HANDOFF-SESSION-2026-11-14.md) | Historical records of finished milestones (machine-specific paths and probe commands are stale) |
@@ -139,6 +144,6 @@ The PRD and SRS are the sources of truth for behavior. If implementation and doc
 
 ## Status
 
-Documentation complete; M0 domain core, M1 JSON persistence, and M2 Win11 shell + mock login are implemented, audited, and building. M3 WP1 (catalog search/filter, checkout and return services, sequential IDs, controllers) landed in `19a1e1b`; **M3 WP2–WP6 are still open**, so the Catalog screen is an M2 placeholder. Then come M4 (loans, returns, penalties), M5 (inventory, photos, reset) and M6 (polish). See `docs/decisions.md` for the decision record, `docs/implementation-plan.md` for the build order, and `HANDOFF-M3-PLAN.md` for the current work plan.
+Documentation complete; M0 domain core, M1 JSON persistence, and M2 Win11 shell + mock login are implemented, audited, and building. M3 WP1 (catalog search/filter, checkout and return services, sequential IDs, controllers) landed in `19a1e1b`; **M3 WP2–WP6 are still open**, so the Catalog screen is an M2 placeholder. A 2026-11-15 debt pass cleared every 200-line violation, enabled `-Xlint:all`, added `desktop-app/build.sh` and `.gitattributes`, and deleted the stale logout runbook. Then come M4 (loans, returns, penalties), M5 (inventory, photos, reset) and M6 (polish). See `docs/decisions.md` for the decision record, `docs/implementation-plan.md` for the build order, and `HANDOFF-M3-PLAN.md` for the current work plan.
 
-Automated verification lives outside the repository and is not part of this checkout; milestone verification is the SRS §6.2 walkthrough plus local probes.
+Automated verification is being rebuilt **inside** the repository under `desktop-app/test/kitnapper/` (WP0.5 in `HANDOFF-M3-PLAN.md`); it is planned, not built yet, and blocks WP2 verification. Until then, milestone verification is the SRS §6.2 walkthrough plus `./build.sh`.

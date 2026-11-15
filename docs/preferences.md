@@ -38,9 +38,16 @@
 
 ## 3. Documentation and commits
 
-- **Document, then commit, then push.** After documenting a plan or finishing
-  a phase, commit and push that work without asking. Standing approval covers
-  documented plan/phase work only; anything else still needs explicit approval.
+- **Documented tasks ship without asking.** When the work in hand is a task that
+  was written down first — a plan, a work package, an execution-log phase, or an
+  explicit task list from the user — then commit and push it without asking,
+  provided every step succeeded and the plan's verification passed. Report the
+  commit SHA, the remote SHA, and the verification result afterwards.
+- **Simple prompts still need approval.** A one-line request, a question, an
+  exploratory edit, or anything the user did not lay out as a task is not a
+  documented task: ask before staging, committing, or pushing.
+- When the two are ambiguous, treat it as a simple prompt and ask. Approval is
+  cheap; an unwanted push is not.
 - Each commit follows the repo's rules: conventional subject, ~72-column body
   explaining what/why, signed commits, and the two required co-author trailers.
 - Never commit build output, runtime data, or local-only files (`AGENTS.md`,

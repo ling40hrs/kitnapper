@@ -81,7 +81,8 @@ Line estimates are sanity checks against the 200-line cap, not budgets to hit.
 | `ImageStore.java` | interface: `importPhoto(equipmentId, sourcePath)`, `photoFor(equipmentId)`, `deletePhoto(equipmentId)`; reset/orphan-sweep hooks (design §12) | 30 |
 | `AuthServiceImpl.java` | impl; authenticates against the users **loaded from `DataStore`**, not a hard-coded list (D23) | 60 |
 | `CatalogServiceImpl.java` | impl | 80 |
-| `LoanServiceImpl.java` | impl; enforces INV-3, INV-6 (3-loan cap) and the 14-day window via `LoanRecord.checkout`; on return, computes the fee for the **chosen return date**, skips a zero fee, freezes exactly one `Penalty` (FR-07, D20), and only calls `markAvailable()` when the item is `LOANED` (D15) | 150 |
+| `LoanServiceImpl.java` | impl; enforces INV-3, INV-6 (3-loan cap) and the 14-day window via `LoanRecord.checkout`; on return, computes the fee for the **chosen return date**, skips a zero fee, freezes exactly one `Penalty` (FR-07, D20), and only calls `markAvailable()` when the item is `LOANED` (D15); delegates reads/lookups to `LoanQueries` | 150 |
+| `LoanQueries.java` | package-private read side of `LoanService`: clock, entity/loan lookup, `myLoans`/`allLoans`/`overdueLoans` sorting, `accruedFee`; keeps `LoanServiceImpl` under the cap | 90 |
 | `LoanMessages.java` | package-private user-facing strings for checkout/return failures and the due-date window | 35 |
 | `Ids.java` | sequential system IDs from the highest numeric suffix: `L-NNN`, `p-NNN`, `e-NNN`; malformed suffixes ignored (D22) | 55 |
 | `PenaltyServiceImpl.java` | impl | 80 |
@@ -94,9 +95,10 @@ Line estimates are sanity checks against the 200-line cap, not budgets to hit.
 
 | File | Contents | Est. lines |
 | :--- | :--- | --: |
-| `JsonParser.java` | recursive-descent parser for **only the subset `JsonWriter` emits** (§3.2) | 120 |
+| `JsonParser.java` | recursive-descent parser for **only the subset `JsonWriter` emits** (§3.2); document structure only | 110 |
+| `JsonScanner.java` | character layer for the parser: strings with the three escapes, plain-decimal numbers, `true`/`false`/`null`, whitespace, position-based errors | 120 |
 | `JsonWriter.java` | writer: pretty-printed, 2-space indent; strings escaped (`\"`, `\\`, `\n`); numbers as plain decimals | 80 |
-| `Json.java` | tiny helpers to build/read the JDK-native representation (`Map<String,Object>`, `List<Object>`, `String`, `Double`, `Boolean`, `null`) | 60 |
+| `Json.java` | tiny helpers to build/read the JDK-native representation (`Map<String,Object>`, `List<Object>`, `String`, `Double`, `Boolean`, `null`); returns defensive copies so no unchecked casts are needed | 100 |
 | `UserMapper.java` | `User` ⇄ JSON (role field selects `Borrower`/`Manager` on read) | 70 |
 | `EquipmentMapper.java` | `Equipment` ⇄ JSON for all three concrete kinds (DIGITAL/MECHANICAL/BASE); writes `kind` via `instanceof`, restores status by replaying transition methods; optional `photoFile` (null-safe, D8); `Optional` getters via `orElse(null)` | 90 |
 | `LoanMapper.java` | `LoanRecord` ⇄ JSON; `returnDate` as `null` when absent; normalizes a persisted `OVERDUE` to `ACTIVE` (never re-serializes it, D18) | 70 |
@@ -129,6 +131,7 @@ Shared infrastructure:
 | `Dialogs.java` | modal dialog shell + themed destructive-confirmation helper (design §7) | 90 |
 | `EmptyState.java` | one-line explanation + fixing action (design §6) | 50 |
 | `WindowChrome.java` | undecorated-frame behavior: drag, double-click maximize, 8 px edge resize bands, min size, restore bounds (design §11) | 180 |
+| `ResizeEdge.java` | package-private enum: hit-test geometry (`at`) and drag math (`dragTo`, min-size clamp) for the resize bands | 100 |
 | `TitleBar.java` | 32 px title bar: wordmark, screen title, theme toggle, min/max/close painting + hit targets (design §5) | 140 |
 | `Omnibar.java` | breadcrumb + contextual command row + search field + layout toggle (design §5) | 160 |
 | `StatusBar.java` | counts, selection summary, monospace aggregate (design §5) | 70 |
@@ -144,8 +147,11 @@ Window & screens (design §5 inventory):
 
 | File | Contents | Est. lines |
 | :--- | :--- | --: |
-| `LoginFrame.java` | email, password, sign-in, inline error area | 120 |
+| `LoginFrame.java` | window shell: shared title bar + centered card, inline error, sign-in callback | 100 |
+| `LoginCard.java` | package-private sign-in card layout: wordmark, fields, error line, primary button, collapsible demo hint | 150 |
 | `MainFrame.java` | hosts `WindowChrome`/`TitleBar`/`Omnibar`/`StatusBar`, sidebar + content `CardLayout` swap | 150 |
+| `ScreenCatalog.java` | package-private route metadata: titles/subtitles, `navKeys`, `defaultKey`, sidebar titles | 70 |
+| `PlaceholderScreen.java` | package-private real page header + muted "No records to show yet." surface for unimplemented routes | 40 |
 | `DashboardScreen.java` | manager KPIs (out now / overdue / unpaid penalties) + overdue table + recent activity | 150 |
 | `CatalogScreen.java` | omnibar commands (search, filters, layout toggle); **details table + `PreviewPane` by default**, cards view via the toggle; checkout action | 170 |
 | `EquipmentCard.java` | catalog card: `PhotoTile`/`GradientTile` media block, badge, value (design §6) | 100 |
@@ -179,9 +185,11 @@ Dialogs (modal per design §5):
 | :--- | :--- | --: |
 | `Main.java` | entry point (41 lines, M2): installs `Theme`, registers fonts, constructs services + `AppContext`, shows `LoginFrame` on the EDT. Stays under 60 lines | 60 |
 
-Total ≈ 70 files (18 model + 52 service/controller/view). Every file above stays under
-the 200-line cap (`WindowChrome` is the tightest — keep behavior and painting split
-across it and `TitleBar`).
+Total 65 files at M3 WP1 + the 2026-11-15 debt pass (18 model, 13 service,
+10 persistence, 3 controller, 20 view, `Main`). Every file above stays under
+the 200-line cap; the current maximum is `Theme.java` at 171 lines and
+`WindowChrome.java` is the tightest behavioral file — keep behavior and
+painting split across it, `TitleBar`, and `ResizeEdge`.
 
 ## 3. JSON Persistence Spec (`kitnapper-data.json`)
 
@@ -361,3 +369,4 @@ them. Logged here so implementation sessions don't re-litigate them.
 | 1.2.0 | 2026-11-14 | M0 decisions: `GeneralEquipment` for the JSON `BASE` kind (D14), maintenance-flag return rule (D15), model exception policy (D16); `LoanStatus` clarified to hold all three constants with only `ACTIVE`/`RETURNED` persisted |
 | 1.3.0 | 2026-11-14 | Post-M0 findings folded in: `AppData` aggregate + `DataStore` accessors (D17), load-fallback scope covers model/referential failures (D18), kind-vs-category rule (D19), return edge cases — zero fee, future dates (D20), derived status/fee display via `LoanService` (D21), ID/photo-filename safety (D22), auth against persisted users (D23); M1 round-trip fixture exercises every restore path |
 | 1.4.0 | 2026-11-14 | design.md §13 resolved: `SkeletonPanel` + `SkeletonGate` added to the view inventory, first use in M3 (card/preview decode + gated catalog refresh), photo import + reduced-motion switch in M5, skeleton audit in M6 |
+| 1.5.0 | 2026-11-15 | Debt cleanup: line-cap splits recorded in the inventory (`JsonScanner`, `ResizeEdge`, `ScreenCatalog`, `PlaceholderScreen`, `LoginCard`, `LoanQueries`), `Json` documented as unchecked-cast free, `-Xlint:all` build, 65-file count; probe harness relocated to `desktop-app/test/kitnapper/` (WP0.5, planned) |

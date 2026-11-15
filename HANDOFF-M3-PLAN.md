@@ -358,15 +358,34 @@ public static void paint(Graphics2D g, int x, int y, EquipmentStatus status);
 | `view/UiFactory.java` | `comboBox`, refresh tables/combos/header | 125 |
 | `view/Dialogs.java` | Facade over `DialogSkin`; keep old methods | 85 |
 
-### 6.4 External probe harness (not committed)
+### 6.4 Probe harness (committed under `desktop-app/test/`)
 
-| File | Purpose |
-| :--- | :--- |
-| `probe/CatalogProbe.java` | Service + controller rules, persistence |
-| `probe/CatalogUiProbe.java` | Headless catalog/table/preview/render |
-| `kitnapper/view/SkeletonProbe.java` | Timing, failure, watchdog, reduced motion |
-| `kitnapper/view/PhotoTileProbe.java` | Temp image decode + fallback + cache |
-| `run-all.sh` | Add compile + run sections and expected outputs |
+The old harness lived outside the repository (`/Users/student/kitnapper-probes`)
+and is gone. WP0.5 rebuilds it **inside** the repo so probes travel with the
+code. Nothing under `desktop-app/test/` is compiled into the app jar; only
+`build.sh`'s check target and `run-all.sh` compile it.
+
+| File | Package | Purpose |
+| :--- | :--- | :--- |
+| `test/kitnapper/DataProbe.java` | `kitnapper` | Seed counts, invariants INV-1/2/4/5, JSON round-trip, corrupt-save fallback |
+| `test/kitnapper/SkinProbe.java` | `kitnapper` | Token contrast/light-pixel count for both themes |
+| `test/kitnapper/EdgeProbe.java` | `kitnapper` | `ResizeEdge.at` / `dragTo` geometry, min-size clamp |
+| `test/kitnapper/FrameProbe.java` | `kitnapper` | Login + shell construction, nav keys, title/status text |
+| `test/kitnapper/FontProbe.java` | `kitnapper` | Text/display/mono/icon font resolution |
+| `test/kitnapper/SizeProbe.java` | `kitnapper` | Chrome heights (32/48/240/32) and sidebar button count |
+| `test/kitnapper/CloseProbe.java` | `kitnapper` | `EXIT_ON_CLOSE` + window-closing hook |
+| `test/kitnapper/CatalogProbe.java` | `kitnapper` | §9.2 service/controller rules and persistence |
+| `test/kitnapper/view/CatalogUiProbe.java` | `kitnapper.view` | §9.3 catalog mount/search/filter/preview/render |
+| `test/kitnapper/view/SkeletonProbe.java` | `kitnapper.view` | §9.3 timing, failure, watchdog, reduced motion |
+| `test/kitnapper/view/PhotoTileProbe.java` | `kitnapper.view` | §9.3 temp image decode, fallback, cache, traversal |
+| `test/run-all.sh` | — | Compile + run every probe, print `PASS=n FAIL=k`, exit non-zero on failure |
+
+Probes are plain `main` classes with a `check(name, ok)` counter — no test
+framework, no third-party library. Package-private view probes (`SkeletonProbe`,
+`PhotoTileProbe`, `CatalogUiProbe`) must live in `kitnapper.view` and be compiled
+against `build/classes` with `-d test/out`.
+
+### 6.5 Line-cap strategy
 
 ### 6.5 Line-cap strategy
 
@@ -391,6 +410,33 @@ public static void paint(Graphics2D g, int x, int y, EquipmentStatus status);
 **Exit:** baseline probes green; any pre-existing failure is reported before code.
 **No git writes.**
 
+### WP0.5 — Rebuild the probe harness (blocks WP2 verification)
+
+The harness referenced by §9 does not exist on this checkout. Rebuild it before
+any UI work so WP2–WP6 have a real gate.
+
+- [ ] Create `desktop-app/test/kitnapper/` and `desktop-app/test/kitnapper/view/`
+      (keep the existing `.gitkeep` in the parent).
+- [ ] Recreate the eight pre-M3 probes from §6.4 with the counts in §9.4:
+      `DataProbe` 26, `SkinProbe` `light_pixels=175`, `EdgeProbe` 4,
+      `FrameProbe` 5, `FontProbe` (`text=Inter`), `SizeProbe` (32/48/240/32),
+      `CloseProbe` (`EXITED_OK`), `CatalogProbe` 28.
+- [ ] Move the session's ad-hoc checks into the suite: `PostRefactorProbe`'s
+      29 service/persistence assertions fold into `DataProbe` + `CatalogProbe`;
+      `FrameSmoke`'s 7 paint checks fold into `FrameProbe`.
+- [ ] Write `test/run-all.sh`: `./build.sh build`, compile `test/**` into
+      `test/out`, run each probe, print one `PASS=n FAIL=k` line per probe,
+      exit non-zero on any failure.
+- [ ] Add `desktop-app/test/out/` to `desktop-app/.gitignore` (build output,
+      never committed).
+- [ ] Record the rebuilt baseline in §17 before starting WP2.
+
+**Exit:** `test/run-all.sh` green; every §9.4 row reproduced. If a baseline
+number legitimately changed after the M3 refactors (for example `FrameProbe`
+nav keys), record the new number in §9.4 rather than forcing the old one.
+
+**No git writes until the suite is green.**
+
 ### WP1 — Services + controllers + business probes
 
 - [x] `Ids.java` (loan, penalty, equipment).
@@ -405,14 +451,17 @@ changes yet. This is the point where the risky rules are proven.
 
 ### WP2 — Shell split and mounting API
 
-- [ ] Extract `ScreenCatalog` (metadata, `navKeys`, `defaultKey`, `titles`).
-- [ ] Extract `PlaceholderScreen.create(meta)`.
+- [x] Extract `ScreenCatalog` (metadata, `navKeys`, `defaultKey`, `titles`).
+      *(done in the 2026-11-15 debt pass)*
+- [x] Extract `PlaceholderScreen.create(meta)`.
+      *(done in the 2026-11-15 debt pass)*
 - [ ] `MainFrame`: `mount`, `setStatus`, `searchField`, onShown/commands maps;
       manager `navKeys` = `dashboard, catalog, allloans, overdue, penalties, inventory`.
 - [ ] `Omnibar.setCommands` (null clears).
 - [ ] Keep the existing `MainFrame` constructor signature for `FrameProbe`.
 
-**Exit:** build green; `FrameProbe` 5/5, `SizeProbe` sane; mounting is exercised by `CatalogUiProbe` in WP4.
+**Exit:** build green; `test/run-all.sh` green (WP0.5 gate); `FrameProbe` 5/5,
+`SizeProbe` sane; mounting is exercised by `CatalogUiProbe` in WP4.
 
 ### WP3 — Shared view infrastructure
 
@@ -582,18 +631,20 @@ status bar: "N items · 0/1 selected"           right: ₱ total
 
 ## 9. Probe plan
 
-Probes live **outside the repo** (`/Users/student/kitnapper-probes/` when this plan
-was written) and are run by `run-all.sh`. That harness is not on the current
-checkout: recreate it under a path you record here before WP2 verification, or
-substitute an equivalent automated check. They are plain `main` classes with a
-`check(name, ok)` counter — no test framework.
+Probes live **in the repository** under `desktop-app/test/kitnapper/` (§6.4) and
+are run by `desktop-app/test/run-all.sh`. The earlier harness was outside the
+repo and did not survive the machine move; WP0.5 rebuilds it and must be green
+before WP2 verification. They are plain `main` classes with a `check(name, ok)`
+counter — no test framework.
 
 ### 9.1 Harness updates
 
-- Compile new sources into `$BASE/probe` (public APIs) and `$BASE/out`
-  (package-private view probes), same as `SkinProbe`/`EdgeProbe`.
-- Set `-Djava.awt.headless=true` for render probes that do not need a window.
-- Exit non-zero on any failure; print `PASS=n FAIL=0`.
+- Compile app sources with `./build.sh build`, then probe sources into
+  `test/out` (public probes) and `test/out` (package-private `kitnapper.view`
+  probes), same as `SkinProbe`/`EdgeProbe`.
+- Set `-Djava.awt.headless=true` only for probes that never need a window; frame
+  paint probes run under `xvfb-run -a` when `DISPLAY` is absent.
+- Exit non-zero on any failure; print `PASS=n FAIL=0` per probe.
 - Keep existing sections and add:
   `CatalogProbe`, `CatalogUiProbe`, `SkeletonProbe`, `PhotoTileProbe`.
 
@@ -669,6 +720,9 @@ Controller:
 
 ### 9.4 Expected baseline after M3
 
+The first eight rows are the pre-M3 baseline WP0.5 must reproduce. `CatalogProbe`
+was recorded at `PASS=28 FAIL=0` in WP1; UI probes land in WP4/WP5.
+
 | Probe | Expected |
 | :--- | :--- |
 | `DataProbe` | `PASS=26 FAIL=0` (seed unchanged) |
@@ -676,9 +730,9 @@ Controller:
 | `EdgeProbe` | `PASS=4 FAIL=0` |
 | `FrameProbe` | `PASS=5 FAIL=0` |
 | `FontProbe` | `text=Inter` |
-| `SizeProbe` | unchanged key heights |
+| `SizeProbe` | unchanged key heights (32/48/240/32) |
 | `CloseProbe` | `EXITED_OK` |
-| `CatalogProbe` | new `PASS=n FAIL=0` (record n) |
+| `CatalogProbe` | `PASS=28 FAIL=0` (WP1 baseline) |
 | `CatalogUiProbe` | new `PASS=10 FAIL=0` |
 | `SkeletonProbe` | new `PASS=5 FAIL=0` |
 | `PhotoTileProbe` | new `PASS=4 FAIL=0` |
@@ -970,6 +1024,44 @@ WP2/WP4.
 
 **Next:** WP2 — shell split and mounting API.
 
+### Debt cleanup and probe-rebuild plan (2026-11-15)
+
+**Status:** complete (no feature behaviour changed). Starting HEAD `77e900e`.
+
+Cleared the backlog left by the M0–M2 phases:
+
+- **Line caps.** Every file is now ≤ 171 lines; nothing exceeds 200.
+  - `JsonParser` 202 → `JsonParser` (structure) + `JsonScanner` (character scanning).
+  - `ResizeBands` 213 → `ResizeBands` + `ResizeEdge` (geometry enum).
+  - `MainFrame` 182 → `MainFrame` (123) + `ScreenCatalog` (67) +
+    `PlaceholderScreen` (40).
+  - `LoanServiceImpl` 188 → `LoanServiceImpl` (147) + `LoanQueries` (84).
+  - `LoginFrame` 191 → `LoginFrame` (99) + `LoginCard` (145).
+  - The 151–171 warning-zone files (`Theme`, `Sidebar`, `TitleBar`,
+    `Equipment`) are unchanged.
+- **Lint.** `Json` lost its only `@SuppressWarnings("unchecked")` (copies into
+  `LinkedHashMap`/`ArrayList`, rejects non-string keys); `nbproject/project.properties`
+  now sets `javac.compilerargs=-Xlint:all`, `javac.deprecation=true`.
+- **Build.** `desktop-app/build.sh` added (`clean|build|run`, JDK only) so this
+  Ant-less machine has a repeatable build; `92` classes, zero warnings.
+- **Repo config.** `.gitattributes` (`* text=auto eol=lf`, binaries marked);
+  `docs/logout-tokens.md` deleted and every reference removed.
+
+Verification (temporary probes under `/tmp/opencode`, not committed):
+
+| Check | Result |
+| :--- | :--- |
+| `./build.sh` | `BUILD OK`, zero `-Xlint:all` warnings |
+| `PostRefactorProbe` | `PASS=29 FAIL=0` |
+| `FrameSmoke` (xvfb) | `PASS=7 FAIL=0` |
+| `find src -name '*.java' \| … $1 > 200` | empty |
+
+Also written here: §6.4 and WP0.5 now specify rebuilding the missing probe
+harness **inside** `desktop-app/test/kitnapper/` with a `test/run-all.sh`
+runner. That work is planned, not executed; it blocks WP2 verification.
+
+**Next:** WP0.5 — rebuild the probe harness.
+
 ---
 
 ## Appendix A — Implementation checklist (copy into the working session)
@@ -979,6 +1071,7 @@ WP2/WP4.
 [x] Ids + CatalogService(+Impl) + LoanServiceImpl + AppContext
 [x] CatalogController + BorrowingController
 [x] CatalogProbe green; DataProbe still 26
+[ ] WP0.5 probe harness rebuilt under desktop-app/test; run-all.sh green
 [ ] MainFrame split + mount/status/commands; manager nav
 [ ] Badges, SegmentedControl, GradientTile, skeletons, PhotoTile, Toasts,
     TableSkins, DialogSkin

@@ -78,7 +78,7 @@
 | `docs/SRS.md` | 3.1.1 | Verifiable requirements, invariants, demo walkthrough, traceability, image-storage NFR; FR-06 clarification |
 | `docs/design.md` | 2.0.0 | Windows 11 / Fluent direction (Files app): neutral ramp + amber accent, tokens, chrome/shell, components, photo uploads; §13 skeleton loading states resolved (150/300/167 ms, flat pulse, gated queries) |
 | `docs/seed-data.md` | — | Points to PRD §9; save-file/reset behaviour |
-| `docs/logout-tokens.md` | — | Runbook for removing all stored GitHub credentials from the Windows build machine |
+| `docs/preferences.md` | — | Tracked, machine-independent working preferences (planning, one phase per turn, commit policy, verification) |
 | `docs/decisions.md` | — | This file |
 | `docs/implementation-plan.md` | 1.4.0 | Class/file inventory, JSON persistence spec, milestones M0–M6, implementation decisions D1–D23 (written 2026-11-14 before any code; v1.1.0 retargets the UI to design.md v2.0; v1.2.0 adds D14–D16 from M0; v1.3.0 adds D17–D23 post-M0 findings: AppData aggregate, load-fallback scope, kind-vs-category rule, return edge cases, ID/photo safety; v1.4.0 adds the `SkeletonPanel`/`SkeletonGate` inventory from design.md §13) |
 
@@ -147,6 +147,19 @@ The attribution rules above now run on the Windows machine, not just the origina
 
 ## 9. Implementation Status
 
+- **Debt cleanup + probe-rebuild plan** (2026-11-15, `77e900e` base). All
+  line-cap violations cleared: `JsonParser` 202 → `JsonParser`/`JsonScanner`,
+  `ResizeBands` 213 → `ResizeBands`/`ResizeEdge`, `MainFrame` 182 →
+  `MainFrame`/`ScreenCatalog`/`PlaceholderScreen`, `LoanServiceImpl` 188 →
+  `LoanServiceImpl`/`LoanQueries`, `LoginFrame` 191 → `LoginFrame`/`LoginCard`.
+  Largest file is now `Theme.java` at 171 lines; nothing exceeds 200.
+  `Json` lost its only `@SuppressWarnings("unchecked")`. `nbproject/project.properties`
+  now builds with `-Xlint:all` and deprecation notes; `desktop-app/build.sh`
+  gives Ant-less machines a `clean|build|run` path (92 classes, zero warnings).
+  `.gitattributes` enforces LF; `docs/logout-tokens.md` deleted. The lost probe
+  harness is planned for `desktop-app/test/kitnapper/` (WP0.5 in
+  `HANDOFF-M3-PLAN.md`) — **planned, not yet built**, and blocking WP2
+  verification. Existing `view/Dialogs` and `Theme.addThemeListener` stay.
 - **M3 WP1 complete: catalog/loan services and controllers** (2026-11-14,
   `19a1e1b`). `CatalogService(+Impl)` (name/serial search, category and status
   filters, deterministic sort), `LoanServiceImpl` (role, availability, 3-loan cap
@@ -155,10 +168,11 @@ The attribution rules above now run on the Windows machine, not just the origina
   `L-`/`p-`/`e-` generation), `LoanMessages`, `CatalogController` and
   `BorrowingController`; `AppContext` gained catalog/loan getters, an injectable
   clock and a package-private `fireChanged()`. `LoanServiceImpl` was extracted at
-  210 lines into 188 + `LoanMessages`. Verified with `CatalogProbe` (28 checks)
-  plus the full existing probe suite; no `kitnapper.view` file changed. **The
-  catalog UI (WP2–WP6) is not written** — Catalog is still the M2 placeholder, and
-  the probe harness is outside the repository. See `HANDOFF-M3-PLAN.md` §17.
+  210 lines into 188 + `LoanMessages`, and again into `LoanQueries` in the
+  2026-11-15 debt pass. Verified with `CatalogProbe` (28 checks) plus the full
+  existing probe suite; no `kitnapper.view` file changed. **The catalog UI
+  (WP2–WP6) is not written** — Catalog is still the M2 placeholder. See
+  `HANDOFF-M3-PLAN.md` §17.
 - **M2 complete: Win11 shell + mock login implemented** (2026-11-14). Two-frame
   flow (`LoginFrame` ↔ `MainFrame`) with custom-painted chrome (drag, resize
   bands, manual maximize to the work area), role-grouped sidebar, omnibar with
