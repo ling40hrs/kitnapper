@@ -28,7 +28,10 @@ final class CatalogTable extends JTable {
 
     private static final long serialVersionUID = 1L;
 
-    private static final int[] COLUMN_WIDTHS = { 185, 90, 125, 125, 145 };
+    /** Status column sized from the widest pill (D41): no clipped words. */
+    private static final int STATUS_WIDTH = Badges.widestPillWidth()
+        + TableSkins.CELL_PAD * 2 + 4;
+    private static final int[] COLUMN_WIDTHS = { 185, 90, STATUS_WIDTH, 125, 145 };
 
     private final CatalogTableModel model;
     private Consumer<Equipment> onSelect = item -> { };

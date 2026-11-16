@@ -52,6 +52,16 @@ public final class FrameProbe {
         borrower.showScreen("bogus-key");
         routes &= screenTitle(borrower).equals("Dashboard");
         check("showscreen-nav", routes);
+        borrower.showScreen("catalog");
+        check("search-catalog", borrower.searchField().isVisible());
+        borrower.showScreen("settings");
+        check("search-hidden-off-catalog", !borrower.searchField().isVisible());
+        borrower.setStatus("10 items · 0/1 selected", "₱1.00");
+        borrower.showScreen("myloans");
+        boolean isolated = statusLeft(borrower).isEmpty();
+        borrower.showScreen("catalog");
+        isolated &= statusLeft(borrower).equals("10 items · 0 selected");
+        check("status-per-route", isolated);
         check("ctrlf-binding",
             borrower.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
                 .get(KeyStroke.getKeyStroke("control F")) != null

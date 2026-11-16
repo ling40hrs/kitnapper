@@ -41,7 +41,7 @@ final class PenaltyUiChecks {
         PenaltiesTable table = screen.table();
         UiProbeSupport.check("penalties-rows", table.getRowCount() == 1);
         UiProbeSupport.check("penalties-columns", table.getColumnCount() == 7);
-        UiProbeSupport.check("penalties-status", "1 penalties · 1 unpaid".equals(sink[0]));
+        UiProbeSupport.check("penalties-status", "1 penalty · 1 unpaid".equals(sink[0]));
         UiProbeSupport.check("penalties-aggregate", "₱200.00".equals(sink[1]));
         UiProbeSupport.check("penalties-amount-cell", "₱200.00".equals(Formats.money(
             ((Number) table.getValueAt(0, 4)).doubleValue())));
@@ -75,7 +75,7 @@ final class PenaltyUiChecks {
         UiProbeSupport.check("penalties-waive-ok", waived.isEmpty());
         screen.reload();
         UiProbeSupport.settle(frame);
-        UiProbeSupport.check("penalties-waived-status", "1 penalties · 0 unpaid".equals(sink[0]));
+        UiProbeSupport.check("penalties-waived-status", "1 penalty · 0 unpaid".equals(sink[0]));
         UiProbeSupport.check("penalties-waived-aggregate", "₱0.00".equals(sink[1]));
         UiProbeSupport.check("penalties-waived-badge",
             UiProbeSupport.hasAccessibleName(screen, "Penalty status Waived"));

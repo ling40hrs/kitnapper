@@ -130,7 +130,8 @@ public final class MyLoansScreen extends JPanel {
     private static String statusLeft(List<LoanRow> active, List<LoanRow> overdue,
         List<LoanRow> returned) {
         int total = active.size() + overdue.size() + returned.size();
-        return total + " loans · " + overdue.size() + " overdue";
+        return Formats.count(total, "loan", "loans") + " · "
+            + overdue.size() + " overdue";
     }
 
     /** Σ live accrued of the outstanding loans, formatted once. */

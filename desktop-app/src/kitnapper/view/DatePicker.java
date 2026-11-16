@@ -59,6 +59,15 @@ final class DatePicker extends JComboBox<LocalDate> {
             boolean isSelected, boolean cellHasFocus) {
             super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             setText(value instanceof LocalDate date ? Formats.date(date) : "");
+            // Tokens, not the LAF selection colours (WP5 F12): a focused combo
+            // must not turn into a solid blue field with white text.
+            setOpaque(true);
+            if (index < 0) {
+                setBackground(Theme.bgControl);
+            } else {
+                setBackground(isSelected ? Theme.accentTint : Theme.bgElevated);
+            }
+            setForeground(Theme.textPrimary);
             return this;
         }
     }

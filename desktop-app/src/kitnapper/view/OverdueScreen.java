@@ -143,7 +143,8 @@ public final class OverdueScreen extends JPanel {
         for (LoanRow row : rows) {
             borrowers.add(row.borrowerName());
         }
-        return rows.size() + " overdue · " + borrowers.size() + " borrowers";
+        return rows.size() + " overdue · "
+            + Formats.count(borrowers.size(), "borrower", "borrowers");
     }
 
     /** Σ accrued of the overdue rows, formatted once (§5.7). */

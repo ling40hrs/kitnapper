@@ -107,6 +107,17 @@ public final class Omnibar extends JPanel {
         return search;
     }
 
+    /**
+     * Shows or hides the search box for the routed screen (design §5): only the
+     * Catalog and Inventory filter, so every other route hides the field rather
+     * than offering a box that does nothing.
+     */
+    public void setSearchVisible(boolean visible) {
+        search.setVisible(visible);
+        revalidate();
+        repaint();
+    }
+
     private void fireHome() {
         if (onHome != null) {
             onHome.run();

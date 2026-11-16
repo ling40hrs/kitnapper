@@ -40,7 +40,7 @@ final class OverdueUiChecks {
         LoansTable table = screen.section().table();
         UiProbeSupport.check("overdue-rows", table.getRowCount() == 1);
         UiProbeSupport.check("overdue-columns", table.getColumnCount() == 6);
-        UiProbeSupport.check("overdue-status", "1 overdue · 1 borrowers".equals(sink[0]));
+        UiProbeSupport.check("overdue-status", "1 overdue · 1 borrower".equals(sink[0]));
         UiProbeSupport.check("overdue-aggregate", "₱200.00".equals(sink[1]));
         UiProbeSupport.check("overdue-first-row", "L-003".equals(table.getValueAt(0, 0)));
         UiProbeSupport.check("overdue-days-late", Long.valueOf(4L).equals(table.getValueAt(0, 4)));

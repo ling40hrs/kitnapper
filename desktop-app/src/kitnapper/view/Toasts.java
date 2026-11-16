@@ -98,10 +98,12 @@ public final class Toasts {
     private static void layout(JLayeredPane pane, Stack stack) {
         int bottom = pane.getHeight() - BOTTOM_MARGIN;
         int right = rightInset(pane);
-        for (int i = 0; i < stack.toasts.size(); i++) {
-            int y = bottom - HEIGHT - i * (HEIGHT + GAP);
-            stack.toasts.get(i).setBounds(pane.getWidth() - right - WIDTH, y,
-                WIDTH, HEIGHT);
+        int y = bottom;
+        for (ToastView toast : stack.toasts) {
+            int height = toast.getPreferredSize().height;
+            y -= height;
+            toast.setBounds(pane.getWidth() - right - WIDTH, y, WIDTH, height);
+            y -= GAP;
         }
     }
 

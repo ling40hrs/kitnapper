@@ -1,6 +1,7 @@
 package kitnapper.view;
 
 import java.awt.Component;
+import java.util.Map;
 
 import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
@@ -37,6 +38,9 @@ public final class MotionProbe {
         check("ease-monotone", monotone());
         check("enabled-default", Motion.enabled());
         check("enabled-off-property", childReportsDisabled());
+        for (Map.Entry<String, Boolean> entry : MotionDialogChecks.results().entrySet()) {
+            check(entry.getKey(), entry.getValue());
+        }
 
         MainFrame frame = new MainFrame(UserRole.BORROWER, "Student One", "",
             key -> { }, () -> { }, () -> { });

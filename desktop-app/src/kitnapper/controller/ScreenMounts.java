@@ -54,13 +54,26 @@ final class ScreenMounts {
         this.photos = new ItemPhotos(context);
     }
 
+    /**
+     * Status writes from {@code key}'s screen, dropped unless that screen is
+     * routed: a hidden screen reloading after a reset must not overwrite the
+     * visible screen's status bar (WP5 finding).
+     */
+    private BiConsumer<String, String> statusFor(String key) {
+        return (left, right) -> {
+            if (frame.isShowing(key)) {
+                status.accept(left, right);
+            }
+        };
+    }
+
     /** Mounts the catalog every role gets, then the role's own screens. */
     void mount(UserRole role) {
         catalog = new CatalogController(context);
         loans = new LoansController(context);
         penalties = new PenaltyController(context);
         catalogScreen = new CatalogScreen(
-            new CatalogActions(catalog, new BorrowingController(context), status),
+            new CatalogActions(catalog, new BorrowingController(context), statusFor("catalog")),
             frame.searchField(), photos);
         catalog.setOnChanged(catalogScreen::reload);
         frame.mount("catalog", catalogScreen, catalogScreen.commands(),
@@ -77,13 +90,13 @@ final class ScreenMounts {
     private void mountManager() {
         LoansActions actions = new LoansActions(loans);
         dashboard = new DashboardController(context);
-        dashboardScreen = new DashboardScreen(dashboard, status);
-        allLoansScreen = new AllLoansScreen(actions, status);
-        overdueScreen = new OverdueScreen(actions, status);
-        penaltiesScreen = new PenaltiesScreen(penalties, status);
+        dashboardScreen = new DashboardScreen(dashboard, statusFor("dashboard"));
+        allLoansScreen = new AllLoansScreen(actions, statusFor("allloans"));
+        overdueScreen = new OverdueScreen(actions, statusFor("overdue"));
+        penaltiesScreen = new PenaltiesScreen(penalties, statusFor("penalties"));
         inventory = new InventoryController(context);
         inventoryScreen = new InventoryScreen(
-            new InventoryActions(inventory, photos, status), frame.searchField());
+            new InventoryActions(inventory, photos, statusFor("inventory")), frame.searchField());
         SettingsController settings = new SettingsController(context, applyTheme, this::reloadAll);
         SettingsScreen settingsScreen = new SettingsScreen(settings);
         frame.mount("dashboard", dashboardScreen, dashboardScreen.commands(),
@@ -110,7 +123,7 @@ final class ScreenMounts {
 
     /** My Loans (§8.3). */
     private void mountBorrower() {
-        myLoansScreen = new MyLoansScreen(new LoansActions(loans), status);
+        myLoansScreen = new MyLoansScreen(new LoansActions(loans), statusFor("myloans"));
         loans.setOnChanged(myLoansScreen::reload);
         frame.mount("myloans", myLoansScreen, myLoansScreen.commands(),
             myLoansScreen::onShown);

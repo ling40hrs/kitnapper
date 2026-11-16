@@ -6,6 +6,7 @@ import java.util.function.BiConsumer;
 import kitnapper.model.User;
 import kitnapper.model.UserRole;
 import kitnapper.service.AppContext;
+import kitnapper.view.Formats;
 import kitnapper.view.LoginFrame;
 import kitnapper.view.MainFrame;
 import kitnapper.view.Theme;
@@ -115,6 +116,7 @@ public final class AppController {
 
     /** Pre-mount status text; the catalog screen replaces it on its first reload. */
     private String statusLeft() {
-        return context.dataStore().equipment().size() + " items · 0 selected";
+        return Formats.count(context.dataStore().equipment().size(), "item", "items")
+            + " · 0 selected";
     }
 }

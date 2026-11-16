@@ -33,6 +33,7 @@ public final class Motion {
     public static final int TICK_MS = 16;
 
     private static final float SCALE_FROM = 0.98f;
+    private static final float OPACITY_PROBE = 0.99f;
     private static final String OVERLAY_KEY = "kitnapper.fadeOverlay";
 
     private Motion() { }
@@ -63,7 +64,13 @@ public final class Motion {
                 animate(FAST_MS, progress -> {
                     dialog.setOpacity(progress);
                     dialog.setBounds(scaled(end, SCALE_FROM + (1f - SCALE_FROM) * progress));
-                }, () -> dialog.setBounds(end));
+                }, () -> {
+                    try {
+                        dialog.setBounds(end);
+                    } catch (IllegalComponentStateException gone) {
+                        // Closed before the grow finished; nothing left to grow.
+                    }
+                });
             }
         });
     }
@@ -78,7 +85,7 @@ public final class Motion {
         animate(FAST_MS, progress -> dialog.setOpacity(1f - progress), () -> {
             try {
                 dialog.setOpacity(1f);
-            } catch (IllegalComponentStateException gone) {
+            } catch (UnsupportedOperationException | IllegalComponentStateException gone) {
                 return;
             }
             run(after);
@@ -111,9 +118,18 @@ public final class Motion {
     }
 
     /**
-     * Whether {@code window} can fade at all. Per-pixel translucency is the
-     * requirement {@code Window.setOpacity} has, and it is unavailable on some
-     * X servers (including plain Xvfb), so the fallback is the instant path.
+     * Whether {@code window} can fade at all; when it cannot, the instant path
+     * runs instead.
+     *
+     * <p>The query is {@link GraphicsDevice.WindowTranslucency#TRANSLUCENT},
+     * because that is the capability {@code Window.setOpacity} documents for a
+     * value below 1.0 — <em>not</em> {@code PERPIXEL_TRANSLUCENT}. An X server
+     * can advertise per-pixel support (so the driver has a translucent visual)
+     * while refusing window opacity outright — plain Xvfb does exactly that —
+     * and the narrower query is what the call actually needs. The probe then
+     * asks for a non-opaque value, since {@code setOpacity(1f)} is allowed on
+     * every platform and a decorated window rejects anything lower with
+     * {@link IllegalComponentStateException}.
      */
     private static boolean translucent(Window window) {
         GraphicsDevice device = window.getGraphicsConfiguration() == null
@@ -130,14 +146,29 @@ public final class Motion {
         }
     }
 
-    /** Shared {@link Timer} loop: {@code step} gets eased progress, then {@code done}. */
+    /**
+     * Shared {@link Timer} loop: {@code step} gets eased progress, then
+     * {@code done}. A platform that advertised window opacity and then refused
+     * a frame — some X servers accept the capability query and reject the
+     * first non-opaque value, and a decorated peer rejects any value below 1.0
+     * — settles the effect immediately instead of escaping onto the EDT, where
+     * it would abandon the caller's {@code done} callback and leave the window
+     * half-faded and undisposable. Only the two documented refusals are caught;
+     * anything else is a real defect and must surface.
+     */
     private static void animate(int durationMs, Consumer<Float> step, Runnable done) {
         long start = System.nanoTime();
         Timer timer = new Timer(TICK_MS, null);
         timer.addActionListener(event -> {
             long elapsed = (System.nanoTime() - start) / 1_000_000L;
             float raw = durationMs <= 0 ? 1f : Math.min(1f, elapsed / (float) durationMs);
-            step.accept(ease(raw));
+            try {
+                step.accept(ease(raw));
+            } catch (UnsupportedOperationException | IllegalComponentStateException refused) {
+                timer.stop();
+                run(done);
+                return;
+            }
             if (raw >= 1f) {
                 timer.stop();
                 done.run();

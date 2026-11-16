@@ -77,7 +77,7 @@ final class CatalogPresenter {
 
     /** "N items · 0/1 selected" for the shell status bar. */
     String statusLeft() {
-        String items = results.size() == 1 ? "1 item" : results.size() + " items";
+        String items = Formats.count(results.size(), "item", "items");
         return items + " · " + (selectedId == null ? "0" : "1") + "/1 selected";
     }
 

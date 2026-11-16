@@ -133,11 +133,17 @@ public final class CatalogScreen extends JPanel {
         actions.setStatus(presenter.statusLeft(), presenter.aggregate());
     }
 
+    /** One shared selection; the status line follows it at once (WP5). */
+    private void select(Equipment item) {
+        presenter.select(item);
+        actions.setStatus(presenter.statusLeft(), presenter.aggregate());
+    }
+
     private void wire() {
         filters.setOnFilterChanged(this::reload);
         filters.setOnLayoutChanged(this::showLayout);
-        table.setOnSelect(presenter::select);
-        body.cards().setOnSelect(presenter::select);
+        table.setOnSelect(this::select);
+        body.cards().setOnSelect(this::select);
         search.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
                 reload();

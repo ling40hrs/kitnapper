@@ -13,27 +13,27 @@ import kitnapper.model.UserRole;
  */
 final class ScreenCatalog {
 
-    /** Title and one-line subtitle for a screen route. */
-    record Meta(String title, String subtitle) { }
+    /** Title, one-line subtitle, and whether the omnibar shows its search box. */
+    record Meta(String title, String subtitle, boolean searchable) { }
 
     private static final Map<String, Meta> SCREENS = new LinkedHashMap<>();
 
     static {
-        put("catalog", "Catalog", "Browse the lending catalog.");
-        put("myloans", "My Loans", "Your active and past checkouts.");
-        put("dashboard", "Dashboard", "Overdue loans and unpaid penalties at a glance.");
-        put("allloans", "All Loans", "Every loan across all borrowers.");
-        put("overdue", "Overdue", "Loans past their due date, longest first.");
-        put("penalties", "Penalties", "Late fees waiting to be settled.");
-        put("inventory", "Inventory", "The full equipment inventory.");
-        put("settings", "Settings / Data", "Theme, save file, and demo data.");
+        put("catalog", "Catalog", "Browse the lending catalog.", true);
+        put("myloans", "My Loans", "Your active and past checkouts.", false);
+        put("dashboard", "Dashboard", "Overdue loans and unpaid penalties at a glance.", false);
+        put("allloans", "All Loans", "Every loan across all borrowers.", false);
+        put("overdue", "Overdue", "Loans past their due date, longest first.", false);
+        put("penalties", "Penalties", "Late fees waiting to be settled.", false);
+        put("inventory", "Inventory", "The full equipment inventory.", true);
+        put("settings", "Settings / Data", "Theme, save file, and demo data.", false);
     }
 
     private ScreenCatalog() {
     }
 
-    private static void put(String key, String title, String subtitle) {
-        SCREENS.put(key, new Meta(title, subtitle));
+    private static void put(String key, String title, String subtitle, boolean searchable) {
+        SCREENS.put(key, new Meta(title, subtitle, searchable));
     }
 
     /** Metadata for a route, or null when the key is unknown. */

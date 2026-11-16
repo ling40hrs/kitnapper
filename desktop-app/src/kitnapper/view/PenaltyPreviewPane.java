@@ -98,7 +98,8 @@ final class PenaltyPreviewPane extends JPanel {
         borrowerValue.setText(row.borrowerName());
         assessedValue.setText(Formats.date(row.assessedDate()));
         String reason = row.waiveReason();
-        reasonValue.setText(reason == null ? "" : reason);
+        reasonValue.setText(reason == null ? "" : PreviewLayout.wrapText(reason, 248, 3));
+        reasonValue.setToolTipText(reason);
         reasonRow.setVisible(reason != null);
         boolean unpaid = row.status() == PenaltyStatus.UNPAID;
         markPaid.setVisible(actionsVisible && unpaid);

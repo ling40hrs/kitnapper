@@ -86,7 +86,7 @@ final class DialogSkin {
         confirm.addActionListener(e -> {
             Optional<String> failure = onConfirm.get();
             if (failure.isPresent()) {
-                error.setText(failure.get());
+                setBodyText(error, failure.get());
                 error.setVisible(true);
                 resize(dialog, owner);
                 return;
@@ -128,11 +128,20 @@ final class DialogSkin {
 
     /** 14 px body text in the secondary token, refreshed on theme switches. */
     static JLabel messageLabel(String text) {
-        JLabel label = new JLabel(text);
+        JLabel label = new JLabel();
         label.setFont(Fonts.text(14, java.awt.Font.PLAIN));
         label.putClientProperty(UiFactory.ROLE, "secondary");
         label.setForeground(Theme.textSecondary);
+        setBodyText(label, text);
         return label;
+    }
+
+    /**
+     * Wraps dialog copy to the card's content width before {@link #resize} pins
+     * the 480 px width, so a long sentence is never cut by the card edge (§5).
+     */
+    static void setBodyText(JLabel label, String text) {
+        label.setText(PreviewLayout.wrapText(text, WIDTH - 24 * 2, 4));
     }
 
     /** Translucent overlay on the owner while the modal dialog shows. */

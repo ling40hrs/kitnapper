@@ -64,6 +64,9 @@ public final class CatalogUiProbe {
         UiProbeSupport.settle(frame);
 
         new CatalogUiChecks(store, actions, screen, frame).run();
+        ToastChecks.run();
+        FocusCueChecks.run(screen, frame);
+        DialogTextChecks.run();
         managerCheck(ctx, actions, frame);
     }
 

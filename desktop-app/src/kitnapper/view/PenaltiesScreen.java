@@ -150,7 +150,8 @@ public final class PenaltiesScreen extends JPanel {
         long unpaid = rows.stream()
             .filter(row -> row.status() == PenaltyStatus.UNPAID)
             .count();
-        return rows.size() + " penalties · " + unpaid + " unpaid";
+        return Formats.count(rows.size(), "penalty", "penalties") + " · " + unpaid
+            + " unpaid";
     }
 
     /** Σ UNPAID amounts, formatted once (§5.7). */

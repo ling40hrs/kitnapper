@@ -27,6 +27,9 @@ import javax.swing.JPanel;
  */
 final class ReturnDialog {
 
+    /** The form's label column, so the fee note wraps instead of clipping. */
+    private static final int NOTE_WIDTH = 360;
+
     private ReturnDialog() { }
 
     /**
@@ -46,14 +49,19 @@ final class ReturnDialog {
         fee.setFont(Fonts.mono(18, Font.BOLD));
         fee.putClientProperty(UiFactory.ROLE, "title");
         fee.setAlignmentX(0f);
-        Runnable refreshFee = () -> fee.setText(
-            Formats.money(feeOn.applyAsDouble(picker.value())));
+        JLabel note = UiFactory.label("", "muted");
+        note.setAlignmentX(0f);
+        Runnable refreshFee = () -> {
+            double amount = feeOn.applyAsDouble(picker.value());
+            fee.setText(Formats.money(amount));
+            note.setText(feeNote(amount));
+        };
         picker.addActionListener(event -> refreshFee.run());
         refreshFee.run();
 
         LocalDate[] chosen = new LocalDate[1];
         double[] frozen = new double[1];
-        boolean done = Dialogs.showForm(owner, "Log return", body(row, picker, fee),
+        boolean done = Dialogs.showForm(owner, "Log return", body(row, picker, fee, note),
             "Log return", false, () -> {
                 chosen[0] = picker.value();
                 frozen[0] = feeOn.applyAsDouble(chosen[0]);
@@ -62,7 +70,18 @@ final class ReturnDialog {
         return done && chosen[0] != null ? Optional.of(frozen[0]) : Optional.empty();
     }
 
-    private static JComponent body(LoanRow row, DatePicker picker, JLabel fee) {
+    /**
+     * The fee note under the amount, wrapped to the form's label column: the
+     * 480 px card clipped "…when you log the retur…" (WP5 F7).
+     */
+    static String feeNote(double amount) {
+        String text = amount > 0
+            ? "This fee is frozen into one LATE_FEE penalty when you log the return."
+            : "No fee is frozen when the return is on time.";
+        return PreviewLayout.wrapText(text, NOTE_WIDTH, 2);
+    }
+
+    private static JComponent body(LoanRow row, DatePicker picker, JLabel fee, JLabel note) {
         JPanel body = new JPanel();
         body.setOpaque(false);
         body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
@@ -94,8 +113,6 @@ final class ReturnDialog {
         body.add(Box.createVerticalStrut(4));
         body.add(fee);
         body.add(Box.createVerticalStrut(4));
-        JLabel note = UiFactory.label("No fee is frozen when the return is on time.", "muted");
-        note.setAlignmentX(0f);
         body.add(note);
         return body;
     }

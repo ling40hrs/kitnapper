@@ -143,7 +143,7 @@ public final class AllLoansScreen extends JPanel {
         long overdue = rows.stream()
             .filter(row -> row.status() == LoanStatus.OVERDUE)
             .count();
-        return rows.size() + " loans · " + overdue + " overdue";
+        return Formats.count(rows.size(), "loan", "loans") + " · " + overdue + " overdue";
     }
 
     /** Σ live accrued of the outstanding loans, formatted once. */

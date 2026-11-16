@@ -62,6 +62,7 @@ public final class UiFactory {
 
     /** Shared combo skin; {@link DatePicker} reuses it for its date renderer. */
     static void styleCombo(JComboBox<?> combo) {
+        ComboSkin.install(combo);
         combo.setFont(Fonts.text(13, java.awt.Font.PLAIN));
         combo.setBackground(Theme.bgControl);
         combo.setForeground(Theme.textPrimary);

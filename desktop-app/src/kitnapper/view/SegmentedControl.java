@@ -49,6 +49,7 @@ final class SegmentedControl extends JPanel {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
+                requestFocusInWindow();
                 choose(indexAt(e.getX()));
             }
 

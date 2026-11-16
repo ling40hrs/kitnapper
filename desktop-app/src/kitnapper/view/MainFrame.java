@@ -41,6 +41,10 @@ public final class MainFrame extends JFrame {
     private final JPanel content = new JPanel(cards);
     private final Map<String, JComponent> commands = new HashMap<>();
     private final Map<String, Runnable> onShown = new HashMap<>();
+    /** Status text per route, so returning to a screen restores its own line. */
+    private final Map<String, String> leftByKey = new HashMap<>();
+    private final Map<String, String> rightByKey = new HashMap<>();
+    private String currentKey;
 
     public MainFrame(UserRole role, String userLabel, String statusLeft,
         Consumer<String> onNavigate, Runnable onSignOut, Runnable onThemeToggle) {
@@ -52,6 +56,7 @@ public final class MainFrame extends JFrame {
         omnibar.setOnHome(() -> onNavigate.accept(ScreenCatalog.defaultKey(role)));
         statusBar = new StatusBar();
         statusBar.setLeft(statusLeft);
+        leftByKey.put(ScreenCatalog.defaultKey(role), statusLeft);
         sidebar = new Sidebar(role, userLabel, ScreenCatalog.titles(),
             ScreenCatalog.navKeys(role),
             new Sidebar.Callbacks() {
@@ -111,6 +116,10 @@ public final class MainFrame extends JFrame {
 
     /** "N items · M selected" on the left, the aggregate on the right. */
     public void setStatus(String left, String right) {
+        if (currentKey != null) {
+            leftByKey.put(currentKey, left);
+            rightByKey.put(currentKey, right);
+        }
         statusBar.setLeft(left);
         statusBar.setRight(right);
     }
@@ -125,17 +134,29 @@ public final class MainFrame extends JFrame {
         if (meta == null) {
             return;
         }
+        currentKey = key;
         cards.show(content, key);
         Motion.fadeScreen(content);
         titleBar.setScreenTitle(meta.title());
         omnibar.setScreen(meta.title());
-        statusBar.setRight("");
+        omnibar.setSearchVisible(meta.searchable());
+        statusBar.setLeft(leftByKey.getOrDefault(key, ""));
+        statusBar.setRight(rightByKey.getOrDefault(key, ""));
         omnibar.setCommands(commands.get(key));
         sidebar.select(key);
         Runnable onShow = onShown.get(key);
         if (onShow != null) {
             onShow.run();
         }
+    }
+
+    /**
+     * True while {@code key} is the routed screen. Screens write the shared
+     * status bar through this guard, so a hidden screen reloading after a data
+     * change can never overwrite the visible screen's status (WP5 finding).
+     */
+    public boolean isShowing(String key) {
+        return key != null && key.equals(currentKey);
     }
 
     /** Ctrl+F focuses the search field (design §8). */
@@ -147,7 +168,9 @@ public final class MainFrame extends JFrame {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                omnibar.searchField().requestFocusInWindow();
+                if (omnibar.searchField().isShowing()) {
+                    omnibar.searchField().requestFocusInWindow();
+                }
             }
         });
     }

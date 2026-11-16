@@ -88,9 +88,25 @@ public final class Badges {
         return width;
     }
 
+    /**
+     * The widest pill any status needs, so a table's status column can size
+     * itself from the content instead of a magic width that clips
+     * "Decommissioned" and "Under maintenance" (design §9, D41).
+     */
+    public static int widestPillWidth() {
+        javax.swing.JLabel probe = new javax.swing.JLabel();
+        FontMetrics words = probe.getFontMetrics(wordFont());
+        FontMetrics glyphs = probe.getFontMetrics(glyphFont());
+        int widest = 0;
+        for (EquipmentStatus status : EquipmentStatus.values()) {
+            widest = Math.max(widest,
+                pillWidth(words, glyphs, glyphFor(status), wordOf(status)));
+        }
+        return widest;
+    }
+
     /** The §3.3 dot token for a status. */
-    static Color dotFor(EquipmentStatus status) {
-        return switch (status) {
+    static Color dotFor(EquipmentStatus status) {        return switch (status) {
             case AVAILABLE -> Theme.dotAvailable;
             case LOANED -> Theme.dotLoaned;
             case UNDER_MAINTENANCE -> Theme.dotMaintenance;

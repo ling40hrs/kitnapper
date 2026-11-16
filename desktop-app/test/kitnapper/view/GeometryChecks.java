@@ -67,6 +67,7 @@ final class GeometryChecks {
             ? JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS : JTable.AUTO_RESIZE_OFF));
         JScrollBar bar = pane.getHorizontalScrollBar();
         UiProbeSupport.check(tag + "-table-hbar", bar.isShowing() != fits);
+        statusColumn(tag, table);
         if (!fits) {
             int actual = 0;
             for (int column = 0; column < table.getColumnCount(); column++) {
@@ -74,6 +75,26 @@ final class GeometryChecks {
             }
             UiProbeSupport.check(tag + "-table-preferred", actual >= total);
         }
+    }
+
+    /**
+     * The status column is sized from the widest badge, so "Decommissioned"
+     * and "Under maintenance" fit whole (WP5 F11). Only equipment tables carry
+     * an {@code EquipmentStatus} column.
+     */
+    private static void statusColumn(String tag, JTable table) {
+        int column = -1;
+        for (int index = 0; index < table.getColumnCount(); index++) {
+            if (table.getColumnClass(index) == kitnapper.model.EquipmentStatus.class) {
+                column = index;
+            }
+        }
+        if (column < 0) {
+            return;
+        }
+        UiProbeSupport.check(tag + "-status-column-fits",
+            table.getColumnModel().getColumn(column).getWidth()
+                >= Badges.widestPillWidth() + TableSkins.CELL_PAD * 2);
     }
 
     /** Toasts never cover the status bar or the pinned preview action (D43). */

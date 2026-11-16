@@ -44,4 +44,12 @@ public final class Formats {
             case OTHER -> "Other";
         };
     }
+
+    /**
+     * A counted noun with the right number: {@code 1 penalty}, {@code 0 penalties}.
+     * Status lines use this so no screen prints "1 penalties" (design §8).
+     */
+    public static String count(long amount, String singular, String plural) {
+        return (amount == 1 ? "1 " : amount + " ") + (amount == 1 ? singular : plural);
+    }
 }

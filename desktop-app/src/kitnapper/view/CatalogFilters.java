@@ -57,6 +57,11 @@ final class CatalogFilters extends JPanel {
         return layout.getSelectedIndex();
     }
 
+    /** The Table/Cards control, for the probe's click-to-focus check (WP5 F12). */
+    SegmentedControl layoutControl() {
+        return layout;
+    }
+
     void setOnFilterChanged(Runnable listener) {
         onFilterChanged = listener == null ? () -> { } : listener;
     }

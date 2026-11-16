@@ -167,7 +167,7 @@ public final class InventoryScreen extends JPanel {
     }
 
     private void setStatus() {
-        String count = results.size() == 1 ? "1 item" : results.size() + " items";
+        String count = Formats.count(results.size(), "item", "items");
         actions.setStatus(count + " · " + (selected() == null ? "0" : "1") + "/1 selected",
             Formats.money(results.stream().mapToDouble(Equipment::getReplacementValue).sum()));
     }

@@ -6,6 +6,7 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 
@@ -114,10 +115,19 @@ final class UiProbeSupport {
 
     /** The whole frame rendered offscreen at its current size. */
     static BufferedImage paint(JFrame frame) {
-        BufferedImage image = new BufferedImage(frame.getWidth(), frame.getHeight(),
-            BufferedImage.TYPE_INT_RGB);
+        return paintComponent(frame.getRootPane(), frame.getWidth(), frame.getHeight());
+    }
+
+    /** One component rendered offscreen at its current size (focus cues). */
+    static BufferedImage paintComponent(JComponent component) {
+        return paintComponent(component, Math.max(1, component.getWidth()),
+            Math.max(1, component.getHeight()));
+    }
+
+    private static BufferedImage paintComponent(JComponent component, int width, int height) {
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = image.createGraphics();
-        frame.paint(g);
+        component.paint(g);
         g.dispose();
         return image;
     }

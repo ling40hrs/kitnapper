@@ -84,7 +84,8 @@ public final class DashboardScreen extends JPanel {
         unpaidCard.setCaption(unpaid);
         overdueSection.setRows(actions.overdueLoans(), "Nothing is overdue.", null);
         activity.setEntries(actions.activity());
-        status.accept(out + " loans · " + overdue + " overdue", unpaid);
+        status.accept(Formats.count(out, "loan", "loans") + " · " + overdue + " overdue",
+            unpaid);
     }
 
     /** Re-applies token colors after a Theme switch (design §8.10). */

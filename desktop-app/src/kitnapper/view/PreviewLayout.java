@@ -3,11 +3,14 @@ package kitnapper.view;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box.Filler;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
@@ -108,6 +111,61 @@ final class PreviewLayout {
         }
         return "<html>" + caption.substring(0, dash + 2) + "<br>"
             + caption.substring(dash + 3) + "</html>";
+    }
+
+    /**
+     * Greedy word wrap for a free-text value (the waive reason, FR-11 audit
+     * trail) at {@code width} px over at most {@code maxLines} lines; text that
+     * still does not fit ellipsises on the last line. Plain text is returned
+     * unchanged so a short reason never grows an HTML line box.
+     */
+    static String wrapText(String text, int width, int maxLines) {
+        if (text == null || text.isBlank()) {
+            return "";
+        }
+        FontMetrics metrics = new JLabel().getFontMetrics(Fonts.text(14, Font.PLAIN));
+        if (metrics.stringWidth(text) <= width) {
+            return text;
+        }
+        java.util.List<String> lines = new java.util.ArrayList<>();
+        StringBuilder line = new StringBuilder();
+        int used = 0;
+        for (String word : text.trim().split("\\s+")) {
+            int wordWidth = metrics.stringWidth(word + " ");
+            if (used > 0 && used + wordWidth > width) {
+                lines.add(line.toString().trim());
+                line.setLength(0);
+                used = 0;
+            }
+            line.append(word).append(' ');
+            used += wordWidth;
+        }
+        lines.add(line.toString().trim());
+        boolean truncated = lines.size() > maxLines;
+        StringBuilder out = new StringBuilder("<html>");
+        for (int i = 0; i < Math.min(lines.size(), maxLines); i++) {
+            if (i > 0) {
+                out.append("<br>");
+            }
+            String value = lines.get(i);
+            if (truncated && i == maxLines - 1) {
+                value = ellipsise(metrics, value, width);
+            }
+            out.append(escape(value));
+        }
+        return out.toString();
+    }
+
+    private static String ellipsise(FontMetrics metrics, String text, int width) {
+        String cut = text;
+        while (!cut.isEmpty() && metrics.stringWidth(cut + "\u2026") > width) {
+            cut = cut.substring(0, cut.length() - 1);
+        }
+        return cut + "\u2026";
+    }
+
+    private static String escape(String text) {
+        return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
 
     /** A spacing block whose height follows the density (design §9 scale). */

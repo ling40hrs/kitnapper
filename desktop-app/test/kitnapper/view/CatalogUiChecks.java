@@ -74,6 +74,7 @@ final class CatalogUiChecks {
         screen.clearFilters();
         frame.searchField().setText(CANON);
         table.setRowSelectionInterval(0, 0);
+        UiProbeSupport.check("status-selection", actions.statusLeft().contains("1/1 selected"));
         UiProbeSupport.check("preview-select", UiProbeSupport.hasLabel(preview, CANON)
             && UiProbeSupport.hasLabel(preview, "₱145,000.00")
             && UiProbeSupport.hasAccessibleName(preview, "Status Available"));
