@@ -563,8 +563,8 @@ documented tasks. Never tag/branch/amend/revert without a new “yes”.
   `Theme`; no `service`/`controller` imports under `view`.
 - Baseline inventory: 154 source files / 14,450 lines; 38 probe files / 4,287
   lines; 18 registered probes + 4 support classes.
-- Plan drafted and checked against the baseline; **not yet committed**. WP0 copies
-  it to `HANDOFF-M6-PLAN.md`, commits, and pushes after approval.
+- Plan committed as `7ba6725` (`docs(m6): author the M6 implementation backbone`)
+  and pushed; remote `main` at the same SHA, GitHub `verified: true` (`valid`).
 - Amendment before the WP0 commit (review): D39 cut the theme crossfade (dialog and
   screen fades only) and D43 kept the 96 px toast inset; §1, §3–§6, WP2, §8 and the
   risk table were adjusted together.
