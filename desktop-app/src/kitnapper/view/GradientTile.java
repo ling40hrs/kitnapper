@@ -61,7 +61,7 @@ final class GradientTile extends JPanel {
         g2.setClip(shape);
         g2.setPaint(new GradientPaint(0, 0, stops[0], 0, getHeight(), stops[1]));
         g2.fill(shape);
-        g2.setFont(Fonts.text(GLYPH_SIZE, Font.PLAIN));
+        g2.setFont(Fonts.symbol(GLYPH_SIZE));
         g2.setColor(veil(Theme.textPrimary, Theme.isDark() ? 0.55f : 0.45f));
         String glyph = glyphFor(category);
         FontMetrics metrics = g2.getFontMetrics();

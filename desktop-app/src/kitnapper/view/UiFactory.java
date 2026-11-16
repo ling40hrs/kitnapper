@@ -125,7 +125,7 @@ public final class UiFactory {
         root.repaint();
     }
 
-    private static Color colorFor(String role) {
+    static Color colorFor(String role) {
         return switch (role) {
             case "title" -> Theme.textPrimary;
             case "subtitle", "secondary" -> Theme.textSecondary;

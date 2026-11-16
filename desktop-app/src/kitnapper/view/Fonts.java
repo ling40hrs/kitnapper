@@ -70,8 +70,20 @@ public final class Fonts {
         return new Font(monoFamily, style, size);
     }
 
+    /** Windows icon font when one is installed, else {@link #symbol(int)}. */
     public static Font icons(int size) {
-        return new Font(iconFamily != null ? iconFamily : textFamily, Font.PLAIN, size);
+        return iconFamily != null ? new Font(iconFamily, Font.PLAIN, size) : symbol(size);
+    }
+
+    /**
+     * The §10 Unicode fallback column and the category tiles are ordinary
+     * Unicode characters, never Fluent codepoints, so an icon font must not
+     * draw them. The logical {@code Dialog} font composites the installed
+     * system fonts and falls back per glyph, which is why the fallback column
+     * is never tofu on Linux.
+     */
+    public static Font symbol(int size) {
+        return new Font(Font.DIALOG, Font.PLAIN, size);
     }
 
     /**

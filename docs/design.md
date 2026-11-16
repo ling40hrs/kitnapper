@@ -354,14 +354,26 @@ fonts are not a library violation; nothing is shipped beyond the Inter files. De
 size 16 px, command bar 20 px, fallback-tile glyph 48 px, color `TEXT_SECONDARY` (never
 gradient-filled).
 
+Two different fonts are involved, and mixing them is how tofu happens:
+
+- **Fluent codepoints** (`U+E7xx`, `U+E9xx`) need an icon font. `Fonts.icons()` uses Segoe
+  Fluent Icons / Segoe MDL2 Assets on Windows; with neither installed it returns the
+  symbol font, which simply means `Fonts.glyph()` hands back the fallback column.
+- **Unicode fallbacks and the category glyphs** are ordinary Unicode characters and must
+  never be drawn with an icon font. `Fonts.symbol()` returns the logical `Dialog` font,
+  which composites the installed system fonts and falls back per glyph, so the fallback
+  column renders on Linux (DejaVu Sans covers all of them) instead of a missing-glyph box.
+
 | Action | Fluent codepoint | Unicode fallback |
 | :--- | :--- | :--- |
+| App brand mark (title bar) | `U+E80F` | `▣` |
 | Home / nav | `U+E80F` | `⌂` |
 | Search | `U+E721` | `⌕` |
 | Add / New | `U+E710` | `＋` |
 | Settings | `U+E713` | `⚙` |
 | Filter | `U+E71C` | `▽` |
 | Sort | `U+E8CB` | `↕` |
+| Refresh / history | `U+E81C` | `↻` |
 | Chevron down | `U+E70D` | `⌄` |
 | Chevron right | `U+E76C` | `›` |
 | Back | `U+E72B` | `←` |
@@ -377,9 +389,14 @@ gradient-filled).
 Category glyphs (fallback column is authoritative if a codepoint renders wrong):
 `CAMERA` ▣, `LENS` ◎, `LAPTOP` ▭, `AUDIO` ♪, `TOOL` ⚒, `OTHER` ▦.
 
-Codepoints are best-effort from Microsoft's Segoe Fluent Icons list and must be verified
-against rendered output during M2; if a codepoint is wrong or missing on a machine, the
-fallback glyph column wins.
+Codepoints are best-effort from Microsoft's Segoe Fluent Icons list. `FontProbe` (via
+`GlyphChecks`) asserts, for every pair the app actually draws, that `Fonts.glyph()` returns
+the codepoint or the fallback **and** that the returned character is displayable by the
+font that will paint it; rows with no shipped call site (add, settings, filter, sort, back,
+edit, delete, warning, home) are specified only. Verified on this checkout in M6 (WP4,
+2026-11-16): with no Windows icon font present, 8 of the 12 landscape fallbacks were *not*
+displayable by the physical Inter font — the symbol-font resolution above is the fix.
+
 
 ## 11. Swing Feasibility Notes
 
@@ -575,3 +592,4 @@ added (files.community, shelf.nu); implementation plan written (`M0–M6`, D1–
 | **D-Preview** | Amended in M6 (2026-11-16) after measurement: compact density alone cannot rescue the 1024×640 preview — the gap is 48 px for catalog and 174 px for inventory, not ~28 px. `PreviewLayout` centralizes the row factory, the density-adjusted gaps and the caption lines; below 560 px of preview height the gaps tighten, and the metadata rows sit in a borderless thin-scrollbar guard while the action bar stays pinned. At 1280×800 and wider nothing scrolls. Recorded as D42 in `implementation-plan.md` (design §6, §9). |
 | **D-Toasts** | Amended in M6 (2026-11-16): 96 px bottom inset measured 1 px short of the 280 px preview's action bar at 1024×640, and the inventory bar (120 px, three actions) is crossed by any bottom-anchored toast. `Toasts` keeps 16/96 and shifts left of a showing preview column (320 px right inset); Settings, with no preview, keeps the plain bottom-right corner. Recorded as D43 in `implementation-plan.md` (design §6). |
 | **D-Motion** | Shipped in M6 (2026-11-16): dialog open fade + 98→100 % grow and close fade at 83 ms, the 120 ms screen fade, and the existing 167 ms toast slide + fade, all through one `Motion` facade with decelerate easing and a `Timer` tick of 16 ms; the screen wash is a click-through `FadeOverlay` on `MODAL_LAYER`. The theme crossfade is **not** shipped — the switch stays instant. `-Dkitnapper.motion=off` is a probe switch, not a user setting. Dialog fades fall back to the instant path when the platform lacks per-pixel translucency (§7). Recorded as D39 in `implementation-plan.md`. |
+| **D-Icons** | Fixed in M6 (2026-11-16) during the WP4 icon audit: `Fonts.icons()` used to hand back the *text* family when no Windows icon font was installed, so on Linux the §10 fallback column was drawn with the bundled physical Inter font, which has no glyph for 8 of the 12 landscape glyphs — title-bar brand, close, wrench, search, moon, minimize, restore and every category tile rendered as missing-glyph boxes. `Fonts` now splits the two roles: `icons()` is the Windows icon font *or* `symbol()`, and `symbol()` is the logical `Dialog` font, which composites the system fonts and falls back per glyph. `GradientTile` draws the category glyphs with `symbol()`, never with an icon font (§10). |
