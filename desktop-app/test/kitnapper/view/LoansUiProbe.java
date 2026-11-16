@@ -52,6 +52,12 @@ public final class LoansUiProbe {
             SwingUtilities.invokeAndWait(() -> LoansUiChecks.allLoans(manager, T));
             SwingUtilities.invokeAndWait(() -> PenaltyUiChecks.penalties(manager));
             SwingUtilities.invokeAndWait(() -> PenaltyUiChecks.dialogBody(manager));
+
+            // Its own store: this pass returns L-003 to prove the post-return
+            // dashboard state, which would contradict the seed asserts above.
+            AppContext dashboard = context(dir);
+            manager(dashboard);
+            SwingUtilities.invokeAndWait(() -> DashboardUiChecks.dashboard(dashboard, T));
         } finally {
             deleteTree(dir);
         }

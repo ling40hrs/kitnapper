@@ -12,7 +12,7 @@ import javax.swing.JPanel;
  * BORDER_SUBTLE outline — no gradient, no shadow. Used by the login card
  * (surface) and the dialog shell (elevated).
  */
-final class RoundedPanel extends JPanel {
+class RoundedPanel extends JPanel {
 
     private static final long serialVersionUID = 1L;
 

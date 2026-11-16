@@ -1,44 +1,29 @@
 package kitnapper.controller;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
 import kitnapper.model.User;
 import kitnapper.model.UserRole;
 import kitnapper.service.AppContext;
-import kitnapper.view.AllLoansScreen;
-import kitnapper.view.CatalogScreen;
 import kitnapper.view.LoginFrame;
 import kitnapper.view.MainFrame;
-import kitnapper.view.MyLoansScreen;
-import kitnapper.view.OverdueScreen;
-import kitnapper.view.PenaltiesScreen;
 import kitnapper.view.Theme;
 
 /**
  * Session and routing wiring (implementation plan §2.4): owns the
  * {@link AppContext}, runs login/logout, builds the main shell for the
- * signed-in role, mounts the screens the role can reach, routes sidebar
- * navigation, and applies the theme toggle. View contracts live in
- * {@link CatalogActions} and {@link LoansActions}; controllers may import
- * views, views never import controllers.
+ * signed-in role, routes sidebar navigation, and applies the theme toggle.
+ * Screen construction and mounting live in {@link ScreenMounts}; view
+ * contracts live in {@link CatalogActions} and {@link LoansActions};
+ * controllers may import views, views never import controllers.
  */
 public final class AppController {
 
     private final AppContext context;
-    private final List<Runnable> refreshers = new ArrayList<>();
     private LoginFrame loginFrame;
     private MainFrame mainFrame;
-    private CatalogController catalog;
-    private BorrowingController borrowing;
-    private LoansController loans;
-    private CatalogScreen catalogScreen;
-    private MyLoansScreen myLoansScreen;
-    private AllLoansScreen allLoansScreen;
-    private OverdueScreen overdueScreen;
-    private PenaltiesScreen penaltiesScreen;
+    private ScreenMounts mounts;
 
     public AppController(AppContext context) {
         this.context = context;
@@ -64,9 +49,6 @@ public final class AppController {
     }
 
     private void openMain(User user) {
-        catalog = new CatalogController(context);
-        borrowing = new BorrowingController(context);
-        loans = new LoansController(context);
         mainFrame = new MainFrame(user.getRole(), user.getFullName(), statusLeft(),
             this::navigate, this::signOut, this::toggleTheme);
         // Bound to this session's frame: screens from an earlier session keep
@@ -77,57 +59,13 @@ public final class AppController {
                 frame.setStatus(left, right);
             }
         };
-        refreshers.clear();
-        catalogScreen = new CatalogScreen(new CatalogActions(catalog, borrowing, status),
-            mainFrame.searchField());
-        catalog.setOnChanged(catalogScreen::reload);
-        mainFrame.mount("catalog", catalogScreen, catalogScreen.commands(),
-            catalogScreen::onShown);
-        refreshers.add(catalogScreen::refreshTheme);
-        mountLoans(user.getRole(), status);
+        mounts = new ScreenMounts(context, frame, status);
+        mounts.mount(user.getRole());
         mainFrame.showScreen(defaultKey(user.getRole()));
         mainFrame.setVisible(true);
         if (loginFrame != null) {
             loginFrame.dispose();
             loginFrame = null;
-        }
-    }
-
-    /** Mounts the role's loan screens (§8.3/§8.4/§8.5/§8.6); inventory stays a placeholder. */
-    private void mountLoans(UserRole role, BiConsumer<String, String> status) {
-        LoansActions actions = new LoansActions(loans);
-        PenaltyController penalties = new PenaltyController(context);
-        if (role == UserRole.MANAGER) {
-            allLoansScreen = new AllLoansScreen(actions, status);
-            overdueScreen = new OverdueScreen(actions, status);
-            penaltiesScreen = new PenaltiesScreen(penalties, status);
-            mainFrame.mount("allloans", allLoansScreen, allLoansScreen.commands(),
-                allLoansScreen::onShown);
-            mainFrame.mount("overdue", overdueScreen, overdueScreen.commands(),
-                overdueScreen::onShown);
-            mainFrame.mount("penalties", penaltiesScreen, penaltiesScreen.commands(),
-                penaltiesScreen::onShown);
-            loans.setOnChanged(this::reloadLoanScreens);
-            penalties.setOnChanged(penaltiesScreen::reload);
-            refreshers.add(allLoansScreen::refreshTheme);
-            refreshers.add(overdueScreen::refreshTheme);
-            refreshers.add(penaltiesScreen::refreshTheme);
-        } else {
-            myLoansScreen = new MyLoansScreen(actions, status);
-            loans.setOnChanged(myLoansScreen::reload);
-            mainFrame.mount("myloans", myLoansScreen, myLoansScreen.commands(),
-                myLoansScreen::onShown);
-            refreshers.add(myLoansScreen::refreshTheme);
-        }
-    }
-
-    /** One app-level change can move rows between All Loans and Overdue. */
-    private void reloadLoanScreens() {
-        if (allLoansScreen != null) {
-            allLoansScreen.reload();
-        }
-        if (overdueScreen != null) {
-            overdueScreen.reload();
         }
     }
 
@@ -140,19 +78,11 @@ public final class AppController {
 
     private void signOut() {
         context.setCurrentUser(null);
+        mounts = null;
         if (mainFrame != null) {
             mainFrame.dispose();
             mainFrame = null;
         }
-        catalog = null;
-        borrowing = null;
-        loans = null;
-        catalogScreen = null;
-        myLoansScreen = null;
-        allLoansScreen = null;
-        overdueScreen = null;
-        penaltiesScreen = null;
-        refreshers.clear();
         start();
     }
 
@@ -164,8 +94,8 @@ public final class AppController {
         if (mainFrame != null) {
             mainFrame.refreshTheme();
         }
-        for (Runnable refresh : refreshers) {
-            refresh.run();
+        if (mounts != null) {
+            mounts.refreshTheme();
         }
         if (loginFrame != null) {
             loginFrame.refreshTheme();

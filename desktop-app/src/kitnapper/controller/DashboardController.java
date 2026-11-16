@@ -6,6 +6,7 @@ import kitnapper.model.LoanStatus;
 import kitnapper.model.PenaltyStatus;
 import kitnapper.service.AppContext;
 import kitnapper.view.ActivityEntry;
+import kitnapper.view.DashboardScreen;
 import kitnapper.view.Formats;
 import kitnapper.view.LoanRow;
 
@@ -16,7 +17,7 @@ import kitnapper.view.LoanRow;
  * {@link kitnapper.service.PenaltyService}; the screen does no entity math
  * and money is formatted here with {@link Formats}.
  */
-public final class DashboardController {
+public final class DashboardController implements DashboardScreen.Actions {
 
     private final AppContext context;
     private final LoanRows rows;
