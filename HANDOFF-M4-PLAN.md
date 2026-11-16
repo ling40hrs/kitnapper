@@ -440,7 +440,7 @@ for manager and borrower sessions. Delivered with three logged deviations: a
 shared `LoansTableSection`, `controller/LoansActions`, and `feeOn` on the loan
 actions. See §17.
 
-### WP4 — Overdue, Penalties, settlement
+### WP4 — Overdue, Penalties, settlement (DONE 2026-11-16)
 
 Files: `OverdueScreen`, `PenaltiesScreen`, `PenaltiesTableModel`,
 `SettlePenaltyDialog`; `AppController` mounts; return from Overdue.
