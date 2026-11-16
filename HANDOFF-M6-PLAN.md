@@ -569,7 +569,32 @@ documented tasks. Never tag/branch/amend/revert without a new “yes”.
   screen fades only) and D43 kept the 96 px toast inset; §1, §3–§6, WP2, §8 and the
   risk table were adjusted together.
 
-### WP1 — pending
+### WP1 — thin scrollbars shipped (2026-11-16)
+
+- Starting HEAD: `b573514` (clean, local == remote).
+- Added `view/ThinScrollBarUI` (148 lines): `BasicScrollBarUI` subclass with an
+  own static `createUI` (the inherited one would return a stock bar), 8 px lane,
+  transparent track (`setOpaque(false)` + no track paint), 4 px thumb widening to
+  the full lane on `mouseEntered` (no overlay animation, no repaint timer), 0×0
+  non-focusable arrow buttons, and a cross-axis `getPreferredSize` of 8 px.
+- `Theme.installDefaults()` registers `ScrollBarUI = ThinScrollBarUI` and
+  `ScrollBar.width = 8` (175 → 177 lines). Tokens are read at paint time.
+- `SkinProbe` delegates six checks to the new package-private
+  `test/kitnapper/ScrollBarChecks` (125 lines) so the probe itself stays small
+  (128 → 132): `scrollbar-ui-installed`, `scrollbar-lane`,
+  `scrollbar-no-arrows`, `scrollbar-thumb-paints`, `scrollbar-hover-widens`,
+  `scrollbar-light-theme`. Hover is driven by real `MouseEvent`s, not a test
+  hook, and thumb width is measured from painted pixels (4 columns → 8).
+- The package-private probe hook sketched in §8.2 was **not** needed: the
+  hover flag is exercised through the public event path, which is stricter.
+- `./build.sh` → `BUILD OK`, 244 classes, zero warnings.
+- `./test/run-all.sh` → `ALL PROBES GREEN`, 18/18; `SkinProbe PASS=10 FAIL=0`
+  (was 4 checks). Static audits clean: no file > 200 lines, no
+  `@SuppressWarnings`, no hex outside `Theme`, no `service`/`controller` imports
+  under `view`.
+- Docs in the same change: design §6 records the D38 lane deviation, §11 notes
+  it, and the §14.2 decision log gains `D-Scrollbars`.
+- Commit `feat(m6): add thin scrollbars`.
 
 ### WP2 — pending
 

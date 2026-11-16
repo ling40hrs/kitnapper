@@ -5,6 +5,7 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import kitnapper.view.Fonts;
@@ -33,6 +34,9 @@ public final class SkinProbe {
         Theme.apply(false);
         check("tokens-light", tokensPresent() && dotsDistinct());
         check("contrast-light", contrastHolds());
+        for (Map.Entry<String, Boolean> entry : ScrollBarChecks.results().entrySet()) {
+            check(entry.getKey(), entry.getValue());
+        }
 
         System.out.println("light_pixels=" + lightPixelCount() + " total=6400");
         System.out.println("PASS=" + passed + " FAIL=" + failed);

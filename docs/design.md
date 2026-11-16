@@ -269,7 +269,11 @@ same day (D28).
 - **Empty states:** glyph (`TEXT_MUTED`), 14 px explanation, 12 px secondary line, and
   the action that fixes it ("No gear matches this filter. Clear filters.").
 - **Scrollbars:** thin overlay style — transparent track, 4 px thumb (`#5A5A5A` dark /
-  `#C6C6C6` light), radius 2, widening to 8 px on hover; no layout space reserved.
+  `#C6C6C6` light), radius 2, widening to 8 px on hover; no arrow buttons.
+  **Deviation (D38):** the thumb lives in an **8 px lane that does occupy layout
+  space** — a true zero-width overlay would need a custom `JScrollPane` fighting
+  selection, wheel and focus on all five scroll surfaces. The lane still reads as
+  part of the surface because the track paints nothing.
 - **Tooltips:** 12 px text, `BG_ELEVATED`, 1 px `BORDER_SUBTLE`, radius 4, 500 ms delay.
 - **Focus visuals:** 2 px `ACCENT` rectangle with a 1 px inner gap (Win11 focus rect),
   always visible on keyboard focus.
@@ -362,7 +366,7 @@ fallback glyph column wins.
 | Rounded window corners + native shadow | Undecorated frames get neither | Square outer corners + 1 px `BORDER_SUBTLE` (decision D9) |
 | Snap layouts / `Win+←/→` | Lost with custom chrome | Accepted limitation, documented here and in the README |
 | Segoe UI Variable / Fluent Icons | System fonts on Win11 / Win10 | Probe at startup; documented fallback chains (§4, §10) |
-| Thin overlay scrollbars | Swing scrollbars are blocky | `BasicScrollBarUI` subclass, always-thin, no overlay animation |
+| Thin overlay scrollbars | Swing scrollbars are blocky | `BasicScrollBarUI` subclass, always-thin, no overlay animation; the 8 px lane keeps layout space (D38) |
 | Per-pixel translucency | Supported but unnecessary | Not used |
 | Window drag / resize / maximize | Manual | `WindowChrome` owns: drag, double-click maximize, 8 px edge resize bands, min size, restore bounds |
 | Multi-monitor / DPI change mid-session | Resize quirks | Accept; verify at 100 / 125 / 150 % |
@@ -543,3 +547,4 @@ added (files.community, shelf.nu); implementation plan written (`M0–M6`, D1–
 | **D-Schema** | `schemaVersion` stays 1; `photoFile` is a nullable additive field so old saves load unchanged. |
 | **D-Skeleton** | Resolved in §13 (2026-11-14): 150 ms delay / 300 ms minimum / 167 ms fade, flat 4 px blocks with a 1,000 ms pulse (`SKELETON_BLOCK` token), no launch skeleton, query skeletons gated behind a measured ≥ 150 ms, reduced motion via a session setting, 10 s watchdog. |
 | **D-Skeleton-M5** | Deferred to M5 (2026-11-15): seed items carry no photos and catalog queries are synchronous, so `PhotoTile`, `SkeletonPanel`, and `SkeletonGate` ship with the inventory photo picker instead of M3. Recorded as D27 in `implementation-plan.md`. |
+| **D-Scrollbars** | Thin scrollbars shipped in M6 (2026-11-16): `ThinScrollBarUI` — 8 px lane, transparent track, 4 px thumb widening to the full lane on hover, radius 2, no arrow buttons, installed once through `UIManager` in `Theme.installDefaults()` so all five scroll surfaces and every future `JScrollPane` pick it up; thumb colour is read at paint time, so both themes work without a UI rebuild. The lane keeps layout space — a true overlay was rejected (§6). Recorded as D38 in `implementation-plan.md`. |
