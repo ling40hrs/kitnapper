@@ -3,7 +3,7 @@ project_name: "KitNapper"
 course: "CS203 – Object-Oriented Programming"
 artifact_type: "Software Requirements Specification (SRS)"
 derived_from: "PRD.md v3.1.0"
-version: "3.1.1"
+version: "3.1.3"
 ---
 
 # Software Requirements Specification — KitNapper
@@ -76,6 +76,8 @@ Priority scale: **H** = must-have, **M** = should-have, **L** = nice-to-have. Al
 | :--- | :--- | :--- |
 | FR-06 | Return logging: a manager records the actual return date; the loan becomes `RETURNED` and the item returns to `AVAILABLE` — except an item already flagged `UNDER_MAINTENANCE` (including flagged while loaned), which stays `UNDER_MAINTENANCE` until the repair is completed. No condition assessment is performed. | H |
 | FR-07 | Late fees computed exclusively via `FeeStrategy`: `₱50.00 × days overdue`, displayed live while the loan is outstanding and frozen into a single `LATE_FEE` penalty on return. No grace period; fees are never hand-editable. | H |
+
+**Acceptance (FR-06):** the return dialog offers only dates from the loan's borrow date to today, defaults to today, and shows the fee that will be frozen for the chosen date; a future return date is still rejected by the service. Returns are available from All Loans and Overdue.
 
 **Acceptance (FR-07):** an outstanding loan 4 days late displays ₱200.00 live; returning it creates exactly one ₱200.00 `LATE_FEE` penalty. A loan returned on its due date yields no penalty.
 
@@ -175,3 +177,4 @@ Seed dataset details: PRD §9; rationale and file placement: `seed-data.md`.
 | 3.1.0 | 2026-11-14 | Windows 11 / Fluent direction (design.md v2.0); photo upload added to inventory scope (FR-10 + acceptance), image-storage NFR-08, walkthrough step 11 covers photo + decommission, category-tile definition in §1.3 |
 | 3.1.1 | 2026-11-14 | Clarified FR-06: an item flagged `UNDER_MAINTENANCE` while loaned keeps that status when returned (mirrors PRD §4.1); no scope change |
 | 3.1.2 | 2026-11-16 | §6.2 steps 4–6 aligned with the delivered catalog: checkout flips the row to `LOANED` immediately, the availability lock disables the action instead of hiding the row, and the 14-day limit is enforced by a `T … T+14` picker plus a service rejection proven by `CatalogProbe`; no requirement changed |
+| 3.1.3 | 2026-11-16 | FR-06 acceptance added: the return dialog offers borrow date … today, defaults to today, previews the fee to freeze, and is reachable from All Loans and Overdue; no requirement changed |

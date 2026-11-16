@@ -1,35 +1,40 @@
 package kitnapper.controller;
 
-import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 
-import kitnapper.model.Equipment;
-import kitnapper.model.EquipmentCategory;
-import kitnapper.model.EquipmentStatus;
 import kitnapper.model.User;
 import kitnapper.model.UserRole;
 import kitnapper.service.AppContext;
+import kitnapper.view.AllLoansScreen;
 import kitnapper.view.CatalogScreen;
 import kitnapper.view.LoginFrame;
 import kitnapper.view.MainFrame;
+import kitnapper.view.MyLoansScreen;
 import kitnapper.view.Theme;
 
 /**
  * Session and routing wiring (implementation plan §2.4): owns the
  * {@link AppContext}, runs login/logout, builds the main shell for the
- * signed-in role, mounts the catalog screen, routes sidebar navigation, and
- * applies the theme toggle. Controllers may import views; views never import
- * controllers.
+ * signed-in role, mounts the screens the role can reach, routes sidebar
+ * navigation, and applies the theme toggle. View contracts live in
+ * {@link CatalogActions} and {@link LoansActions}; controllers may import
+ * views, views never import controllers.
  */
 public final class AppController {
 
     private final AppContext context;
+    private final List<Runnable> refreshers = new ArrayList<>();
     private LoginFrame loginFrame;
     private MainFrame mainFrame;
     private CatalogController catalog;
     private BorrowingController borrowing;
+    private LoansController loans;
     private CatalogScreen catalogScreen;
+    private MyLoansScreen myLoansScreen;
+    private AllLoansScreen allLoansScreen;
 
     public AppController(AppContext context) {
         this.context = context;
@@ -57,12 +62,25 @@ public final class AppController {
     private void openMain(User user) {
         catalog = new CatalogController(context);
         borrowing = new BorrowingController(context);
+        loans = new LoansController(context);
         mainFrame = new MainFrame(user.getRole(), user.getFullName(), statusLeft(),
             this::navigate, this::signOut, this::toggleTheme);
-        catalogScreen = new CatalogScreen(actions(), mainFrame.searchField());
+        // Bound to this session's frame: screens from an earlier session keep
+        // their controller listeners until logout, and must not write here.
+        MainFrame frame = mainFrame;
+        BiConsumer<String, String> status = (left, right) -> {
+            if (frame.isDisplayable()) {
+                frame.setStatus(left, right);
+            }
+        };
+        refreshers.clear();
+        catalogScreen = new CatalogScreen(new CatalogActions(catalog, borrowing, status),
+            mainFrame.searchField());
         catalog.setOnChanged(catalogScreen::reload);
         mainFrame.mount("catalog", catalogScreen, catalogScreen.commands(),
             catalogScreen::onShown);
+        refreshers.add(catalogScreen::refreshTheme);
+        mountLoans(user.getRole(), status);
         mainFrame.showScreen(defaultKey(user.getRole()));
         mainFrame.setVisible(true);
         if (loginFrame != null) {
@@ -71,48 +89,22 @@ public final class AppController {
         }
     }
 
-    /** The §5.7 view contract, backed by the two M3 controllers. */
-    private CatalogScreen.Actions actions() {
-        return new CatalogScreen.Actions() {
-            @Override
-            public List<Equipment> search(String query, EquipmentCategory category,
-                EquipmentStatus status) {
-                catalog.setQuery(query);
-                catalog.setCategory(category);
-                catalog.setStatus(status);
-                return catalog.results();
-            }
-
-            @Override
-            public boolean isManager() {
-                return catalog.isManager();
-            }
-
-            @Override
-            public boolean canCheckout(Equipment item) {
-                return catalog.canCheckout(item);
-            }
-
-            @Override
-            public String checkoutHint(Equipment item) {
-                return catalog.checkoutHint(item);
-            }
-
-            @Override
-            public List<LocalDate> dueDates() {
-                return borrowing.dueDateChoices();
-            }
-
-            @Override
-            public Optional<String> checkout(Equipment item, LocalDate dueDate) {
-                return borrowing.checkout(item, dueDate);
-            }
-
-            @Override
-            public void setStatus(String left, String right) {
-                mainFrame.setStatus(left, right);
-            }
-        };
+    /** Mounts the role's loan screen (§8.3/§8.4); other routes stay placeholders. */
+    private void mountLoans(UserRole role, BiConsumer<String, String> status) {
+        LoansActions actions = new LoansActions(loans);
+        if (role == UserRole.MANAGER) {
+            allLoansScreen = new AllLoansScreen(actions, status);
+            loans.setOnChanged(allLoansScreen::reload);
+            mainFrame.mount("allloans", allLoansScreen, allLoansScreen.commands(),
+                allLoansScreen::onShown);
+            refreshers.add(allLoansScreen::refreshTheme);
+        } else {
+            myLoansScreen = new MyLoansScreen(actions, status);
+            loans.setOnChanged(myLoansScreen::reload);
+            mainFrame.mount("myloans", myLoansScreen, myLoansScreen.commands(),
+                myLoansScreen::onShown);
+            refreshers.add(myLoansScreen::refreshTheme);
+        }
     }
 
     private void navigate(String key) {
@@ -130,7 +122,11 @@ public final class AppController {
         }
         catalog = null;
         borrowing = null;
+        loans = null;
         catalogScreen = null;
+        myLoansScreen = null;
+        allLoansScreen = null;
+        refreshers.clear();
         start();
     }
 
@@ -142,8 +138,8 @@ public final class AppController {
         if (mainFrame != null) {
             mainFrame.refreshTheme();
         }
-        if (catalogScreen != null) {
-            catalogScreen.refreshTheme();
+        for (Runnable refresh : refreshers) {
+            refresh.run();
         }
         if (loginFrame != null) {
             loginFrame.refreshTheme();

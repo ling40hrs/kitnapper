@@ -6,19 +6,19 @@
 > Written: 2026-11-16 · Status: **approved, WP0 committed**
 > Previous plan: `HANDOFF-M3-PLAN.md` (M3 record, complete). Scope note: `HANDOFF-M4.md`.
 
-> **Resume here (fresh session):** M4 WP2 is **done** (shared loans table,
-> preview panes, status badges, date picker — see §17). Execute **one work
-> package per turn**, in order, next **WP3 — My Loans, All Loans, and return
-> logging** (`MyLoansScreen`, `AllLoansScreen`, `ReturnDialog`; extract
-> `CatalogActions`; mount in `AppController`). Read this file end to end,
-> then `AGENTS.md` and `docs/preferences.md`; `HANDOFF-M4.md` §4–§5 is still
-> the reuse map and gotcha list. Every WP ends with `./build.sh` +
-> `./test/run-all.sh` green, a log entry in §17, and a commit under the
-> documented-task rule. Current state at WP2: 101 Java files / 8,891 lines;
-> 20 probe files / 2,193 lines; 10/10 probes green (`LoanProbe` PASS=35);
-> `LoansUiProbe` smoke PASS=33, registered in the runner at WP6; tallest file
-> `CatalogScreen` 199, then `PreviewPane` 197, `PenaltyPreviewPane` 195,
-> `LoanPreviewPane` 194.
+> **Resume here (fresh session):** M4 WP3 is **done** (My Loans, All Loans,
+> return logging, `CatalogActions` extraction — see §17). Execute **one work
+> package per turn**, in order, next **WP4 — Overdue, Penalties, settlement**
+> (`OverdueScreen`, `PenaltiesScreen`, `PenaltiesTableModel`,
+> `SettlePenaltyDialog`; `AppController` mounts; return from Overdue). Read this
+> file end to end, then `AGENTS.md` and `docs/preferences.md`;
+> `HANDOFF-M4.md` §4–§5 is still the reuse map and gotcha list. Every WP ends
+> with `./build.sh` + `./test/run-all.sh` green, a log entry in §17, and a
+> commit under the documented-task rule. Current state at WP3: 107 Java files /
+> 9,543 lines; 21 probe files / 2,281 lines; 10/10 probes green (`LoanProbe`
+> PASS=35); `LoansUiProbe` (manual, WP6 registers it) `PASS=39`; tallest file
+> still `CatalogScreen` 199. Reuse for WP4: `LoansTableSection`, `LoansActions`,
+> `LoansController.overdueLoans()`, `PenaltyPreviewPane`, `ReturnDialog`.
 
 ---
 
@@ -423,7 +423,7 @@ Files: `LoansTableModel`, `LoansTable`, `LoanPreviewPane`,
 scaffolding (row rendering, preview fields, dark/light non-blank) passes;
 `PASS` count recorded; all files ≤ 200 (expected max `LoanPreviewPane` ~190).
 
-### WP3 — My Loans, All Loans, return logging
+### WP3 — My Loans, All Loans, return logging (DONE 2026-11-16)
 
 Files: `MyLoansScreen`, `AllLoansScreen`, `ReturnDialog`; modified
 `AppController` (extract `CatalogActions`, mount borrower/manager screens,
@@ -432,6 +432,13 @@ theme list). Status sink wired.
 **Gate:** manual SRS step 9 path in the probe (return from All Loans freezes one
 penalty, item returns AVAILABLE, Overdue empties); build + suite green; manager
 and borrower navigation land on the right default screen.
+
+**Result (2026-11-16):** gate met — `LoansUiProbe` `PASS=39 FAIL=0` including the
+return from All Loans (one ₱200 UNPAID penalty, `e-007` AVAILABLE, Overdue
+empty, status `3 loans · 0 overdue`); suite 10/10; AppController wiring smoked
+for manager and borrower sessions. Delivered with three logged deviations: a
+shared `LoansTableSection`, `controller/LoansActions`, and `feeOn` on the loan
+actions. See §17.
 
 ### WP4 — Overdue, Penalties, settlement
 
@@ -951,3 +958,65 @@ Audits: no file over 200 (max `CatalogScreen` 199; new maximums
 20 probe files / 2,193 lines.
 
 Committed: `feat(m4): add the shared loan table and preview panes`.
+
+### WP3 — My Loans, All Loans, return logging (2026-11-16)
+
+Starting HEAD `66e2635` (WP2 close-out); tree clean; local == `origin/main`.
+
+Commands and results:
+
+```bash
+cd desktop-app && ./build.sh      # BUILD OK -> build/classes (165 classes)
+./test/run-all.sh                 # ALL PROBES GREEN (10/10)
+xvfb-run -a java -cp "build/classes:test/out" kitnapper.view.LoansUiProbe
+                                  # PASS=39 FAIL=0
+```
+
+Delivered: `view/MyLoansScreen` (Active/Overdue/Returned `SegmentedControl`,
+MY table, preview with the return action hidden, per-tab empty states, borrower
+scope counts), `view/AllLoansScreen` (ALL table, preview with `Log return`,
+§8.8 flow, empty state for an empty dataset), `view/ReturnDialog` (borrow date …
+today, default today, live "Fee to freeze" through the controller, inline
+DANGER on rejection), `view/LoansTableSection` (shared table + empty-state body),
+`controller/CatalogActions` (the M3 anonymous actions, moved verbatim),
+`controller/LoansActions`, `controller/AppController` (mounts the role's loan
+screen, keeps a `refreshers` list), `LoansController.feeOn`.
+
+Probe split per the WP2 note: `LoansUiChecks` holds the check bodies and
+`LoansUiProbe` seeds/sessions/orchestrates. The manager pass now proves the WP3
+gate end to end: select `L-003`, return at `T` through the dialog's own delegate
+(`feeOn` = ₱200 today, ₱150 at `T-1`), row flips to RETURNED, hint "Already
+returned on 2026-11-14.", action disabled, `overdueLoans()` empty, status
+`3 loans · 0 overdue` / `₱0.00`, one ₱200 UNPAID penalty, `e-007` AVAILABLE.
+
+Deviations confirmed with the maintainer before coding:
+
+- `view/LoansTableSection` — the table + empty-state body is needed three times
+  (MY, ALL, OVERDUE); §6.5 only sanctions splits. Overdue reuses it in WP4.
+- `controller/LoansActions` — one adapter implements `MyLoansScreen.Actions` and
+  `AllLoansScreen.Actions`, so `AppController` stays free of anonymous classes;
+  WP4 adds `OverdueScreen.Actions` to it.
+- `LoansController.feeOn(row, date)` — §8.8 needs a per-date fee the §5.5
+  contracts did not expose; `ReturnDialog` takes it as a narrow lambda, matching
+  `CheckoutDialog`.
+- The status sink stays the plain `frame::setStatus` (maintainer's call), bound
+  to the session's frame and guarded by `isDisplayable()` so screens from an
+  earlier session cannot write into a new one. Last-writer-wins remains a known
+  limitation for WP6/M6.
+
+Docs in this change: SRS FR-06 acceptance plus revision **3.1.3** (front-matter
+version also corrected — it still read 3.1.1 while the appendix had 3.1.2).
+§11's SRS return-picker item is therefore done; WP6 covers the remaining
+documentation passes.
+
+AppController has no probe coverage, so the mount path was smoked ad hoc (temp
+save, manager login → All Loans + catalog mounted, sign-out, borrower login →
+My Loans): all checks OK. Not committed as a probe — WP6 owns `LoansUiProbe` in
+the suite.
+
+Audits: no file over 200 (max `CatalogScreen` 199, `PreviewPane` 197,
+`PenaltyPreviewPane` 195, `LoanPreviewPane` 194); no hex outside `Theme`; no
+`service`/`controller` imports under `view`; no `@SuppressWarnings`. Inventory:
+107 Java files / 9,543 lines; 21 probe files / 2,281 lines.
+
+Committed: `feat(m4): add My Loans and All Loans with return logging`.

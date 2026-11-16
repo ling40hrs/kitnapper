@@ -81,6 +81,15 @@ public final class LoansController {
         return borrowing.returnLoan(row.loanId(), returnDate);
     }
 
+    /**
+     * The live fee as of a chosen return date (§8.8), computed by
+     * {@code LoanService.accruedFee(loanId, asOf)} so the dialog's preview and
+     * the frozen penalty can never disagree (D21).
+     */
+    public double feeOn(LoanRow row, LocalDate date) {
+        return context.loans().accruedFee(row.loanId(), date);
+    }
+
     /** The screen reload hook, fired after every app-level change. */
     public void setOnChanged(Runnable listener) {
         onChanged = listener;
