@@ -7,14 +7,13 @@
 > Status: **M3 complete** — WP0–WP6 verified and committed; see `HANDOFF-M4.md` for the next milestone
 
 > **Resume here (fresh session):** M3 is **complete** — this plan is now the record,
-> not the work queue. **Next work package: author the M4 plan** from
-> `HANDOFF-M4.md` §3 (My Loans, All Loans, Overdue, Penalties, Dashboard;
-> return + settle dialogs), get it approved, then implement its WP1. Read
-> `HANDOFF-M4.md`, then `AGENTS.md` and `docs/preferences.md`. Current state:
-> WP0–WP6 all verified and committed; the catalog is a real screen (table +
-> cards, filters, empty state, preview pane, checkout dialog, theme refresh)
-> mounted through `MainFrame.mount("catalog", …)`, managers get it read-only, and
-> the in-repo probe suite (`desktop-app/test/run-all.sh`, 9 probes) is the gate.
+> not the work queue. **The active plan is `HANDOFF-M4-PLAN.md`** (approved
+> 2026-11-16): execute its WP1 first. Read the M4 plan, then `AGENTS.md` and
+> `docs/preferences.md`. Current state: WP0–WP6 of M3 all verified and
+> committed; the catalog is a real screen (table + cards, filters, empty state,
+> preview pane, checkout dialog, theme refresh) mounted through
+> `MainFrame.mount("catalog", …)`, managers get it read-only, and the in-repo
+> probe suite (`desktop-app/test/run-all.sh`, 9 probes) is the gate.
 > The §17 execution log below is the authoritative history of M3; the
 > **Appendix A checklist** shows what was ticked at close-out.
 >

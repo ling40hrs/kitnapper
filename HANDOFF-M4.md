@@ -1,5 +1,10 @@
 # HANDOFF — M3 done, next: M4 (loans, returns, fees)
 
+> **Status (2026-11-16):** M4 is planned. The approved contract — data
+> contracts, work packages, file inventory, probe plan, docs list, definition of
+> done — is **`HANDOFF-M4-PLAN.md`**; where this note and the plan disagree, the
+> plan wins. This file remains the scope note, reuse map, and gotcha list.
+
 Written 2026-11-16 at the M3 close-out (`feat(m3)` + `test(m3)` commits, docs
 commit alongside this file). Read `docs/preferences.md` §2–§3 and
 `docs/implementation-plan.md` §4 before starting; this file is the working note,

@@ -128,8 +128,9 @@ Build output is written to `build/` and `dist/`, both of which are ignored by Gi
 | [`docs/implementation-plan.md`](docs/implementation-plan.md) | Build order, class/file inventory, JSON persistence spec, decisions D1–D27 |
 | [`docs/seed-data.md`](docs/seed-data.md) | Where seed data lives and when to split it out |
 | [`docs/preferences.md`](docs/preferences.md) | Tracked, machine-independent working preferences: planning, one-phase execution, document-commit-push, verification |
-| [`HANDOFF-M3-PLAN.md`](HANDOFF-M3-PLAN.md) | **Active working document:** M3 plan, work packages, probe plan, execution log |
-| [`HANDOFF-M4.md`](HANDOFF-M4.md) | **Next milestone:** current state, M4 scope (returns, fees, manager views), reuse map, gotchas, probe commands |
+| [`HANDOFF-M4-PLAN.md`](HANDOFF-M4-PLAN.md) | **Active working document:** M4 plan — data contracts, work packages, probe plan, docs list, definition of done |
+| [`HANDOFF-M3-PLAN.md`](HANDOFF-M3-PLAN.md) | M3 record: plan, work packages, probe plan, execution log |
+| [`HANDOFF-M4.md`](HANDOFF-M4.md) | M4 scope note: current state, reuse map, gotchas, probe commands |
 | [`HANDOFF-M3.md`](HANDOFF-M3.md), [`HANDOFF-M2.md`](HANDOFF-M2.md), [`HANDOFF-M1.md`](HANDOFF-M1.md), [`HANDOFF-SESSION-2026-11-14.md`](HANDOFF-SESSION-2026-11-14.md) | Historical records of finished milestones (machine-specific paths and probe commands are stale) |
 
 The PRD and SRS are the sources of truth for behavior. If implementation and documentation disagree, the documentation takes precedence until both are updated together.
@@ -152,4 +153,4 @@ M3 ships the real Catalog screen: search plus category/status filters, a details
 
 Verification lives **inside** the repository: `desktop-app/test/run-all.sh` builds the app and runs nine probes (`DataProbe`, `CatalogProbe`, `SkinProbe`, `FontProbe`, `EdgeProbe`, `SizeProbe`, `FrameProbe`, `CloseProbe`, `CatalogUiProbe`), using `xvfb-run -a` for the paint probes so they work with or without a display. It is the gate for every remaining work package, together with the SRS §6.2 walkthrough.
 
-Next: M4 — My Loans, All Loans, Overdue, and Penalties, with return logging, frozen late fees, and settlement. Then M5 (inventory, photos, reset) and M6 (polish). See `docs/decisions.md` for the decision record, `docs/implementation-plan.md` for the build order, `HANDOFF-M4.md` for what comes next, and `HANDOFF-M3-PLAN.md` for the M3 record.
+Next: M4 — My Loans, All Loans, Overdue, Penalties, and the manager Dashboard, with return logging, frozen late fees, and settlement. The M4 plan (`HANDOFF-M4-PLAN.md`) is approved and implementation starts at WP1; then M5 (inventory, photos, reset) and M6 (polish). See `docs/decisions.md` for the decision record, `docs/implementation-plan.md` for the build order, and `HANDOFF-M3-PLAN.md` for the M3 record.
