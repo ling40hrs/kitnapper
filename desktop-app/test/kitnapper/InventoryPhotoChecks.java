@@ -24,6 +24,9 @@ import kitnapper.service.ImageStore;
 final class InventoryPhotoChecks {
 
     private static final int MATTE = 0x102030;
+    /** Display decode targets the store must honour (design §12). */
+    private static final int CARD_EDGE = 160;
+    private static final int PREVIEW_EDGE = 640;
 
     private InventoryPhotoChecks() {
     }
@@ -53,12 +56,12 @@ final class InventoryPhotoChecks {
 
         Path small = write(dir, "small.png", 100, 60, TYPE_INT_RGB, Color.BLUE, "png");
         String smallStaged = images.stage(small, MATTE);
-        BufferedImage smallLoaded = images.load(smallStaged, ImageRules.CARD_EDGE_PX).orElseThrow();
+        BufferedImage smallLoaded = images.load(smallStaged, CARD_EDGE).orElseThrow();
         ProbeSupport.check("a small photo is never upscaled", smallLoaded.getWidth() == 100);
 
         Path alpha = write(dir, "alpha.png", 200, 200, BufferedImage.TYPE_INT_ARGB, null, "png");
         String alphaStaged = images.stage(alpha, MATTE);
-        BufferedImage flattened = images.load(alphaStaged, ImageRules.PREVIEW_EDGE_PX).orElseThrow();
+        BufferedImage flattened = images.load(alphaStaged, PREVIEW_EDGE).orElseThrow();
         ProbeSupport.check("alpha is flattened onto the matte",
                 (flattened.getRGB(1, 1) & 0xFFFFFF) == MATTE);
         ProbeSupport.check("a stored photo is opaque", flattened.getRGB(1, 1) >>> 24 == 0xFF);

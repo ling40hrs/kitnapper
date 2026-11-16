@@ -1,18 +1,15 @@
 package kitnapper.view;
 
 import java.awt.BorderLayout;
-import java.awt.CardLayout;
 import java.awt.Window;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -23,9 +20,9 @@ import kitnapper.model.EquipmentCategory;
 import kitnapper.model.EquipmentStatus;
 
 /**
- * The §8.1 catalog page: page header, table or cards on the left, the fixed
- * preview pane on the right, and the counts registered on the shell status
- * bar. Query and selection state live in {@link CatalogPresenter}; every rule
+ * The §8.1 catalog page: page header, the {@link CatalogBody} (table or cards
+ * plus the preview pane), and the counts registered on the shell status bar.
+ * Query and selection state live in {@link CatalogPresenter}; every rule
  * (search, filters, checkout, hints) comes from the controller through
  * {@link Actions}. Views never import the controller or the services.
  */
@@ -50,37 +47,38 @@ public final class CatalogScreen extends JPanel {
         void setStatus(String left, String right);
     }
 
-    private static final String TABLE = "table";
-    private static final String CARDS = "cards";
-    private static final String EMPTY = "empty";
-    private static final int PAD_X = 32;
-
     private final Actions actions;
     private final JTextField search;
     private final CatalogFilters filters = new CatalogFilters();
     private final CatalogTable table = new CatalogTable();
-    private final CatalogCards cards = new CatalogCards();
-    private final PreviewPane preview = new PreviewPane(this::requestCheckout);
+    private final CatalogBody body;
     private final CatalogPresenter presenter;
-    private final JPanel left = new JPanel(new CardLayout());
-    private final JScrollPane tableScroll;
-    private final EmptyState empty;
     private int layout;
 
     public CatalogScreen(Actions actions, JTextField searchField) {
+        this(actions, searchField, PhotoSource.NONE);
+    }
+
+    /**
+     * @param photos item photos for the cards layout and the preview pane;
+     *               {@link PhotoSource#NONE} keeps every media block on the
+     *               category fallback tile
+     */
+    public CatalogScreen(Actions actions, JTextField searchField, PhotoSource photos) {
         super(new BorderLayout());
         this.actions = Objects.requireNonNull(actions, "actions");
         this.search = Objects.requireNonNull(searchField, "searchField");
-        this.tableScroll = table.inScrollPane();
         JButton clear = UiFactory.secondaryButton("Clear filters");
         clear.addActionListener(e -> clearFilters());
-        this.empty = new EmptyState(Fonts.glyph("\uE721", "\u2315"),
+        EmptyState empty = new EmptyState(Fonts.glyph("\uE721", "\u2315"),
             "No gear matches this filter.", "Try another search, or clear the filters.", clear);
-        this.presenter = new CatalogPresenter(actions, filters, search, table, cards, preview);
+        this.body = new CatalogBody(table, empty, photos, this::requestCheckout);
+        this.presenter = new CatalogPresenter(actions, filters, search, table,
+            body.cards(), body.preview());
         setOpaque(false);
         ScreenCatalog.Meta meta = ScreenCatalog.meta("catalog");
         add(new PageHeader(meta.title(), meta.subtitle()), BorderLayout.NORTH);
-        add(buildBody(), BorderLayout.CENTER);
+        add(body, BorderLayout.CENTER);
         wire();
         reload();
     }
@@ -98,16 +96,15 @@ public final class CatalogScreen extends JPanel {
     /** Re-runs the query and re-renders both layouts; also the store-change hook. */
     public void reload() {
         presenter.reload();
-        showLeft();
+        body.showView(layout, presenter.isEmpty());
         actions.setStatus(presenter.statusLeft(), presenter.aggregate());
     }
+
     /** Re-applies token colors after a Theme switch (design §8.10). */
     public void refreshTheme() {
         UiFactory.refresh(this);
         filters.refreshTheme();
-        cards.refreshTheme();
-        preview.refreshTheme();
-        tableScroll.getViewport().setBackground(Theme.bgSurface);
+        body.refreshTheme();
         repaint();
     }
 
@@ -116,7 +113,7 @@ public final class CatalogScreen extends JPanel {
     }
 
     CatalogCards cards() {
-        return cards;
+        return body.cards();
     }
 
     CatalogFilters filters() {
@@ -124,7 +121,7 @@ public final class CatalogScreen extends JPanel {
     }
 
     PreviewPane preview() {
-        return preview;
+        return body.preview();
     }
 
     /** Search plus both combos back to neutral, layout back to table. */
@@ -132,7 +129,7 @@ public final class CatalogScreen extends JPanel {
         presenter.clearFilters();
         filters.selectLayout(0);
         layout = 0;
-        showLeft();
+        body.showView(layout, presenter.isEmpty());
         actions.setStatus(presenter.statusLeft(), presenter.aggregate());
     }
 
@@ -140,7 +137,7 @@ public final class CatalogScreen extends JPanel {
         filters.setOnFilterChanged(this::reload);
         filters.setOnLayoutChanged(this::showLayout);
         table.setOnSelect(presenter::select);
-        cards.setOnSelect(presenter::select);
+        body.cards().setOnSelect(presenter::select);
         search.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
                 reload();
@@ -158,16 +155,7 @@ public final class CatalogScreen extends JPanel {
 
     private void showLayout(int index) {
         layout = index;
-        showLeft();
-    }
-
-    private void showLeft() {
-        CardLayout cardsLayout = (CardLayout) left.getLayout();
-        if (presenter.isEmpty()) {
-            cardsLayout.show(left, EMPTY);
-        } else {
-            cardsLayout.show(left, layout == 0 ? TABLE : CARDS);
-        }
+        body.showView(layout, presenter.isEmpty());
     }
 
     /**
@@ -182,18 +170,5 @@ public final class CatalogScreen extends JPanel {
                 + Formats.date(dueDate));
             reload();
         });
-    }
-
-    private JPanel buildBody() {
-        JPanel body = new JPanel(new BorderLayout(16, 0));
-        body.setOpaque(false);
-        body.setBorder(BorderFactory.createEmptyBorder(0, PAD_X, 16, PAD_X));
-        left.setOpaque(false);
-        left.add(tableScroll, TABLE);
-        left.add(cards, CARDS);
-        left.add(empty, EMPTY);
-        body.add(left, BorderLayout.CENTER);
-        body.add(preview, BorderLayout.EAST);
-        return body;
     }
 }

@@ -23,9 +23,10 @@ import kitnapper.model.Equipment;
 /**
  * One §8.4 catalog card: 8 px radius {@code BG_SURFACE}, 1 px
  * {@code BORDER_SUBTLE} (raised to {@code BORDER_STRONG} on hover, {@code ACCENT}
- * plus {@code ACCENT_TINT} when selected), 16:9 fallback media, then name,
- * category, badge and monospace value. No shadow and no gradient beyond the
- * media tile. Clicking reports the item to {@link CatalogCards}.
+ * plus {@code ACCENT_TINT} when selected), 16:9 media ({@link PhotoTile} — the
+ * photo, or the category fallback), then name, category, badge and monospace
+ * value. No shadow and no gradient beyond the media tile. Clicking reports the
+ * item to {@link CatalogCards}.
  */
 final class EquipmentCard extends JPanel {
 
@@ -41,14 +42,14 @@ final class EquipmentCard extends JPanel {
     private boolean selected;
     private boolean hovered;
 
-    EquipmentCard(Equipment item, Consumer<Equipment> onClick) {
+    EquipmentCard(Equipment item, Consumer<Equipment> onClick, PhotoSource photos) {
         super(new BorderLayout(0, 8));
         this.item = item;
         this.onClick = onClick == null ? ignored -> { } : onClick;
         setOpaque(false);
         setBorder(BorderFactory.createEmptyBorder(PAD, PAD, PAD, PAD));
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        add(new GradientTile(item.getCategory(), MEDIA_WIDTH), BorderLayout.NORTH);
+        add(new PhotoTile(item, MEDIA_WIDTH, photos, PhotoTile.CARD_EDGE_PX), BorderLayout.NORTH);
         add(body(), BorderLayout.CENTER);
         setToolTipText(item.getName());
         getAccessibleContext().setAccessibleName(

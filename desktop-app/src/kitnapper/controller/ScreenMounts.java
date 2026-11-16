@@ -51,7 +51,7 @@ final class ScreenMounts {
         penalties = new PenaltyController(context);
         catalogScreen = new CatalogScreen(
             new CatalogActions(catalog, new BorrowingController(context), status),
-            frame.searchField());
+            frame.searchField(), new ItemPhotos(context));
         catalog.setOnChanged(catalogScreen::reload);
         frame.mount("catalog", catalogScreen, catalogScreen.commands(),
             catalogScreen::onShown);

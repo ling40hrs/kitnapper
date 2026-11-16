@@ -28,12 +28,6 @@ public final class ImageRules {
     /** Longest edge of a stored photo (design §12). */
     public static final int MAX_EDGE_PX = 1024;
 
-    /** Card thumbnail decode target (design §12). */
-    public static final int CARD_EDGE_PX = 160;
-
-    /** Preview-pane decode target (design §12). */
-    public static final int PREVIEW_EDGE_PX = 640;
-
     /** Re-encode quality (design §12). */
     public static final float JPEG_QUALITY = 0.85f;
 

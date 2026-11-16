@@ -1,11 +1,12 @@
 # KitNapper M5 — Implementation Backbone
 
-> **Status (2026-11-16, WP1 done):** the service half of M5 is in: `ImageStore`/`PhotoCodec`
-> with the full design §12 pipeline, `InventoryService` with role and loan guards, and
-> `InventoryProbe` (81 checks) registered — `ALL PROBES GREEN` at 13/13. Screens start at
-> WP2. Starting HEAD `4ff491e` (local = `origin/main` before WP0). This file is the
-> working document for M5 and replaces `HANDOFF-M5.md` as the executable contract; the
-> scope note stays authoritative for *why* (design §12–§13, D27).
+> **Status (2026-11-16, WP2 done):** photos and skeletons are live — `PhotoTile` +
+> `SkeletonGate`/`SkeletonPanel` + `PhotoCache`, wired into catalog cards and the preview
+> pane, with `PhotoUiProbe` (20 checks) registered: `ALL PROBES GREEN` at 14/14. The
+> inventory screen starts at WP3. Starting HEAD `4ff491e` (local = `origin/main` before
+> WP0). This file is the working document for M5 and replaces `HANDOFF-M5.md` as the
+> executable contract; the scope note stays authoritative for *why* (design §12–§13,
+> D27).
 >
 > Authoritative inputs: `docs/implementation-plan.md` §4 (M5 row) and §5 (D7, D8, D11,
 > D15, D19, D22, D27), `docs/design.md` §7, §12, §13, `docs/SRS.md` §3.4–§3.5 and §6.2
@@ -366,11 +367,13 @@ assert them instead of sleeping: `DELAY_MS = 150`, `MIN_VISIBLE_MS = 300`,
 
 | File | Lines | Content |
 | :--- | ---: | :--- |
-| `view/PhotoSource.java` | 20 | §5.7 interface |
-| `view/PhotoCache.java` | 75 | access-ordered LRU, key `file@edge`, `clear()` |
-| `view/PhotoTile.java` | 150 | 16:9 media slot; skeleton → image or `GradientTile` |
-| `view/SkeletonPanel.java` | 120 | `Variant` MEDIA/PREVIEW/CARD/TABLE; flat 4 px blocks + pulse |
-| `view/SkeletonGate.java` | 155 | 150/300/167/10 000 ms, watchdog, accessible state, reduced motion |
+| `view/PhotoSource.java` | 25 | §5.7 interface, `NONE` constant for screens without photos |
+| `view/PhotoCache.java` | 60 | access-ordered LRU, key `file@edge`, `clear()` |
+| `view/PhotoTile.java` | 130 | 16:9 media; skeleton → cover-scaled photo or `GradientTile` |
+| `view/SkeletonPanel.java` | 182 | `Variant` MEDIA/PREVIEW/CARD/TABLE; flat blocks, pulse, fade |
+| `view/SkeletonGate.java` | 177 | 150/300/167/10 000 ms, watchdog, accessible name, reduced motion |
+| `view/PreviewMedia.java` | 55 | the preview pane's media slot (split from `PreviewPane`) |
+| `view/CatalogBody.java` | 76 | table/cards/preview layout (split from `CatalogScreen`) |
 | `view/ToggleSwitch.java` | 90 | 40×20 switch (§6 components), Space/Enter, accessible name |
 | `view/InventoryScreen.java` | 185 | header + "Add item", table, preview, omnibar search, status counts |
 | `view/InventoryTable.java` | 120 | `TableSkins` table, 5 columns, selection hook, `inScrollPane()` |
@@ -386,9 +389,13 @@ assert them instead of sleeping: `DELAY_MS = 150`, `MIN_VISIBLE_MS = 300`,
 | :--- | :--- |
 | `service/DataStore.java` / `DataStoreImpl.java` | add `Path folder()` |
 | `service/AppContext.java` | `images()`, `inventory()`, `rebindCurrentUser()`, sweep in constructor |
-| `view/PreviewPane.java` | 197 → ~160: media slot extracted to `PreviewMedia`; `PhotoTile` wiring |
-| `view/PreviewMedia.java` (new, ~90) | 16:9 media slot swapped between `GradientTile`/`PhotoTile`, `refreshTheme` |
+| `view/PreviewPane.java` | 197 → 198: media slot moved to `PreviewMedia`; takes a `PhotoSource` |
+| `view/CatalogScreen.java` | 199 → 174: layout extracted to `CatalogBody`; takes a `PhotoSource` (2-arg overload keeps probes working) |
+| `view/CatalogBody.java` (new, 76) | table/cards/preview layout + empty state, split at WP2 |
+| `view/PreviewMedia.java` (new, 55) | 16:9 slot swapping `PhotoTile`s |
+| `view/CatalogCards.java` | 125 → 127: passes the `PhotoSource` to each card |
 | `view/EquipmentCard.java` | media block becomes `PhotoTile` (160 px) |
+| `controller/ItemPhotos.java` (new, 27) | `PhotoSource` bridge over `AppContext.images()`, shared by catalog and inventory |
 | `view/PageHeader.java` | 24 → ~40: optional right-aligned action slot |
 | `view/ScreenCatalog.java` | no route change; verify `settings`/`inventory` meta wording |
 | `controller/ScreenMounts.java` | mount `inventory` + `settings`; `reloadAll()`; split if > 150 |
@@ -437,7 +444,7 @@ Author this file; re-prove baseline; static audits; commit. No application code.
 - Register `InventoryProbe` in `run-all.sh`.
 - **Done when:** the probe proves D19/D22/D32-photo/D7 rules headless; build + suite green.
 
-### WP2 — Skeleton and photo display, wired into catalog
+### WP2 — Skeleton and photo display, wired into catalog (DONE 2026-11-16)
 
 - `SkeletonPanel`, `SkeletonGate`, `PhotoCache`, `PhotoSource`, `PhotoTile`.
 - Split `PreviewPane` → `PreviewMedia`; wire `EquipmentCard` (160 px) and the preview
@@ -803,3 +810,55 @@ and promote (13), reset and re-bind (15 was measured inside `ResetChecks`; total
 probe's single `PASS=81`).
 
 **Next:** WP2 — skeleton and photo display.
+
+### WP2 — Skeleton and photo display, wired into catalog (2026-11-16)
+
+**Starting HEAD:** `b7bb5e3` (WP1), tree clean.
+
+**What changed:** new `PhotoSource`, `PhotoCache`, `PhotoTile`, `SkeletonPanel`,
+`SkeletonGate`, `PreviewMedia`, `CatalogBody` (view) and `ItemPhotos` (controller);
+`PreviewPane`, `EquipmentCard`, `CatalogCards`, `CatalogScreen`, `ScreenMounts` wired to
+the photo source; `ImageRules` lost the two display edge constants (they moved to
+`PhotoTile` so no view imports the service layer); two probe files registered.
+
+**Commands run and results:**
+
+| Command | Result |
+| :--- | :--- |
+| `./build.sh` | `BUILD OK -> build/classes (213 classes)`, zero warnings |
+| `./test/run-all.sh` | `ALL PROBES GREEN` — 14/14 registered |
+| `java ... kitnapper.view.PhotoUiProbe` (xvfb) | `PASS=20 FAIL=0` |
+| `sh ../../netbeans/extide/ant/bin/ant clean jar` | `BUILD SUCCESSFUL` |
+| `wc -l` sweep | no file > 200; `SkeletonPanel` 182, `SkeletonGate` 177, `PreviewPane` 198 |
+| hex / view-import / suppression grep | all clean |
+
+**Deviations from the written plan, and why:**
+
+1. **`CatalogScreen` measured 210 after wiring** (plan said 199 + a few). The body
+   assembly moved to `CatalogBody` (76) and the screen landed at 174 — a second split
+   beyond the §6.5 rule, same reason.
+2. **`PhotoTileChecks` measured 238**; fixtures and EDT helpers moved to
+   `PhotoProbeSupport` (test-only), leaving 118.
+3. **`AccessibleContext.setAccessibleRole` is not public API** — the skeleton carries the
+   accessible name "Loading photo" (one change at start, one at end) but not the
+   `PROGRESS_BAR` role design §13.5 names. Recorded as a deviation for WP6 rather than
+   subclassing accessibility internals.
+4. **Display decode targets live in `PhotoTile`** (`CARD_EDGE_PX` 160,
+   `PREVIEW_EDGE_PX` 640), not `ImageRules`: a view constant in the service would have
+   forced `view → service` imports, which the layering rule forbids. `ImageRules` keeps
+   the storage facts (folder, extensions, 20 MB, 1024 px, q0.85).
+5. **`controller/ItemPhotos` added** (not planned): the plan had `InventoryActions`
+   implement `PhotoSource`, but the catalog needs photos too (SRS §6.2 step 11), so one
+   shared bridge keeps a single implementation.
+6. **`PreviewPane` is 198, not ~160.** Only the media slot left the class; the metadata
+   rows, action bar, and caption helpers stayed. Under the cap, but with no room left —
+   WP3 must not grow it, and Inventory gets its own pane as planned.
+
+**Behaviour proven:** a photo paints on a card and in the preview (wiring checks), no
+photo is the category tile with no skeleton, a fast decode shows no skeleton at all, a
+slow one shows blocks and then the photo, a throwing source and an empty result both end
+on the fallback with no skeleton left behind, the cache fills and clears, reduced motion
+stops the pulse and makes the fade instant, and the timing constants are 150/300/167/
+10 000 ms.
+
+**Next:** WP3 — the inventory screen.

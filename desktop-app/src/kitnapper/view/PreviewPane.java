@@ -21,10 +21,10 @@ import kitnapper.model.Equipment;
 
 /**
  * The §8.3 280 px preview pane: {@code BG_ELEVATED} with a 1 px left border,
- * 16:9 fallback media, title, five metadata rows, and one pinned primary
- * action with a hint caption beneath. Borrowers see <b>Check out</b> (enabled
- * only when the item is borrowable); managers see the caption without the
- * button. Nothing selected shows the muted empty state instead.
+ * 16:9 media ({@link PreviewMedia}), title, five metadata rows, and one pinned
+ * primary action with a hint caption beneath. Borrowers see <b>Check out</b>
+ * (enabled only when the item is borrowable); managers see the caption without
+ * the button. Nothing selected shows the muted empty state instead.
  */
 final class PreviewPane extends JPanel {
 
@@ -37,7 +37,7 @@ final class PreviewPane extends JPanel {
     private final Consumer<Equipment> onCheckout;
     private final CardLayout states = new CardLayout();
     private final JPanel stack = new JPanel(states);
-    private final JPanel mediaSlot = new JPanel(new BorderLayout());
+    private final PreviewMedia media;
     private final JPanel statusSlot = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
     private final JLabel title = new JLabel();
     private final JLabel categoryValue = valueLabel(false);
@@ -48,9 +48,10 @@ final class PreviewPane extends JPanel {
     private final JLabel hint = UiFactory.label("", "muted");
     private Equipment shown;
 
-    PreviewPane(Consumer<Equipment> onCheckout) {
+    PreviewPane(Consumer<Equipment> onCheckout, PhotoSource photos) {
         super(new BorderLayout());
         this.onCheckout = onCheckout == null ? item -> { } : onCheckout;
+        this.media = new PreviewMedia(MEDIA_WIDTH, photos);
         setOpaque(false);
         setPreferredSize(new Dimension(WIDTH, 0));
         setMinimumSize(new Dimension(WIDTH, 0));
@@ -66,8 +67,7 @@ final class PreviewPane extends JPanel {
     /** Paint state for the current selection, as decided by {@link CatalogScreen}. */
     void show(Equipment item, boolean actionVisible, boolean actionEnabled, String hintText) {
         shown = item;
-        mediaSlot.removeAll();
-        mediaSlot.add(new GradientTile(item.getCategory(), MEDIA_WIDTH), BorderLayout.CENTER);
+        media.show(item);
         title.setText(item.getName());
         title.setToolTipText(item.getName());
         statusSlot.removeAll();
@@ -83,7 +83,6 @@ final class PreviewPane extends JPanel {
         hint.setToolTipText(hasHint ? hintText : null);
         hint.getAccessibleContext().setAccessibleName(hasHint ? hintText : null);
         hint.setVisible(hasHint);
-        mediaSlot.revalidate();
         statusSlot.revalidate();
         states.show(stack, "detail");
         revalidate();
@@ -93,11 +92,13 @@ final class PreviewPane extends JPanel {
     /** Back to "Select an item to see details." */
     void clear() {
         shown = null;
+        media.clear();
         states.show(stack, "empty");
         repaint();
     }
 
     void refreshTheme() {
+        media.refreshTheme();
         UiFactory.refresh(this);
         repaint();
     }
@@ -126,8 +127,8 @@ final class PreviewPane extends JPanel {
         JPanel info = new JPanel();
         info.setOpaque(false);
         info.setLayout(new BoxLayout(info, BoxLayout.Y_AXIS));
-        mediaSlot.setOpaque(false);
-        info.add(mediaSlot);
+        media.setOpaque(false);
+        info.add(media);
         info.add(Box.createVerticalStrut(12));
         title.setFont(Fonts.display(16, Font.BOLD));
         title.putClientProperty(UiFactory.ROLE, "title");

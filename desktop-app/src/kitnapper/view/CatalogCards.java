@@ -30,10 +30,12 @@ final class CatalogCards extends JPanel {
     private final JPanel grid = new JPanel(new GridLayout(0, 3, GAP, GAP));
     private final Map<String, EquipmentCard> cards = new LinkedHashMap<>();
     private final JScrollPane scroll;
+    private final PhotoSource photos;
     private Consumer<Equipment> onSelect = item -> { };
 
-    CatalogCards() {
+    CatalogCards(PhotoSource photos) {
         super(new BorderLayout());
+        this.photos = photos == null ? PhotoSource.NONE : photos;
         setOpaque(false);
         grid.setOpaque(false);
         grid.setBorder(BorderFactory.createEmptyBorder(0, 0, GAP, 0));
@@ -54,7 +56,7 @@ final class CatalogCards extends JPanel {
         cards.clear();
         grid.removeAll();
         for (Equipment item : items) {
-            EquipmentCard card = new EquipmentCard(item, this::choose);
+            EquipmentCard card = new EquipmentCard(item, this::choose, photos);
             cards.put(item.getId(), card);
             grid.add(card);
         }
