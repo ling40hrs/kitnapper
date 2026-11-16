@@ -46,8 +46,10 @@ final class SettlePenaltyDialog {
         JTextField reason = UiFactory.textField("Why is this fee waived?");
         FlatButton confirm = new FlatButton("Confirm", FlatButton.Role.PRIMARY);
         apply(choice, reason, confirm);
-        choice.setSelectedIndex(segmentOf(initial));
+        // Listener before the initial pick: the Waive path must arrive with an
+        // enabled reason field and a destructive confirm (§8.9).
         choice.addChangeListener(index -> apply(choice, reason, confirm));
+        choice.setSelectedIndex(segmentOf(initial));
 
         boolean done = Dialogs.showForm(owner, "Settle penalty",
             body(row, choice, reason), confirm,
