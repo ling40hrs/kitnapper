@@ -10,7 +10,7 @@
 | Problem | Replace physical sign-out logbooks for schools/studios |
 | Team | **YAPPERS** (group project): Casiano, Cudia, Villacorza |
 | Course | CS203 – Object-Oriented Programming |
-| Current phase | Implementation — M3 (catalog + checkout); WP1 services landed at `19a1e1b`, catalog UI next |
+| Current phase | Implementation — M4 delivered (returns, fees, manager views); M5 (inventory, photos, reset) next |
 
 ## 2. Product Decisions (from PRD interview)
 
@@ -75,12 +75,12 @@
 | File | Version | Contents |
 | :--- | :--- | :--- |
 | `docs/PRD.md` | 3.1.1 | Product requirements, domain model, state machines, seed data, optional per-item photo; clarified maintenance-flag return behavior |
-| `docs/SRS.md` | 3.1.2 | Verifiable requirements, invariants, demo walkthrough, traceability, image-storage NFR; FR-06 clarification; §6.2 step 6 notes that the due-date picker makes an out-of-window date unreachable and the probe proves the rejection |
+| `docs/SRS.md` | 3.1.4 | Verifiable requirements, invariants, demo walkthrough, traceability, image-storage NFR; FR-06 return-picker acceptance; FR-11 settlement acceptance; §6.2 step 6 notes that the due-date picker makes an out-of-window date unreachable and the probe proves the rejection |
 | `docs/design.md` | 2.0.0 | Windows 11 / Fluent direction (Files app): neutral ramp + amber accent, tokens, chrome/shell, components, photo uploads; §13 skeleton loading states resolved (150/300/167 ms, flat pulse, gated queries) |
 | `docs/seed-data.md` | — | Points to PRD §9; save-file/reset behaviour |
 | `docs/preferences.md` | — | Tracked, machine-independent working preferences (planning, one phase per turn, commit policy, verification) |
 | `docs/decisions.md` | — | This file |
-| `docs/implementation-plan.md` | 1.8.0 | Class/file inventory, JSON persistence spec, milestones M0–M6, implementation decisions D1–D27 (written 2026-11-14 before any code; 1.2.0 adds D14–D16 from M0; 1.3.0 adds D17–D23 post-M0 findings; 1.4.0 adds the skeleton inventory from design §13; 1.6.0 defers photos/skeletons to M5 (D27); 1.7.0 rebuilds the probe harness; 1.8.0 records M3 as delivered with D24–D26 and the actual 85-file inventory) |
+| `docs/implementation-plan.md` | 1.9.0 | Class/file inventory, JSON persistence spec, milestones M0–M6, implementation decisions D1–D31 (written 2026-11-14 before any code; 1.2.0 adds D14–D16 from M0; 1.3.0 adds D17–D23 post-M0 findings; 1.4.0 adds the skeleton inventory from design §13; 1.6.0 defers photos/skeletons to M5 (D27); 1.7.0 rebuilds the probe harness; 1.8.0 records M3 as delivered with D24–D26 and the actual 85-file inventory; 1.9.0 records M4 delivered, inventory 117 files / 10,788 lines, decisions D28–D31) |
 
 ## 5. Design Direction
 
@@ -166,6 +166,7 @@ The attribution rules above now run on the Windows machine, not just the origina
   toasts overlap the preview action bar while visible. Inventory and docs:
   `docs/implementation-plan.md` 1.8.0 (D24–D26), `docs/design.md` §5,
   `docs/SRS.md` §6.2, `README.md`, `HANDOFF-M4.md`.
+- **M4 complete: returns, late fees, penalty settlement, manager views** (2026-11-16, WP0–WP5 + width pass). Real screens for My Loans, All Loans, Overdue, Penalties and Dashboard; `PenaltyService(+Impl)`/settle (manager-only, one-way, reason-mandatory waive), `accruedFee(loanId, asOf)` overload, shared `LoansTable`/`LoansTableModel`/`LoanPreviewPane`, `ReturnDialog`/`SettlePenaltyDialog`, `ScreenMounts`/`CatalogActions` extracted from `AppController`. Verified with `./build.sh` (187 classes, zero warnings), `ant clean jar`, `test/run-all.sh` — 11/11 green plus `LoansUiProbe PASS=101 FAIL=0` (manual). Seed scenario holds: 1 overdue row (L-003, ₱200.00), return freezes exactly one penalty, waive with reason persists. Docs: `docs/implementation-plan.md` 1.9.0 (D28–D31), `docs/SRS.md` 3.1.4 (FR-06/FR-11 acceptance), `HANDOFF-M4-PLAN.md`. Known M6 polish: 1024×640 preview clipping, toast overlap.
 - **Scope: photos + skeleton loading moved to M5** (2026-11-15, D27). Seed items
   carry no photos (D11) and catalog queries are synchronous, so `PhotoTile`,
   `SkeletonPanel`, `SkeletonGate`, `SkeletonProbe`, and `PhotoTileProbe` ship

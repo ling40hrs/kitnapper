@@ -6,18 +6,22 @@
 > Written: 2026-11-16 · Status: **approved, WP0 committed**
 > Previous plan: `HANDOFF-M3-PLAN.md` (M3 record, complete). Scope note: `HANDOFF-M4.md`.
 
-> **Resume here (fresh session):** M4 WP5 is **done** (Dashboard mounted for
-> managers — see §17). Execute **one work package per turn**, in order, next
-> **WP6 — Verification, docs, handoff** (probe registration, static audits,
-> `ant clean jar`, SRS §6.2 by hand, docs §11, `HANDOFF-M5.md`). Read this
-> file end to end, then `AGENTS.md` and `docs/preferences.md`;
-> `HANDOFF-M4.md` §4–§5 is still the reuse map and gotcha list. Every WP ends
-> with `./build.sh` + `./test/run-all.sh` green, a log entry in §17, and a
-> commit under the documented-task rule. Current state at WP5: 116 Java files /
-> 10,722 lines; 24 probe files / 2,669 lines; 10/10 probes green (`LoanProbe`
-> PASS=35); `LoansUiProbe` (manual, WP6 registers it) `PASS=101`; tallest file
-> still `CatalogScreen` 199. Reuse for WP6: `DashboardUiChecks`,
-> `DashboardScreen.section()`, the mount smoke recipe in §17 WP5.
+> **Resume here (fresh session):** M4 WP5 and the width pass are **done**
+> (see §17). **WP6 — Verification, docs, handoff** remains open: register
+> `LoansUiProbe` in `run-all.sh` (if desired), complete static audits,
+> `ant clean jar`, SRS §6.2 steps 7–10 by hand, finalize docs per §11
+> (including `HANDOFF-M5.md`), and record the WP6 close-out in §17. Read this
+> file end to end, then `AGENTS.md` and `docs/preferences.md`; `HANDOFF-M4.md`
+> §4–§5 is still the reuse map and gotcha list. Every WP ends with `./build.sh`
+> + `./test/run-all.sh` green, a log entry in §17, and a commit under the
+> documented-task rule. Current state (post width pass, `2e54c42`): 117 Java
+> files / 10,788 lines; 25 probe files / 2,791 lines; 11/11 probes green in
+> `run-all.sh` (`LoansLayoutProbe` registered; `LoanProbe` PASS=35);
+> `LoansUiProbe` (manual) `PASS=101`; tallest file `CatalogScreen` 199. Reuse
+> for WP6: `DashboardUiChecks`, `DashboardScreen.section()`, the mount smoke
+> recipe in §17 WP5. Note: core M4 docs and `HANDOFF-M5.md` were drafted during
+> a 2026-11-16 documentation audit — verify completeness against §11 before
+> closing WP6.
 
 ---
 

@@ -1,9 +1,11 @@
-# HANDOFF — M3 done, next: M4 (loans, returns, fees)
+# HANDOFF — M4 (loans, returns, fees) — historical scope note
 
-> **Status (2026-11-16):** M4 is planned. The approved contract — data
-> contracts, work packages, file inventory, probe plan, docs list, definition of
-> done — is **`HANDOFF-M4-PLAN.md`**; where this note and the plan disagree, the
-> plan wins. This file remains the scope note, reuse map, and gotcha list.
+> **Status (2026-11-16, M4 close-out):** M4 is **delivered** (WP0–WP5 + width pass
+> committed and pushed at `2e54c42`; `LoansUiProbe` PASS=101 manual, 11/11 probes
+> green in `run-all.sh`). The approved contract and execution log are
+> **`HANDOFF-M4-PLAN.md`**; this file remains the scope note, reuse map, and gotcha
+> list. For next work see **`HANDOFF-M5.md`**. Where this note and the plan disagree,
+> the plan wins.
 
 Written 2026-11-16 at the M3 close-out (`feat(m3)` + `test(m3)` commits, docs
 commit alongside this file). Read `docs/preferences.md` §2–§3 and
