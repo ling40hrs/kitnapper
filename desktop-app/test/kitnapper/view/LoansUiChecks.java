@@ -14,6 +14,7 @@ import kitnapper.controller.LoansController;
 import kitnapper.model.Equipment;
 import kitnapper.model.EquipmentStatus;
 import kitnapper.model.LoanStatus;
+import kitnapper.model.UserRole;
 import kitnapper.service.AppContext;
 
 /**
@@ -85,6 +86,12 @@ final class LoansUiChecks {
         UiProbeSupport.check("all-fee-cell", "₱200.00".equals(Formats.money(
             ((Number) table.getValueAt(viewRowOf(table, "L-003"), 7)).doubleValue())));
 
+        // §9.3.4: a click on the Due header sorts earliest first, so L-003 leads.
+        table.getRowSorter().toggleSortOrder(4);
+        UiProbeSupport.settle(frame);
+        UiProbeSupport.check("all-sort-due",
+            table.rowAt(0) != null && "L-003".equals(table.rowAt(0).loanId()));
+
         int overdueRow = viewRowOf(table, "L-003");
         table.setRowSelectionInterval(overdueRow, overdueRow);
         UiProbeSupport.settle(frame);
@@ -123,6 +130,17 @@ final class LoansUiChecks {
         UiProbeSupport.check("all-item-available",
             item(ctx, "e-007").getStatus() == EquipmentStatus.AVAILABLE);
         frame.dispose();
+    }
+
+    /** §9.3.10: the shell's route vocabulary per role (needs no store). */
+    static void navigation() {
+        UiProbeSupport.check("nav-manager-keys", ScreenCatalog.navKeys(UserRole.MANAGER)
+            .equals(List.of("dashboard", "catalog", "allloans", "overdue", "penalties", "inventory")));
+        UiProbeSupport.check("nav-borrower-keys",
+            ScreenCatalog.navKeys(UserRole.BORROWER).equals(List.of("catalog", "myloans")));
+        UiProbeSupport.check("nav-defaults",
+            ScreenCatalog.defaultKey(UserRole.MANAGER).equals("dashboard")
+                && ScreenCatalog.defaultKey(UserRole.BORROWER).equals("catalog"));
     }
 
     /** The row carrying {@code loanId}, or a failure when it is missing. */

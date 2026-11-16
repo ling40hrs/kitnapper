@@ -23,8 +23,9 @@ import kitnapper.service.persistence.SeedData;
  * query), All Loans (table, paint, and the return that freezes the ₱200
  * penalty and frees {@code e-007}), then Penalties (settlement and the §8.9
  * body). The check bodies live in {@link LoansUiChecks},
- * {@link OverdueUiChecks} and {@link PenaltyUiChecks}; the full §9.3 flow
- * joins the suite at WP6. Needs a display (xvfb-run).
+ * {@link OverdueUiChecks} and {@link PenaltyUiChecks}. Registered in
+ * {@code test/run-all.sh} as {@code kitnapper.view.LoansUiProbe} (display), so
+ * the full §9.3 flow runs with the suite. Needs a display (xvfb-run).
  */
 public final class LoansUiProbe {
 
@@ -34,6 +35,7 @@ public final class LoansUiProbe {
 
     public static void main(String[] args) throws Exception {
         Theme.apply(true);
+        LoansUiChecks.navigation();
         Path dir = Files.createTempDirectory("kitnapper-loans-ui-probe");
         try {
             // Each pass gets its own seeded store: the Overdue pass returns
