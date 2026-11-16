@@ -6,19 +6,18 @@
 > Written: 2026-11-16 · Status: **approved, WP0 committed**
 > Previous plan: `HANDOFF-M3-PLAN.md` (M3 record, complete). Scope note: `HANDOFF-M4.md`.
 
-> **Resume here (fresh session):** M4 WP4 is **done** (Overdue, Penalties,
-> settlement — see §17). Execute **one work package per turn**, in order, next
-> **WP5 — Dashboard and final wiring** (`DashboardScreen`, `KpiCard`,
-> `ActivityList`; `AppController` mount; `DashboardController` wiring). Read this
+> **Resume here (fresh session):** M4 WP5 is **done** (Dashboard mounted for
+> managers — see §17). Execute **one work package per turn**, in order, next
+> **WP6 — Verification, docs, handoff** (probe registration, static audits,
+> `ant clean jar`, SRS §6.2 by hand, docs §11, `HANDOFF-M5.md`). Read this
 > file end to end, then `AGENTS.md` and `docs/preferences.md`;
 > `HANDOFF-M4.md` §4–§5 is still the reuse map and gotcha list. Every WP ends
 > with `./build.sh` + `./test/run-all.sh` green, a log entry in §17, and a
-> commit under the documented-task rule. Current state at WP4: 112 Java files /
-> 10,374 lines; 23 probe files / 2,498 lines; 10/10 probes green (`LoanProbe`
-> PASS=35); `LoansUiProbe` (manual, WP6 registers it) `PASS=73`; tallest file
-> still `CatalogScreen` 199. Reuse for WP5: `LoansTableSection(OVERDUE)`,
-> `DashboardController` (already complete), `KpiCard` conventions in §6.3,
-> `EmptyState`, `ActivityEntry`.
+> commit under the documented-task rule. Current state at WP5: 116 Java files /
+> 10,722 lines; 24 probe files / 2,669 lines; 10/10 probes green (`LoanProbe`
+> PASS=35); `LoansUiProbe` (manual, WP6 registers it) `PASS=101`; tallest file
+> still `CatalogScreen` 199. Reuse for WP6: `DashboardUiChecks`,
+> `DashboardScreen.section()`, the mount smoke recipe in §17 WP5.
 
 ---
 
@@ -448,13 +447,19 @@ Files: `OverdueScreen`, `PenaltiesScreen`, `PenaltiesTableModel`,
 **Gate:** SRS step 10 in the probe (waive with reason updates the badge; blank
 reason shows inline DANGER and keeps the dialog open); suite green.
 
-### WP5 — Dashboard and final wiring
+### WP5 — Dashboard and final wiring (DONE 2026-11-16)
 
 Files: `DashboardScreen`, `KpiCard`, `ActivityList`; `AppController` mount;
 `DashboardController` wiring.
 
 **Gate:** manager default screen shows 3 out / 1 overdue / 0 unpaid on seed; the
 overdue table matches `overdueLoans()`; activity newest first; suite green.
+
+**Result (2026-11-16):** gate met — `LoansUiProbe` `PASS=101 FAIL=0` with the
+new dashboard pass (seed `Out now: 3` / `Overdue: 1` / `Unpaid penalties: 0`,
+table row `L-003` at ₱200.00 / 4 days late, activity `L-001` → `L-002` →
+`L-003`; after the return `2 / 0 / 1`, empty overdue table, return event above
+its checkout). Suite 10/10, mount smoke 8/8, `ant clean jar` green. See §17.
 
 ### WP6 — Verification, docs, handoff
 
@@ -538,13 +543,18 @@ shown (M4-D5).
 
 - KPI row: three `KpiCard`s — "Out now" (`loansOut`), "Overdue"
   (`overdueCount`), "Unpaid penalties" (`unpaidCount` + `unpaidTotal` caption).
+- Layout: the cards form a 96 px-tall row on the 16 px grid; below it the
+  overdue table fills the left and a fixed 280 px "Recent activity" rail sits
+  on the right (the preview-pane width). Activity rows are two-line — muted
+  `yyyy-MM-dd` above the sentence, 1 px `BORDER_SUBTLE` hairline between rows.
 - Overdue table (mode `OVERDUE`, no preview) titled "Overdue now"; clicking a
   row navigates to Overdue? **No** — M4 keeps it read-only; navigation is the
   sidebar (no new routing surface).
 - Activity list: last six events, newest first — each loan contributes a
   checkout at `borrowDate` and, once returned, a return at `returnDate`; ties
   break by loan id desc; text "Student One checked out Sony A7 IV" /
-  "… returned Rode Wireless PRO kit · ₱200.00 fee".
+  "… returned Rode Wireless PRO kit · ₱200.00 fee" (the fee suffix appears only
+  when the return froze a fee).
 - Empty dashboard state: all three counters zero → the activity list shows "No
   lending activity yet."
 
@@ -1082,3 +1092,54 @@ again (manager login mounts Overdue + Penalties + All Loans + Catalog, borrower
 login mounts My Loans + Catalog): 6/6 OK. WP6 owns `LoansUiProbe` in the suite.
 
 Committed: `feat(m4): add Overdue and Penalties with settlement`.
+
+### WP5 — Dashboard and final wiring (2026-11-16)
+
+Starting HEAD `929e164` (WP4 close-out); tree clean; local == `origin/main`.
+
+Commands and results:
+
+```bash
+cd desktop-app && ./build.sh                    # BUILD OK -> build/classes (185 classes)
+./test/run-all.sh                               # ALL PROBES GREEN (10/10)
+xvfb-run -a java -cp "build/classes:test/out" kitnapper.view.LoansUiProbe
+                                                # PASS=101 FAIL=0 (was 73 at WP4)
+sh ../../netbeans/extide/ant/bin/ant clean jar   # BUILD SUCCESSFUL
+```
+
+Delivered: `view/KpiCard` (the shared 8 px surface with a 12 px secondary
+label, a 28 px semibold number and an optional muted caption; the accessible
+name carries label and value for the probe), `view/ActivityList` (two-line
+rows — muted date above the sentence, hairline separators, `EmptyState`
+"No lending activity yet."), `view/DashboardScreen` (96 px KPI row, read-only
+`LoansTableSection(OVERDUE)` titled "Overdue now", 280 px activity rail,
+`N loans · M overdue` / Σ UNPAID), `controller/DashboardController` implements
+`DashboardScreen.Actions`, `controller/ScreenMounts` (the §6.5 extraction:
+catalog + role screens + `refreshers`), `controller/AppController` reduced to
+session, shell, routing and theme (183 → 113 lines).
+
+Layout confirmed with the maintainer before coding: KPI row on top, overdue
+table left, activity rail right at the preview-pane width; activity rows are
+two-line. `RoundedPanel` lost `final` so `KpiCard` reuses the card surface
+instead of duplicating the paint (2-line diff, no behavior change).
+
+Probes: new `test/.../DashboardUiChecks` (28 checks) as its own seeded pass —
+this pass returns `L-003`, so it cannot share a store with the seed asserts
+(fourth per-pass store in `LoansUiProbe`). It asserts the KPI accessible names,
+the caption, the table against `controller.overdueLoans()` (id by id), the
+activity sentences in tree order, the §5.7 status strings, and dark/light
+non-blank paints.
+
+AppController still has no probe coverage; the `ScreenMounts` extraction was
+smoked ad hoc under xvfb by reflecting `openMain`/`signOut` (`/tmp/opencode/
+MountSmoke2.java`, not committed): manager lands on the Dashboard with the KPI
+row and 4 manager screens mounted, sign-out works, borrower lands on the
+Catalog with My Loans mounted and no dashboard: 8/8 OK. WP6 owns
+`LoansUiProbe` in the suite.
+
+Audits: no file over 200 (max `CatalogScreen` 199; new maximums `DashboardScreen`
+135, `ScreenMounts` 116, `ActivityList` 105); no hex outside `Theme`; no
+`service`/`controller` imports under `view`; no `@SuppressWarnings`.
+Inventory: 116 Java files / 10,722 lines; 24 probe files / 2,669 lines.
+
+Committed: `feat(m4): add the manager Dashboard`.
