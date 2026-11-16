@@ -55,6 +55,7 @@ run kitnapper.view.SizeProbe headless
 run kitnapper.FrameProbe display
 run kitnapper.CloseProbe display
 run kitnapper.view.CatalogUiProbe display
+run kitnapper.view.LoansLayoutProbe display
 
 if [ "$fail" -eq 0 ]; then
     echo "ALL PROBES GREEN"

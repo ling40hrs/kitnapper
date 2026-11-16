@@ -301,6 +301,11 @@ timing and pulse are specified in §13. Destructive actions
 - **Heights & widths:** title bar 32, omnibar 48, status bar 32, sidebar 240, preview 280,
   buttons/inputs 32 (28 compact), table row 40, table header 36, badge 20, KPI card ≥ 96.
 - **Window:** minimum 1024×640; opens at 1280×800 (user-resizable, maximizable).
+- **Loan tables:** the shared loan table never shrinks a column below the width
+  its content needs. The 280 px preview leaves ~670 px of a 1280 px window, which
+  fits My Loans and Overdue but not the eight All Loans columns, so that table
+  scrolls horizontally instead of clipping dates, badges or money; when the
+  viewport is wide enough the columns stretch to fill it.
 - **Elevation:** border + one surface step; no drop shadows anywhere (scrim + border for
   dialogs, border for toasts).
 

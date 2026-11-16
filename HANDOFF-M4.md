@@ -38,7 +38,7 @@ the plan is the contract.
   no checkout button, two-line caption "Manager view — / checkout is
   borrower-only."
 - **Verification harness** in the repository: `desktop-app/test/run-all.sh`,
-  nine probes, `xvfb-run -a` for the paint ones.
+  eleven probes, `xvfb-run -a` for the paint ones.
 
 Key files to read first (they define the patterns M4 should copy):
 `view/CatalogScreen.java`, `view/CatalogPresenter.java`,
@@ -111,7 +111,7 @@ excepted), no `service`/`controller` imports in `view`, no suppressions.
 ```bash
 cd desktop-app
 ./build.sh clean && ./build.sh          # JDK only, no Ant needed
-./test/run-all.sh                       # 9 probes, xvfb-aware
+./test/run-all.sh                       # 11 probes, xvfb-aware
 sh ../../netbeans/extide/ant/bin/ant clean jar   # literal DoD check
 ./build.sh run                          # launch (writes kitnapper-data.json in cwd)
 ```

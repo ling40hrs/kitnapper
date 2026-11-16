@@ -29,9 +29,16 @@ final class LoansTableModel extends AbstractTableModel {
 
     private record Column(String name, Class<?> type, Kind kind, int width, Field field) { }
 
+    /*
+     * Width budgets (§9): the My Loans and All Loans tables share the 280 px
+     * preview, which leaves ~670 px of a 1280 px window. My Loans and Overdue
+     * fit that budget at their preferred widths; the eight All Loans columns
+     * cannot at any readable date width, so {@link LoansTable} scrolls instead
+     * of squeezing them. Keep MY and OVERDUE at or under ~672 px.
+     */
     private static final Column[] MY_COLUMNS = {
         new Column("ID", String.class, Kind.MONO, 76, Field.ID),
-        new Column("Item", String.class, Kind.TEXT, 200, Field.ITEM),
+        new Column("Item", String.class, Kind.TEXT, 188, Field.ITEM),
         new Column("Borrowed", LocalDate.class, Kind.DATE, 104, Field.BORROWED),
         new Column("Due", LocalDate.class, Kind.DATE, 104, Field.DUE),
         new Column("Status", LoanStatus.class, Kind.STATUS, 104, Field.STATUS),
@@ -51,8 +58,8 @@ final class LoansTableModel extends AbstractTableModel {
 
     private static final Column[] OVERDUE_COLUMNS = {
         new Column("ID", String.class, Kind.MONO, 76, Field.ID),
-        new Column("Item", String.class, Kind.TEXT, 190, Field.ITEM),
-        new Column("Borrower", String.class, Kind.TEXT, 130, Field.BORROWER),
+        new Column("Item", String.class, Kind.TEXT, 176, Field.ITEM),
+        new Column("Borrower", String.class, Kind.TEXT, 118, Field.BORROWER),
         new Column("Due", LocalDate.class, Kind.DATE, 100, Field.DUE),
         new Column("Days late", Long.class, Kind.TEXT, 90, Field.DAYS_LATE),
         new Column("Accrued fee", Double.class, Kind.MONEY, 110, Field.FEE),

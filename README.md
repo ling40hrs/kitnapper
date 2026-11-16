@@ -69,7 +69,7 @@ Finals/                       (the repository root)
     │   │   └── persistence/  hand-written JSON parser, writer, mappers (M1)
     │   ├── controller/       AppController, CatalogController, BorrowingController
     │   └── view/             theme, chrome, shell, login, catalog, preview, dialogs
-    ├── test/                 probe harness: 9 probes + run-all.sh (xvfb-aware)
+    ├── test/                 probe harness: 11 probes + run-all.sh (xvfb-aware)
     └── resources/
         └── fonts/              bundled Inter (Regular, SemiBold, Bold)
 ```
@@ -151,6 +151,6 @@ Documentation complete; M0 (domain core), M1 (JSON persistence), M2 (Win11 shell
 
 M3 ships the real Catalog screen: search plus category/status filters, a details table with a 280 px preview pane, a cards view with shared selection, an empty state, and a 480 px checkout dialog whose due date is a `T … T+14` picker. Checkout persists, locks the item, and keeps validation errors inline. Managers get the same catalog read-only — no checkout action, an explicit caption instead. The successful 2026-11-15 debt pass cleared every 200-line violation, enabled `-Xlint:all`, and added `desktop-app/build.sh` plus `.gitattributes`.
 
-Verification lives **inside** the repository: `desktop-app/test/run-all.sh` builds the app and runs nine probes (`DataProbe`, `CatalogProbe`, `SkinProbe`, `FontProbe`, `EdgeProbe`, `SizeProbe`, `FrameProbe`, `CloseProbe`, `CatalogUiProbe`), using `xvfb-run -a` for the paint probes so they work with or without a display. It is the gate for every remaining work package, together with the SRS §6.2 walkthrough.
+Verification lives **inside** the repository: `desktop-app/test/run-all.sh` builds the app and runs eleven probes (`DataProbe`, `CatalogProbe`, `LoanProbe`, `SkinProbe`, `FontProbe`, `EdgeProbe`, `SizeProbe`, `FrameProbe`, `CloseProbe`, `CatalogUiProbe`, `LoansLayoutProbe`), using `xvfb-run -a` for the paint probes so they work with or without a display. It is the gate for every remaining work package, together with the SRS §6.2 walkthrough.
 
 Next: M4 — My Loans, All Loans, Overdue, Penalties, and the manager Dashboard, with return logging, frozen late fees, and settlement. The M4 plan (`HANDOFF-M4-PLAN.md`) is approved and implementation starts at WP1; then M5 (inventory, photos, reset) and M6 (polish). See `docs/decisions.md` for the decision record, `docs/implementation-plan.md` for the build order, and `HANDOFF-M3-PLAN.md` for the M3 record.

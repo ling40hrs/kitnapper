@@ -1143,3 +1143,42 @@ Audits: no file over 200 (max `CatalogScreen` 199; new maximums `DashboardScreen
 Inventory: 116 Java files / 10,722 lines; 24 probe files / 2,669 lines.
 
 Committed: `feat(m4): add the manager Dashboard`.
+
+### Verification pass — loans-table column clipping (2026-11-16)
+
+Starting HEAD `bfa24cd`; tree clean; local == `origin/main`.
+
+Found by an independent headless run of the real entry point at 1280×800: the
+All Loans table (eight columns, 876 px preferred) was auto-shrunk into the
+~670 px the fixed 280 px preview leaves, clipping dates (`2026-1…`), the
+`OVERDUE` badge (`Overdu`) and the fee (`₱20…`); the Dashboard overdue table
+clipped its Due column. My Loans and Overdue fitted that width.
+
+Fix: `view/LoansWidthPolicy` (new, 52 lines) — the table stays
+`AUTO_RESIZE_OFF` while its columns do not fit (so it scrolls horizontally) and
+switches to `AUTO_RESIZE_SUBSEQUENT_COLUMNS` once the viewport can hold them,
+restoring the §8.1 widths when it narrows again. `LoansTableModel` MY and
+OVERDUE widths trimmed to 672/670 px so those screens stretch rather than
+scroll at 1280 and 1024 stays readable.
+
+Commands and results:
+
+```bash
+cd desktop-app && ./build.sh       # BUILD OK -> build/classes (188 classes)
+./test/run-all.sh                  # ALL PROBES GREEN (11/11)
+```
+
+Probes: `test/kitnapper/view/LoansLayoutProbe` (12 checks) mounts each mode at
+678 px and 1020 px and asserts no column is narrower than its widest cell, plus
+the resize-mode contract. Negative control: restoring the old always-stretch
+policy fails `all-narrow-mode` and `all-narrow-no-clipping`, so the probe guards
+the regression.
+
+Independent re-check (`/tmp/opencode`, not committed): 37/37 launch-and-route
+checks and 44/44 data-boundary checks against this tree. All Loans now measures
+76/180/130/100/100/100/100/90 at 1280 with every date, badge and amount legible,
+and stretches to fill at 1600.
+
+Audits: no file over 200 (`LoansTable` 178, `LoansWidthPolicy` 52); no hex
+outside `Theme`; no `service`/`controller` imports under `view`; no
+`@SuppressWarnings`.
