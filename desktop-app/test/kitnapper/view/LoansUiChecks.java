@@ -11,12 +11,9 @@ import javax.swing.JFrame;
 
 import kitnapper.controller.LoansActions;
 import kitnapper.controller.LoansController;
-import kitnapper.controller.PenaltyController;
 import kitnapper.model.Equipment;
 import kitnapper.model.EquipmentStatus;
 import kitnapper.model.LoanStatus;
-import kitnapper.model.PenaltyOutcome;
-import kitnapper.model.PenaltyStatus;
 import kitnapper.service.AppContext;
 
 /**
@@ -125,40 +122,6 @@ final class LoansUiChecks {
         UiProbeSupport.check("all-aggregate-after", "₱0.00".equals(sink[1]));
         UiProbeSupport.check("all-item-available",
             item(ctx, "e-007").getStatus() == EquipmentStatus.AVAILABLE);
-        frame.dispose();
-    }
-
-    /** The frozen penalty and the settlement actions on the §8.6 pane. */
-    static void penaltyPane(AppContext ctx) {
-        List<PenaltyRow> fees = new PenaltyController(ctx).penalties();
-        UiProbeSupport.check("one-penalty", fees.size() == 1);
-        PenaltyRow penalty = fees.get(0);
-        UiProbeSupport.check("penalty-row", penalty.amount() == 200.0
-            && penalty.status() == PenaltyStatus.UNPAID);
-
-        PenaltyPreviewPane pane = new PenaltyPreviewPane(fee -> { }, fee -> { });
-        JFrame frame = frame(pane);
-        pane.show(penalty, true);
-        UiProbeSupport.settle(frame);
-        UiProbeSupport.check("penalty-amount", UiProbeSupport.hasLabel(pane, "₱200.00"));
-        UiProbeSupport.check("penalty-loan", UiProbeSupport.hasLabel(pane, "L-003"));
-        UiProbeSupport.check("penalty-item",
-            UiProbeSupport.hasLabel(pane, "Rode Wireless PRO kit"));
-        UiProbeSupport.check("penalty-badge",
-            UiProbeSupport.hasAccessibleName(pane, "Penalty status Unpaid"));
-
-        PenaltyController penalties = new PenaltyController(ctx);
-        UiProbeSupport.check("waive-ok",
-            penalties.settle(penalty, PenaltyOutcome.WAIVED, "First offense").isEmpty());
-        pane.show(penalties.penalties().get(0), true);
-        UiProbeSupport.settle(frame);
-        UiProbeSupport.check("waived-badge",
-            UiProbeSupport.hasAccessibleName(pane, "Penalty status Waived"));
-        UiProbeSupport.check("waive-reason", UiProbeSupport.hasLabel(pane, "First offense"));
-        JButton paid = UiProbeSupport.button(pane, "Mark paid");
-        JButton waive = UiProbeSupport.button(pane, "Waive\u2026");
-        UiProbeSupport.check("settled-no-actions", paid != null && waive != null
-            && !paid.isVisible() && !waive.isVisible());
         frame.dispose();
     }
 

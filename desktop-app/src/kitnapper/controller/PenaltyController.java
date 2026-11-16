@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import kitnapper.model.PenaltyOutcome;
 import kitnapper.service.AppContext;
+import kitnapper.view.PenaltiesScreen;
 import kitnapper.view.PenaltyRow;
 
 /**
@@ -14,7 +15,7 @@ import kitnapper.view.PenaltyRow;
  * settlement from {@link kitnapper.service.PenaltyService}, and failures
  * are translated into user-facing messages so the screen never catches.
  */
-public final class PenaltyController {
+public final class PenaltyController implements PenaltiesScreen.Actions {
 
     private static final String SAVE_FAILED =
             "Could not save the change. Check the app folder and retry.";
@@ -31,11 +32,13 @@ public final class PenaltyController {
     }
 
     /** Every penalty as view rows, newest assessed first. */
+    @Override
     public List<PenaltyRow> penalties() {
         return rows.toPenaltyRows(context.penalties().allPenalties());
     }
 
     /** Settles the penalty; empty means success, otherwise the message. */
+    @Override
     public Optional<String> settle(PenaltyRow row, PenaltyOutcome outcome,
                                    String reason) {
         if (row == null) {

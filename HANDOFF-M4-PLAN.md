@@ -6,19 +6,19 @@
 > Written: 2026-11-16 · Status: **approved, WP0 committed**
 > Previous plan: `HANDOFF-M3-PLAN.md` (M3 record, complete). Scope note: `HANDOFF-M4.md`.
 
-> **Resume here (fresh session):** M4 WP3 is **done** (My Loans, All Loans,
-> return logging, `CatalogActions` extraction — see §17). Execute **one work
-> package per turn**, in order, next **WP4 — Overdue, Penalties, settlement**
-> (`OverdueScreen`, `PenaltiesScreen`, `PenaltiesTableModel`,
-> `SettlePenaltyDialog`; `AppController` mounts; return from Overdue). Read this
+> **Resume here (fresh session):** M4 WP4 is **done** (Overdue, Penalties,
+> settlement — see §17). Execute **one work package per turn**, in order, next
+> **WP5 — Dashboard and final wiring** (`DashboardScreen`, `KpiCard`,
+> `ActivityList`; `AppController` mount; `DashboardController` wiring). Read this
 > file end to end, then `AGENTS.md` and `docs/preferences.md`;
 > `HANDOFF-M4.md` §4–§5 is still the reuse map and gotcha list. Every WP ends
 > with `./build.sh` + `./test/run-all.sh` green, a log entry in §17, and a
-> commit under the documented-task rule. Current state at WP3: 107 Java files /
-> 9,543 lines; 21 probe files / 2,281 lines; 10/10 probes green (`LoanProbe`
-> PASS=35); `LoansUiProbe` (manual, WP6 registers it) `PASS=39`; tallest file
-> still `CatalogScreen` 199. Reuse for WP4: `LoansTableSection`, `LoansActions`,
-> `LoansController.overdueLoans()`, `PenaltyPreviewPane`, `ReturnDialog`.
+> commit under the documented-task rule. Current state at WP4: 112 Java files /
+> 10,374 lines; 23 probe files / 2,498 lines; 10/10 probes green (`LoanProbe`
+> PASS=35); `LoansUiProbe` (manual, WP6 registers it) `PASS=73`; tallest file
+> still `CatalogScreen` 199. Reuse for WP5: `LoansTableSection(OVERDUE)`,
+> `DashboardController` (already complete), `KpiCard` conventions in §6.3,
+> `EmptyState`, `ActivityEntry`.
 
 ---
 
@@ -1020,3 +1020,65 @@ Audits: no file over 200 (max `CatalogScreen` 199, `PreviewPane` 197,
 107 Java files / 9,543 lines; 21 probe files / 2,281 lines.
 
 Committed: `feat(m4): add My Loans and All Loans with return logging`.
+
+### WP4 — Overdue, Penalties, settlement (2026-11-16)
+
+Starting HEAD `3f018f8` (WP3 close-out); tree clean; local == `origin/main`.
+
+Commands and results:
+
+```bash
+cd desktop-app && ./build.sh                    # BUILD OK -> build/classes (179 classes)
+./test/run-all.sh                               # ALL PROBES GREEN (10/10)
+xvfb-run -a java -cp "build/classes:test/out" kitnapper.view.LoansUiProbe
+                                                # PASS=73 FAIL=0 (was 39 at WP3)
+sh ../../netbeans/extide/ant/bin/ant clean jar   # BUILD SUCCESSFUL
+```
+
+Delivered: `view/OverdueScreen` (OVERDUE table, shared preview with `Log
+return`, `N overdue · M borrowers` / Σ accrued, success empty state "Nothing is
+overdue. Good." on the last return), `view/PenaltiesScreen` (penalties table,
+`PenaltyPreviewPane`, settle flow, `N penalties · M unpaid` / Σ UNPAID),
+`view/PenaltiesTableModel` + `view/PenaltiesTable` (mirrors the loans pair),
+`view/SettlePenaltyDialog` (§8.9 body, `Mark paid`/`Waive` segmented control,
+reason enabled only for Waive, confirm primary vs destructive), `controller/
+LoansActions` now also implements `OverdueScreen.Actions`, `controller/
+PenaltyController` implements `PenaltiesScreen.Actions`, `controller/
+AppController` mounts both for managers and reloads All Loans + Overdue on one
+change, `view/DialogSkin` + `view/Dialogs` take a caller-built confirm button,
+`view/FlatButton.setRole` restyles it live.
+
+Probes: new `test/.../OverdueUiChecks` and `test/.../PenaltyUiChecks`
+(`LoansUiChecks` was at 195/200); the WP3 `penaltyPane` check moved into
+`PenaltyUiChecks` against the real screen. `LoansUiProbe` now seeds a separate
+store per pass — the Overdue pass returns `L-003` on purpose, so sharing one
+store contradicted the All Loans asserts (the first run failed 5 checks before
+the split). The WP4 gate is proved on the controller path: `settle(row, WAIVED,
+"   ")` returns the reason-required message — the exact string `DialogSkin`
+renders inline while staying open — and the penalty is still UNPAID; the §8.9
+body is painted separately to prove it renders the row, with the reason field
+disabled.
+
+Deviations confirmed with the maintainer before coding:
+
+- `view/PenaltiesTable` — §6.3 listed only the model, but §8.6 needs the same
+  skinned/sortable/hover table as loans and hover is only paintable from a
+  `JTable` subclass; `PenaltiesScreen` would otherwise pass its 130-line shape.
+- `FlatButton.setRole` + the `DialogSkin`/`Dialogs` confirm-button overload —
+  §8.9 wants Confirm primary for Mark paid and destructive for Waive, which the
+  one-shot footer could not express (+12 lines across three files, all ≤ 200).
+- `OverdueScreen` — own file per §6.3, built on `LoansTableSection(OVERDUE)` and
+  `LoanPreviewPane` rather than a shared base class (refactoring WP3 was not in
+  the plan).
+
+Audits: no file over 200 (max `CatalogScreen` 199, `PreviewPane` 197,
+`PenaltyPreviewPane` 195, `LoanPreviewPane` 194, `AppController` 183); no hex
+outside `Theme`; no `service`/`controller` imports under `view`; no
+`@SuppressWarnings`. Inventory: 112 Java files / 10,374 lines; 23 probe files /
+2,498 lines.
+
+AppController still has no probe coverage; the mount path was smoked ad hoc
+again (manager login mounts Overdue + Penalties + All Loans + Catalog, borrower
+login mounts My Loans + Catalog): 6/6 OK. WP6 owns `LoansUiProbe` in the suite.
+
+Committed: `feat(m4): add Overdue and Penalties with settlement`.

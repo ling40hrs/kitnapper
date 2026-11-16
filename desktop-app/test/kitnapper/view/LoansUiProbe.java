@@ -16,13 +16,15 @@ import kitnapper.service.persistence.RootMapper;
 import kitnapper.service.persistence.SeedData;
 
 /**
- * Manual UI probe for the loan screens (plan §8.3/§8.4/§9.3). Seeds a temp save
- * at {@code T = 2026-11-14}, then runs the borrower pass (My Loans tabs and
- * preview) and the manager pass (All Loans: table, preview, dark/light paint,
- * and the return that freezes the ₱200 penalty, frees {@code e-007} and empties
- * Overdue) before the penalty pane settles it. The check bodies live in
- * {@link LoansUiChecks}; the full §9.3 flow joins the suite at WP6.
- * Needs a display (xvfb-run).
+ * Manual UI probe for the loan and penalty screens (plan §8.3–§8.6/§9.3).
+ * Seeds a temp save at {@code T = 2026-11-14} and runs each pass against its
+ * own fresh store, because the flows deliberately consume seed state: My Loans
+ * (tabs and preview), Overdue (row, preview, and the return that empties the
+ * query), All Loans (table, paint, and the return that freezes the ₱200
+ * penalty and frees {@code e-007}), then Penalties (settlement and the §8.9
+ * body). The check bodies live in {@link LoansUiChecks},
+ * {@link OverdueUiChecks} and {@link PenaltyUiChecks}; the full §9.3 flow
+ * joins the suite at WP6. Needs a display (xvfb-run).
  */
 public final class LoansUiProbe {
 
@@ -34,20 +36,34 @@ public final class LoansUiProbe {
         Theme.apply(true);
         Path dir = Files.createTempDirectory("kitnapper-loans-ui-probe");
         try {
-            seed(dir);
-            DataStoreImpl store = new DataStoreImpl(dir);
-            store.load();
-            AppContext ctx = new AppContext(store, () -> T);
-            // Every Swing read and write happens on the EDT (CatalogUiProbe rule).
+            // Each pass gets its own seeded store: the Overdue pass returns
+            // L-003 on purpose, so sharing one store would contradict the
+            // All Loans asserts that run after it.
+            AppContext ctx = context(dir);
             student(ctx);
             SwingUtilities.invokeAndWait(() -> LoansUiChecks.myLoans(ctx));
-            manager(ctx);
-            SwingUtilities.invokeAndWait(() -> LoansUiChecks.allLoans(ctx, T));
-            SwingUtilities.invokeAndWait(() -> LoansUiChecks.penaltyPane(ctx));
+
+            AppContext overdue = context(dir);
+            manager(overdue);
+            SwingUtilities.invokeAndWait(() -> OverdueUiChecks.overdue(overdue, T));
+
+            AppContext manager = context(dir);
+            manager(manager);
+            SwingUtilities.invokeAndWait(() -> LoansUiChecks.allLoans(manager, T));
+            SwingUtilities.invokeAndWait(() -> PenaltyUiChecks.penalties(manager));
+            SwingUtilities.invokeAndWait(() -> PenaltyUiChecks.dialogBody(manager));
         } finally {
             deleteTree(dir);
         }
         UiProbeSupport.finish();
+    }
+
+    /** A fresh store over a freshly seeded save file (probe isolation). */
+    private static AppContext context(Path dir) throws java.io.IOException {
+        seed(dir);
+        DataStoreImpl store = new DataStoreImpl(dir);
+        store.load();
+        return new AppContext(store, () -> T);
     }
 
     private static void student(AppContext ctx) {

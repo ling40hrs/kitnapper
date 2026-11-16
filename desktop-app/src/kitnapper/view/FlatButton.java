@@ -9,6 +9,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.RoundRectangle2D;
+import java.util.Objects;
 
 import javax.swing.JButton;
 
@@ -22,7 +23,7 @@ final class FlatButton extends JButton {
 
     enum Role { PRIMARY, SECONDARY, SUBTLE, DESTRUCTIVE }
 
-    private final Role role;
+    private Role role;
 
     FlatButton(String text, Role role) {
         super(text);
@@ -34,6 +35,15 @@ final class FlatButton extends JButton {
         setContentAreaFilled(false);
         setOpaque(false);
         setPreferredSize(new Dimension(getPreferredSize().width, 32));
+    }
+
+    /**
+     * Changes the role on a live button: the settle dialog's confirm is primary
+     * for "Mark paid" and destructive for "Waive" (§8.9).
+     */
+    void setRole(Role role) {
+        this.role = Objects.requireNonNull(role, "role");
+        repaint();
     }
 
     @Override

@@ -13,6 +13,8 @@ import kitnapper.view.CatalogScreen;
 import kitnapper.view.LoginFrame;
 import kitnapper.view.MainFrame;
 import kitnapper.view.MyLoansScreen;
+import kitnapper.view.OverdueScreen;
+import kitnapper.view.PenaltiesScreen;
 import kitnapper.view.Theme;
 
 /**
@@ -35,6 +37,8 @@ public final class AppController {
     private CatalogScreen catalogScreen;
     private MyLoansScreen myLoansScreen;
     private AllLoansScreen allLoansScreen;
+    private OverdueScreen overdueScreen;
+    private PenaltiesScreen penaltiesScreen;
 
     public AppController(AppContext context) {
         this.context = context;
@@ -89,21 +93,41 @@ public final class AppController {
         }
     }
 
-    /** Mounts the role's loan screen (§8.3/§8.4); other routes stay placeholders. */
+    /** Mounts the role's loan screens (§8.3/§8.4/§8.5/§8.6); inventory stays a placeholder. */
     private void mountLoans(UserRole role, BiConsumer<String, String> status) {
         LoansActions actions = new LoansActions(loans);
+        PenaltyController penalties = new PenaltyController(context);
         if (role == UserRole.MANAGER) {
             allLoansScreen = new AllLoansScreen(actions, status);
-            loans.setOnChanged(allLoansScreen::reload);
+            overdueScreen = new OverdueScreen(actions, status);
+            penaltiesScreen = new PenaltiesScreen(penalties, status);
             mainFrame.mount("allloans", allLoansScreen, allLoansScreen.commands(),
                 allLoansScreen::onShown);
+            mainFrame.mount("overdue", overdueScreen, overdueScreen.commands(),
+                overdueScreen::onShown);
+            mainFrame.mount("penalties", penaltiesScreen, penaltiesScreen.commands(),
+                penaltiesScreen::onShown);
+            loans.setOnChanged(this::reloadLoanScreens);
+            penalties.setOnChanged(penaltiesScreen::reload);
             refreshers.add(allLoansScreen::refreshTheme);
+            refreshers.add(overdueScreen::refreshTheme);
+            refreshers.add(penaltiesScreen::refreshTheme);
         } else {
             myLoansScreen = new MyLoansScreen(actions, status);
             loans.setOnChanged(myLoansScreen::reload);
             mainFrame.mount("myloans", myLoansScreen, myLoansScreen.commands(),
                 myLoansScreen::onShown);
             refreshers.add(myLoansScreen::refreshTheme);
+        }
+    }
+
+    /** One app-level change can move rows between All Loans and Overdue. */
+    private void reloadLoanScreens() {
+        if (allLoansScreen != null) {
+            allLoansScreen.reload();
+        }
+        if (overdueScreen != null) {
+            overdueScreen.reload();
         }
     }
 
@@ -126,6 +150,8 @@ public final class AppController {
         catalogScreen = null;
         myLoansScreen = null;
         allLoansScreen = null;
+        overdueScreen = null;
+        penaltiesScreen = null;
         refreshers.clear();
         start();
     }

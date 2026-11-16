@@ -4,6 +4,7 @@ import java.awt.Window;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import javax.swing.JButton;
 import javax.swing.JComponent;
 
 /**
@@ -36,5 +37,16 @@ public final class Dialogs {
     public static boolean showForm(Window owner, String title, JComponent body,
         String confirmLabel, boolean destructive, Supplier<Optional<String>> onConfirm) {
         return DialogSkin.show(owner, title, body, confirmLabel, destructive, onConfirm);
+    }
+
+    /**
+     * Form dialog around a caller-built confirm button, so the button can
+     * change role while the dialog is open (§8.9: the settle dialog's confirm
+     * is primary for "Mark paid" and destructive for "Waive"). The caller owns
+     * the label and role; Enter still confirms.
+     */
+    public static boolean showForm(Window owner, String title, JComponent body,
+        JButton confirm, Supplier<Optional<String>> onConfirm) {
+        return DialogSkin.show(owner, title, body, confirm, onConfirm);
     }
 }

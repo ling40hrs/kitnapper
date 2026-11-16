@@ -10,6 +10,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Optional;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 import javax.swing.AbstractAction;
@@ -41,6 +42,20 @@ final class DialogSkin {
      */
     static boolean show(Window owner, String title, JComponent body, String confirmLabel,
         boolean destructive, Supplier<Optional<String>> onConfirm) {
+        JButton confirm = destructive
+            ? UiFactory.destructiveButton(confirmLabel)
+            : UiFactory.primaryButton(confirmLabel);
+        return show(owner, title, body, confirm, onConfirm);
+    }
+
+    /**
+     * Shows a modal dialog around a caller-built confirm button, so a form can
+     * restyle it while open (§8.9: primary for "Mark paid", destructive for
+     * "Waive"). The caller owns the button's label and role.
+     */
+    static boolean show(Window owner, String title, JComponent body, JButton confirm,
+        Supplier<Optional<String>> onConfirm) {
+        Objects.requireNonNull(confirm, "confirm");
         JDialog dialog = new JDialog(owner, java.awt.Dialog.ModalityType.APPLICATION_MODAL);
         dialog.setUndecorated(true);
         dialog.setBackground(new Color(0, 0, 0, 0));
@@ -50,9 +65,6 @@ final class DialogSkin {
         JLabel error = messageLabel("");
         error.setVisible(false);
         JButton cancel = UiFactory.secondaryButton("Cancel");
-        JButton confirm = destructive
-            ? UiFactory.destructiveButton(confirmLabel)
-            : UiFactory.primaryButton(confirmLabel);
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         footer.setOpaque(false);
         footer.add(cancel);
