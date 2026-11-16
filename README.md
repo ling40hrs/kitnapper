@@ -13,7 +13,7 @@
 
 A desktop application for managing equipment loans at a small institution. KitNapper replaces the paper sign-out sheet: staff publish available gear, students check items out, and the app tracks due dates, overdue loans, and late fees.
 
-The domain core, the hand-written JSON persistence layer, the Windows 11 application shell with mock login, and the catalog/loan service layer are implemented and building. The real catalog screen, the loan/penalty views, inventory and photo uploads, and the polish pass are still to come (M3 WP2–WP6, M4–M6).
+The domain core, the hand-written JSON persistence layer, the Windows 11 application shell with mock login, and the catalog with instant checkout are implemented, building, and covered by an in-repository probe suite. The loan/penalty views, inventory and photo uploads, and the polish pass are still to come (M4–M6).
 
 ## Contents
 
@@ -38,6 +38,7 @@ Finals/                       (the repository root)
 ├── HANDOFF-M2.md
 ├── HANDOFF-M3.md
 ├── HANDOFF-M3-PLAN.md        active M3 plan and execution log
+├── HANDOFF-M4.md             M4 handoff: returns, fees, manager views
 ├── HANDOFF-SESSION-2026-11-14.md
 ├── .editorconfig             shared formatting
 ├── .gitattributes            LF everywhere; binary assets not normalized
@@ -67,8 +68,8 @@ Finals/                       (the repository root)
     │   ├── service/          services, AppContext, ID/seed helpers (M1–M3)
     │   │   └── persistence/  hand-written JSON parser, writer, mappers (M1)
     │   ├── controller/       AppController, CatalogController, BorrowingController
-    │   └── view/             theme, chrome, shell, login — catalog still a placeholder
-    ├── test/                 probe harness (WP0.5 — planned, not built yet)
+    │   └── view/             theme, chrome, shell, login, catalog, preview, dialogs
+    ├── test/                 probe harness: 9 probes + run-all.sh (xvfb-aware)
     └── resources/
         └── fonts/              bundled Inter (Regular, SemiBold, Bold)
 ```
@@ -124,10 +125,11 @@ Build output is written to `build/` and `dist/`, both of which are ignored by Gi
 | [`docs/SRS.md`](docs/SRS.md) | Numbered requirements, invariants, acceptance criteria, demo script |
 | [`docs/design.md`](docs/design.md) | Windows 11 / Fluent visual spec (v2.0): tokens, custom chrome, components, photo uploads, skeleton loading states (§13) |
 | [`docs/decisions.md`](docs/decisions.md) | Record of confirmed decisions and known gaps |
-| [`docs/implementation-plan.md`](docs/implementation-plan.md) | Build order, class/file inventory, JSON persistence spec, decisions D1–D23 |
+| [`docs/implementation-plan.md`](docs/implementation-plan.md) | Build order, class/file inventory, JSON persistence spec, decisions D1–D27 |
 | [`docs/seed-data.md`](docs/seed-data.md) | Where seed data lives and when to split it out |
 | [`docs/preferences.md`](docs/preferences.md) | Tracked, machine-independent working preferences: planning, one-phase execution, document-commit-push, verification |
 | [`HANDOFF-M3-PLAN.md`](HANDOFF-M3-PLAN.md) | **Active working document:** M3 plan, work packages, probe plan, execution log |
+| [`HANDOFF-M4.md`](HANDOFF-M4.md) | **Next milestone:** current state, M4 scope (returns, fees, manager views), reuse map, gotchas, probe commands |
 | [`HANDOFF-M3.md`](HANDOFF-M3.md), [`HANDOFF-M2.md`](HANDOFF-M2.md), [`HANDOFF-M1.md`](HANDOFF-M1.md), [`HANDOFF-SESSION-2026-11-14.md`](HANDOFF-SESSION-2026-11-14.md) | Historical records of finished milestones (machine-specific paths and probe commands are stale) |
 
 The PRD and SRS are the sources of truth for behavior. If implementation and documentation disagree, the documentation takes precedence until both are updated together.
@@ -144,6 +146,10 @@ The PRD and SRS are the sources of truth for behavior. If implementation and doc
 
 ## Status
 
-Documentation complete; M0 domain core, M1 JSON persistence, and M2 Win11 shell + mock login are implemented, audited, and building. M3 WP1 (catalog search/filter, checkout and return services, sequential IDs, controllers) landed in `19a1e1b`; **M3 WP2–WP6 are still open**, so the Catalog screen is an M2 placeholder. A 2026-11-15 debt pass cleared every 200-line violation, enabled `-Xlint:all`, added `desktop-app/build.sh` and `.gitattributes`, and deleted the stale logout runbook. Then come M4 (loans, returns, penalties), M5 (inventory, photos, reset) and M6 (polish). See `docs/decisions.md` for the decision record, `docs/implementation-plan.md` for the build order, and `HANDOFF-M3-PLAN.md` for the current work plan.
+Documentation complete; M0 (domain core), M1 (JSON persistence), M2 (Win11 shell + mock login) and **M3 (catalog + instant checkout)** are implemented, probed, and building on JDK 17.
 
-Automated verification is being rebuilt **inside** the repository under `desktop-app/test/kitnapper/` (WP0.5 in `HANDOFF-M3-PLAN.md`); it is planned, not built yet, and blocks WP2 verification. Until then, milestone verification is the SRS §6.2 walkthrough plus `./build.sh`.
+M3 ships the real Catalog screen: search plus category/status filters, a details table with a 280 px preview pane, a cards view with shared selection, an empty state, and a 480 px checkout dialog whose due date is a `T … T+14` picker. Checkout persists, locks the item, and keeps validation errors inline. Managers get the same catalog read-only — no checkout action, an explicit caption instead. The successful 2026-11-15 debt pass cleared every 200-line violation, enabled `-Xlint:all`, and added `desktop-app/build.sh` plus `.gitattributes`.
+
+Verification lives **inside** the repository: `desktop-app/test/run-all.sh` builds the app and runs nine probes (`DataProbe`, `CatalogProbe`, `SkinProbe`, `FontProbe`, `EdgeProbe`, `SizeProbe`, `FrameProbe`, `CloseProbe`, `CatalogUiProbe`), using `xvfb-run -a` for the paint probes so they work with or without a display. It is the gate for every remaining work package, together with the SRS §6.2 walkthrough.
+
+Next: M4 — My Loans, All Loans, Overdue, and Penalties, with return logging, frozen late fees, and settlement. Then M5 (inventory, photos, reset) and M6 (polish). See `docs/decisions.md` for the decision record, `docs/implementation-plan.md` for the build order, `HANDOFF-M4.md` for what comes next, and `HANDOFF-M3-PLAN.md` for the M3 record.

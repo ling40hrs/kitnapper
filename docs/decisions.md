@@ -75,12 +75,12 @@
 | File | Version | Contents |
 | :--- | :--- | :--- |
 | `docs/PRD.md` | 3.1.1 | Product requirements, domain model, state machines, seed data, optional per-item photo; clarified maintenance-flag return behavior |
-| `docs/SRS.md` | 3.1.1 | Verifiable requirements, invariants, demo walkthrough, traceability, image-storage NFR; FR-06 clarification |
+| `docs/SRS.md` | 3.1.2 | Verifiable requirements, invariants, demo walkthrough, traceability, image-storage NFR; FR-06 clarification; §6.2 step 6 notes that the due-date picker makes an out-of-window date unreachable and the probe proves the rejection |
 | `docs/design.md` | 2.0.0 | Windows 11 / Fluent direction (Files app): neutral ramp + amber accent, tokens, chrome/shell, components, photo uploads; §13 skeleton loading states resolved (150/300/167 ms, flat pulse, gated queries) |
 | `docs/seed-data.md` | — | Points to PRD §9; save-file/reset behaviour |
 | `docs/preferences.md` | — | Tracked, machine-independent working preferences (planning, one phase per turn, commit policy, verification) |
 | `docs/decisions.md` | — | This file |
-| `docs/implementation-plan.md` | 1.4.0 | Class/file inventory, JSON persistence spec, milestones M0–M6, implementation decisions D1–D23 (written 2026-11-14 before any code; v1.1.0 retargets the UI to design.md v2.0; v1.2.0 adds D14–D16 from M0; v1.3.0 adds D17–D23 post-M0 findings: AppData aggregate, load-fallback scope, kind-vs-category rule, return edge cases, ID/photo safety; v1.4.0 adds the `SkeletonPanel`/`SkeletonGate` inventory from design.md §13) |
+| `docs/implementation-plan.md` | 1.8.0 | Class/file inventory, JSON persistence spec, milestones M0–M6, implementation decisions D1–D27 (written 2026-11-14 before any code; 1.2.0 adds D14–D16 from M0; 1.3.0 adds D17–D23 post-M0 findings; 1.4.0 adds the skeleton inventory from design §13; 1.6.0 defers photos/skeletons to M5 (D27); 1.7.0 rebuilds the probe harness; 1.8.0 records M3 as delivered with D24–D26 and the actual 85-file inventory) |
 
 ## 5. Design Direction
 
@@ -91,6 +91,7 @@ app as primary reference), superseding the warm dark-dashboard pass of the same 
 - **Neutral Win11 surface ramp** (`#1F1F1F` app, `#272727` surfaces, `#323232` controls) with the **amber accent `#F0A32E` retained** as the single brand color; square outer window corners.
 - **Typography:** Segoe UI Variable → Segoe UI → bundled Inter (fallback), Segoe Fluent Icons → MDL2 → Unicode glyph fallbacks.
 - **Shell:** custom title bar (**no tabs**) + omnibar row (breadcrumb, commands, search, layout toggle), grouped sidebar, status bar with counts/selection/aggregate.
+- **Managers get a read-only Catalog** (2026-11-16, D24): manager nav is Dashboard, Catalog, All Loans, Overdue, Penalties, Inventory; the catalog is the same screen with checkout withheld (INV-3), shown as an explicit caption rather than a missing control.
 - **Catalog + Inventory default to details table + preview pane** (overrides the v1 "defaults to cards" answer); the layout toggle switches the left pane to cards.
 - **Status badges:** amber-tinted pill + semantic dot + word (never color alone; wrench glyph on `UNDER_MAINTENANCE`).
 - **Gradients are restricted to the single photo-fallback category tile** — every other surface is flat; no Mica blur, no glows, no shadows.
@@ -147,6 +148,24 @@ The attribution rules above now run on the Windows machine, not just the origina
 
 ## 9. Implementation Status
 
+- **M3 complete: catalog + instant checkout** (2026-11-16). The catalog is a
+  real screen: page header, search + category/status filters, a details table
+  with a 280 px preview pane by default, a cards toggle that shares one
+  selection, an empty state with **Clear filters**, badges, and a 480 px
+  checkout dialog whose due date is a non-editable `T … T+14` picker defaulting
+  to `T+3`. Managers get the same screen read-only (D24); checkout persists and
+  locks the item, and validation errors stay inline in the dialog.
+  `CatalogPresenter` owns query/selection/status so `CatalogScreen` stays at
+  199 lines (D26). The 15-day demo step is proven by probe, not by typing
+  (D25), and `docs/SRS.md` 3.1.2 says so. Verified with `./build.sh`,
+  `ant clean jar` (NetBeans-bundled Ant), and `test/run-all.sh` — 9/9 probes
+  green, `CatalogUiProbe` `PASS=13 FAIL=0`, manual §6.2 walkthrough captured at
+  1280×800 and 1024×640. Fixes made during that pass: the manager caption now
+  renders on two lines instead of ellipsizing at 280 px. Known M6 polish: at
+  1024×640 the preview's ID row and caption collide and table badges truncate;
+  toasts overlap the preview action bar while visible. Inventory and docs:
+  `docs/implementation-plan.md` 1.8.0 (D24–D26), `docs/design.md` §5,
+  `docs/SRS.md` §6.2, `README.md`, `HANDOFF-M4.md`.
 - **Scope: photos + skeleton loading moved to M5** (2026-11-15, D27). Seed items
   carry no photos (D11) and catalog queries are synchronous, so `PhotoTile`,
   `SkeletonPanel`, `SkeletonGate`, `SkeletonProbe`, and `PhotoTileProbe` ship

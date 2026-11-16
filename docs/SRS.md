@@ -135,9 +135,9 @@ Run in order; each step lists the requirement it proves.
 1. **Launch** the app → login screen appears (FR-03).
 2. **Enter a wrong password** → inline error; the app does not log in (FR-03).
 3. **Log in as `student1@institution.edu` / `student123`** → catalog appears with search and filters; type a gear name to filter (FR-01, FR-03).
-4. **Check out an AVAILABLE item** (e.g., Canon EOS R6), due date `T + 3 days` → item immediately shows `LOANED` (FR-04).
-5. **Confirm the lock**: the same item is no longer selectable (FR-02).
-6. **Try a due date 15+ days out** → rejected with a validation message (FR-04, INV-2).
+4. **Check out an AVAILABLE item** (e.g., Canon EOS R6), due date `T + 3 days` → the row badge immediately shows `LOANED` and the item drops out of the AVAILABLE filter (FR-04).
+5. **Confirm the lock**: the loaned item is still listed, but its **Check out** action is disabled and the preview reads "Currently on loan." (FR-02).
+6. **Try a due date 15+ days out** → the due-date picker only offers `T … T+14`, so the date cannot be entered; the service still rejects an out-of-window date and `CatalogProbe` asserts that rejection (FR-04, INV-2).
 7. **Close and relaunch, then log in again** → the new loan is still present (FR-12, NFR-07).
 8. **Log in as manager** → Overdue Dashboard shows L-003 first with **₱200.00 accrued** (FR-08); All Loans lists every loan (FR-09).
 9. **Log the return of L-003** with return date `T` → loan becomes `RETURNED`; exactly one ₱200.00 `LATE_FEE` penalty is created; item returns to `AVAILABLE` (FR-06, FR-07).
@@ -174,3 +174,4 @@ Seed dataset details: PRD §9; rationale and file placement: `seed-data.md`.
 | 3.0.0 | 2026-11-11 | Swing + NetBeans Ant (replacing JavaFX); fixed-password mock login (FR-03); live accrual + freeze-on-return (FR-07); borrow limits (FR-04, INV-2, INV-6); All Loans view (FR-09); save file pinned to app folder; cancellation/extension explicitly out of scope |
 | 3.1.0 | 2026-11-14 | Windows 11 / Fluent direction (design.md v2.0); photo upload added to inventory scope (FR-10 + acceptance), image-storage NFR-08, walkthrough step 11 covers photo + decommission, category-tile definition in §1.3 |
 | 3.1.1 | 2026-11-14 | Clarified FR-06: an item flagged `UNDER_MAINTENANCE` while loaned keeps that status when returned (mirrors PRD §4.1); no scope change |
+| 3.1.2 | 2026-11-16 | §6.2 steps 4–6 aligned with the delivered catalog: checkout flips the row to `LOANED` immediately, the availability lock disables the action instead of hiding the row, and the 14-day limit is enforced by a `T … T+14` picker plus a service rejection proven by `CatalogProbe`; no requirement changed |

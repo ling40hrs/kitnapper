@@ -217,7 +217,7 @@ The login screen uses the same title bar but hides omnibar, sidebar, and status 
 | :--- | :--- | :--- |
 | Login | both | Centered 420 px card on `BG_APP` (email, password, sign-in, inline error; collapsed "Demo accounts" hint) |
 | Dashboard | Manager | 3 KPI cards (out now, overdue, unpaid penalties), overdue table, recent activity |
-| Catalog | both | Omnibar (search, filters, layout toggle); **details table + preview pane by default**; cards view optional via the toggle |
+| Catalog | both (manager read-only) | Omnibar (search, filters, layout toggle); **details table + preview pane by default**; cards view optional via the toggle; managers get the "Manager view — checkout is borrower-only." caption and no checkout action |
 | My Loans | Borrower | Active/Overdue/Returned segmented control; loans table + loan preview with fee breakdown |
 | All Loans | Manager | Sortable table + loan preview; return action |
 | Overdue | Manager | Overdue table, longest-overdue first, days-late column, live accrued fees |

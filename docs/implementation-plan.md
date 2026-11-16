@@ -3,8 +3,8 @@ project_name: "KitNapper"
 team_name: "YAPPERS"
 course: "CS203 – Object-Oriented Programming"
 artifact_type: "Implementation Plan (structure, persistence format, build order)"
-derived_from: "PRD.md v3.1.0, SRS.md v3.1.0, design.md"
-version: "1.4.0"
+derived_from: "PRD.md v3.1.0, SRS.md v3.1.2, design.md"
+version: "1.8.0"
 ---
 
 # KitNapper — Implementation Plan
@@ -16,15 +16,17 @@ version: "1.4.0"
 > updated.
 >
 > **Implementation progress:** M0 (model), M1 (persistence + seed), M2 (shell + login) and
-> M3 WP1 (catalog/loan services + controllers) are implemented; the catalog UI and
-> everything after it are not. Follow the milestones in §4 one at a time; do not
-> implement everything at once. Each milestone must end with the project compiling
-> (`ant clean jar` or the `javac` fallback) and, from M2 on, launching.
+> M3 (catalog + instant checkout, manager read-only) are implemented, probed, and
+> documented. My Loans, All Loans, Overdue, Penalties, Inventory and Settings are still
+> M2 placeholders. Follow the milestones in §4 one at a time; do not implement everything
+> at once. Each milestone must end with the project compiling (`ant clean jar` or the
+> `javac` fallback) and launching, with `desktop-app/test/run-all.sh` green from M3 on.
 >
 > **Deviations from this inventory** are tracked in `docs/decisions.md` §9 and
-> `HANDOFF-M3-PLAN.md` §6 (the 200-line cap forced extra `view` files: `FlatButton`,
-> `FieldSkin`, `RoundedPanel`, `ResizeBands`, `Sidebar`, `LoanMessages`, and the M3
-> screen splits), so the per-package counts below are a floor, not a fixed contract.
+> `HANDOFF-M3-PLAN.md` §6/§17 (the 200-line cap forced extra `view` files: `FlatButton`,
+> `FieldSkin`, `RoundedPanel`, `ResizeBands`, `Sidebar`, `CatalogPresenter`,
+> `CatalogFilters`, `CatalogCards`, `PageHeader`, `EmptyState`, `DatePicker`, and the
+> M3 screen splits), so the per-package counts below are a floor, not a fixed contract.
 >
 > **design.md is v2.0 (Windows 11 / Fluent), §13 resolved.** The M2–M6 UI work
 > implements its §3–§13.
@@ -185,11 +187,29 @@ Dialogs (modal per design §5):
 | :--- | :--- | --: |
 | `Main.java` | entry point (41 lines, M2): installs `Theme`, registers fonts, constructs services + `AppContext`, shows `LoginFrame` on the EDT. Stays under 60 lines | 60 |
 
-Total 65 files at M3 WP1 + the 2026-11-15 debt pass (18 model, 13 service,
-10 persistence, 3 controller, 20 view, `Main`). Every file above stays under
-the 200-line cap; the current maximum is `Theme.java` at 171 lines and
-`WindowChrome.java` is the tightest behavioral file — keep behavior and
-painting split across it, `TitleBar`, and `ResizeEdge`.
+M3 also delivered files the estimate above did not name (the cap and the screen
+split forced them). The pre-estimated M3 files above are now at their real
+sizes: `CatalogScreen` 199, `PreviewPane` 197, `EquipmentCard` 144, `Badges` 130,
+`GradientTile` 78, `SegmentedControl` 189, `EmptyState` 53.
+
+| File | Contents | Lines |
+| :--- | :--- | --: |
+| `view/CatalogPresenter.java` | query/selection/status state for the catalog; keeps `CatalogScreen` layout-only | 118 |
+| `view/CatalogFilters.java` | category + status combos and the table/cards segmented control (omnibar commands) | 118 |
+| `view/CatalogTable.java` / `CatalogTableModel.java` | non-opaque hover-painted table + typed model | 183 / 87 |
+| `view/CatalogCards.java` | 3-column card grid in a width-tracking scroll pane | 125 |
+| `view/CheckoutDialog.java` / `DatePicker.java` | `T … T+14` picker + modal checkout body | 77 / 54 |
+| `view/PageHeader.java` | page title + subtitle row shared by every screen | 24 |
+| `controller/CatalogController.java` / `BorrowingController.java` | query state + booking actions with user-facing messages | 89 / 67 |
+| `service/Ids.java` | sequential `e-0NN` / `L-0NN` / `p-0NN` generation (D22) | 53 |
+| `service/CatalogService(+Impl)` | name/serial search, category + status filters, deterministic sort | 27 + 54 |
+| `service/LoanMessages.java` / `LoanQueries.java` / `LoanServiceImpl.java` | user-facing failure text, derived status/fee queries, checkout/return rules | 32 / 84 / 147 |
+
+Total 85 files after M3 + the 2026-11-15 debt pass (18 model, 13 service,
+10 persistence, 3 controller, **40 view**, `Main`; 7,285 lines), plus 15 probe
+files (1,585 lines) under `desktop-app/test/` that never compile into the app jar.
+Every file stays under the 200-line cap; the current maximum is
+`CatalogScreen.java` at 199 lines, so split it before adding to it.
 
 ## 3. JSON Persistence Spec (`kitnapper-data.json`)
 
@@ -312,7 +332,7 @@ before moving on. **Do not batch milestones.**
 | M0 | Domain core | all `model` files | `ant clean jar` compiles; nothing runnable yet |
 | M1 | JSON persistence + seed | `service.persistence` files, `AppData`, `DataStore` + impl, `LoanService` skeleton | scratch entry point (a temporary `main` in a persistence package file, **deleted after M1**) writes the seed, re-reads it, and the round-trip matches — the fixture must also include a `BASE`-kind item, a `RETURNED` loan, a `WAIVED` penalty and an `UNDER_MAINTENANCE` item to exercise every restore path (D14, D18); corrupt-file and model-validation fallbacks checked by hand |
 | M2 | Shell + login (Win11 chrome) | `Main`, `Theme`, `Fonts`, `UiFactory`, `AppContext`, `AuthService(+Impl)`, `WindowChrome`, `TitleBar`, `Omnibar`, `StatusBar`, `LoginFrame`, `MainFrame`, `AppController`, `Formats`, `Dialogs` | steps 1–3: login screen, wrong password rejected, student login lands on catalog shell; chrome drag/resize/maximize checked |
-| M3 | Catalog + checkout | `CatalogScreen`, `EquipmentCard`, `PreviewPane`, `GradientTile`, `SegmentedControl`, `Badges`, `CatalogTableModel`, `CatalogController`, `CatalogService(+Impl)`, `BorrowingController`, `CheckoutDialog`, `LoanService(+Impl)`, `Toasts` | steps 3–6: search/filter, checkout, availability lock, 15-day rejection; model exceptions surface as inline messages, never EDT crashes (D16, D21); media is the gradient tile only — photos and skeletons are M5 (D27) |
+| M3 | Catalog + checkout | `CatalogScreen` + `CatalogPresenter`, `CatalogFilters`, `CatalogTable(Model)`, `CatalogCards`, `EquipmentCard`, `PreviewPane`, `GradientTile`, `SegmentedControl`, `Badges`, `EmptyState`, `PageHeader`, `CheckoutDialog`, `DatePicker`, `CatalogController`, `CatalogService(+Impl)`, `BorrowingController`, `LoanService(+Impl)`, `Ids`, `Toasts` | steps 3–6: search/filter, checkout, availability lock, 15-day rejection; exceptions never reach the EDT (D16, D21); managers get a read-only catalog and no checkout action (D24); the due-date picker makes an out-of-window date unreachable, so step 6 is proven by `CatalogProbe`/`CatalogUiProbe` (D25); media is the gradient tile only — photos and skeletons are M5 (D27); `./build.sh` + `test/run-all.sh` (9 probes) are the gate |
 | M4 | Returns, fees, manager views | `DashboardScreen`, `AllLoansScreen`, `OverdueScreen`, `MyLoansScreen`, `LoansTableModel`, `PenaltiesScreen`, `PenaltiesTableModel`, `ReturnDialog`, `SettlePenaltyDialog`, `PenaltyController`, `PenaltyService(+Impl)`, `Badges` | steps 7–10: persistence round-trip (restart), overdue dashboard ₱200, return freezes penalty, waive; extra checks: a due-date return creates **no** penalty and a maintenance-flagged item stays `UNDER_MAINTENANCE` (D15, D20); tables use `effectiveStatus(now)`, fees come from `LoanService` (D21) |
 | M5 | Inventory, photos + reset | `InventoryScreen`, `InventoryTableModel`, `InventoryController`, `InventoryService(+Impl)`, `ImageStore(+Impl)`, `EquipmentDialog`, `SettingsScreen`, `EmptyState` | steps 11–12: add item **with photo** + decommission, reset restores the §6.1 baseline and wipes `kitnapper-images/`; extra checks: kind preserved on category edit (D19), photo filename safety (D22); `PhotoTile`, `SkeletonPanel`/`SkeletonGate` and photo import skeleton land here (D27), plus the "Animate loading placeholders" switch (design §13.4) |
 | M6 | Polish | `ThinScrollBarUI`, dark/light toggle, Fluent-motion fades (design §7), icon-codepoint verification (§10), HiDPI/text-scale pass, **skeleton audit per design §13** | full 12-step walkthrough + design §8 contrast/keyboard checks + gradient spot-check (§3.4) at 1080p and 1366×768; skeleton audit: reduced-motion, watchdog, no permanent skeletons |
@@ -350,6 +370,9 @@ them. Logged here so implementation sessions don't re-litigate them.
 | D21 | How do views get derived status and fees? | `LoanService` exposes them (`accruedFee`, overdue listing) computed with `effectiveStatus(LocalDate.now())`. Views never construct a `FeeStrategy` and never call entity mutators directly — services are the only callers of transition/settlement methods. |
 | D22 | How are IDs and photo filenames kept safe? | Equipment and loan IDs are **system-generated** (sequential `e-0NN`/`L-0NN`), never user-typed; `ImageStore` builds `<equipmentId>.jpg`; `Equipment.setPhotoFile` accepts bare file names only. |
 | D23 | Does `AuthService` hard-code credentials? | No — it authenticates against the user list **loaded from `DataStore`** (which the seed and reset populate), so an edited or corrupted save changes what logs in, consistently with the dataset. |
+| D24 | Does the manager get a Catalog screen, and can it check items out? | **Yes to the screen, no to checkout.** Manager nav is Dashboard, Catalog, All Loans, Overdue, Penalties, Inventory; the catalog mounts the same `CatalogScreen` with `Actions.isManager()` true, so the preview shows the caption "Manager view — checkout is borrower-only." and no button (INV-3). Borrowers keep Catalog, My Loans. |
+| D25 | How is INV-2's 14-day window verified when the UI cannot express a 15-day date? | The due date is a non-editable picker over `T … T+14` (`DatePicker`), so the invalid date is unreachable in the demo. `LoanServiceImpl` still rejects out-of-window dates defensively, and `CatalogProbe` asserts the rejection; SRS §6.2 step 6 cites the probe instead of manual entry. |
+| D26 | How is a screen mounted, and how did the cap shape M3? | `MainFrame.mount(key, screen, commands, onShown)` + `showScreen(key)`; views stay layout-only by delegating state to a presenter (`CatalogPresenter`) and callbacks to the controller, and the split files listed in §2.6 are the result. M4 reuses the same pattern for every loan screen. |
 | D27 | Do photos and skeleton loading ship in M3? | **No — deferred to M5.** Seed items carry no photos (D11), so a decode path and a loading skeleton have nothing to exercise until the inventory photo picker exists. M3's catalog uses `GradientTile` for every card and preview and keeps queries synchronous (design §13.1); `PhotoTile`, `SkeletonPanel`, `SkeletonGate` and their two probes ship with M5. |
 
 ## 6. Verification Notes
@@ -370,6 +393,7 @@ them. Logged here so implementation sessions don't re-litigate them.
 | 1.2.0 | 2026-11-14 | M0 decisions: `GeneralEquipment` for the JSON `BASE` kind (D14), maintenance-flag return rule (D15), model exception policy (D16); `LoanStatus` clarified to hold all three constants with only `ACTIVE`/`RETURNED` persisted |
 | 1.3.0 | 2026-11-14 | Post-M0 findings folded in: `AppData` aggregate + `DataStore` accessors (D17), load-fallback scope covers model/referential failures (D18), kind-vs-category rule (D19), return edge cases — zero fee, future dates (D20), derived status/fee display via `LoanService` (D21), ID/photo-filename safety (D22), auth against persisted users (D23); M1 round-trip fixture exercises every restore path |
 | 1.4.0 | 2026-11-14 | design.md §13 resolved: `SkeletonPanel` + `SkeletonGate` added to the view inventory, first use in M3 (card/preview decode + gated catalog refresh), photo import + reduced-motion switch in M5, skeleton audit in M6 |
-| 1.6.0 | 2026-11-15 | Photos and skeleton loading deferred from M3 to M5 (D27): the M3 catalog renders `GradientTile` only; M3/M5 milestone rows and the view inventory adjusted |
 | 1.5.0 | 2026-11-15 | Debt cleanup: line-cap splits recorded in the inventory (`JsonScanner`, `ResizeEdge`, `ScreenCatalog`, `PlaceholderScreen`, `LoginCard`, `LoanQueries`), `Json` documented as unchecked-cast free, `-Xlint:all` build, 65-file count; probe harness relocated to `desktop-app/test/kitnapper/` (WP0.5, planned) |
+| 1.6.0 | 2026-11-15 | Photos and skeleton loading deferred from M3 to M5 (D27): the M3 catalog renders `GradientTile` only; M3/M5 milestone rows and the view inventory adjusted |
 | 1.7.0 | 2026-11-15 | WP0.5 executed: eight probes rebuilt under `desktop-app/test/kitnapper/` (+ `run-all.sh`; `EdgeProbe`/`SizeProbe` in `kitnapper.view` for package-private surfaces), suite green, baselines re-recorded in `HANDOFF-M3-PLAN.md` §9.4 |
+| 1.8.0 | 2026-11-16 | M3 delivered and recorded: catalog screen + preview + cards + filters + checkout dialog, manager read-only catalog (D24), picker/probe verification of INV-2 (D25), mounting + split strategy (D26); §2.5/§2.6 inventory updated to the delivered 85 files / 7,285 lines with `CatalogScreen` at the 199-line maximum; milestone row and revision numbering corrected |

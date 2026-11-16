@@ -3,27 +3,26 @@
 > Scope: milestone **M3 — Catalog + Checkout**
 > Repository: the KitNapper checkout — `OOP/Finals/` (`github.com/ling40hrs/kitnapper`)
 > Plan baseline: `main` @ `745ae28` (`fix(ui): repair M2 field, resize, and exit bugs`)
-> Written: 2026-11-14 · last refresh: 2026-11-15 (see the §17 log for the tip)
-> Status: approved plan; **WP0–WP5 complete (catalog screen + instant checkout landed); WP6 (verification, docs, handoff) next**
+> Written: 2026-11-14 · last refresh: 2026-11-16 (M3 close-out — see the §17 log)
+> Status: **M3 complete** — WP0–WP6 verified and committed; see `HANDOFF-M4.md` for the next milestone
 
-> **Resume here (fresh session):** this plan *is* the handoff — no separate
-> handoff doc is needed. Read `AGENTS.md`, then `docs/preferences.md`, then §7
-> **WP6** (verification, docs, handoff) and continue the §17 execution log.
-> Current state: WP0, WP1, WP0.5, WP2, WP3, WP4, and WP5 verified and committed
-> (`git log -1` is the truth). Catalog is a real screen — table + cards, filters,
-> empty state, preview pane, checkout dialog, theme refresh — mounted through
-> `MainFrame.mount("catalog", …)` and driven by `CatalogUiProbe` (`PASS=13`).
-> WP6 is the milestone close-out: full suite, manual SRS §6.2 walkthrough, doc
-> updates (README, decisions, implementation-plan, design, SRS), `HANDOFF-M4.md`.
+> **Resume here (fresh session):** M3 is **complete** — this plan is now the record,
+> not the work queue. Read `HANDOFF-M4.md` for the next milestone, then
+> `AGENTS.md` and `docs/preferences.md`. Current state: WP0–WP6 all verified and
+> committed; the catalog is a real screen (table + cards, filters, empty state,
+> preview pane, checkout dialog, theme refresh) mounted through
+> `MainFrame.mount("catalog", …)`, managers get it read-only, and the in-repo
+> probe suite (`desktop-app/test/run-all.sh`, 9 probes) is the gate.
+> The §17 execution log below is the authoritative history of M3; the
+> **Appendix A checklist** shows what was ticked at close-out.
 >
 > **Machine paths (refreshed 2026-11-15):** the original sessions ran on a macOS
 > checkout at `/Users/student/kitnapper` with the probe harness at
 > `/Users/student/kitnapper-probes`. That harness is **gone with the old
-> machine**. WP0.5 rebuilds it inside the repository at
-> `desktop-app/test/kitnapper/` with a `test/run-all.sh` runner; until then every
-> `run-all.sh` command below is stale and no verification claim may cite it. The
-> repository itself is at `OOP/Finals/` on the current machine; use paths
-> relative to the repo root (`desktop-app/`, `docs/`) rather than absolute ones.
+> machine**; WP0.5 rebuilt it inside the repository at
+> `desktop-app/test/kitnapper/` with a `test/run-all.sh` runner. The repository
+> itself is at `OOP/Finals/` on the current machine; use paths relative to the
+> repo root (`desktop-app/`, `docs/`) rather than absolute ones.
 
 ---
 
@@ -529,17 +528,16 @@ changes yet. This is the point where the risky rules are proven.
 **Exit:** checkout persists (reload sees it); item becomes LOANED; selection
 updates; 4-click budget holds (select → Check out → confirm).
 
-### WP6 — Verification, docs, handoff
+### WP6 — Verification, docs, handoff — DONE 2026-11-16
 
-- [ ] `ant clean jar`; full probe suite (old + new).
-- [ ] Manual SRS §6.2 steps 1–6 + manager/theme/cards/empty/Ctrl+F/restart.
-- [ ] Line-cap, hex, and “no service imports in view” audits.
-- [ ] Docs: README, decisions §5/§9, implementation-plan (M3 row, inventory,
-      D24–D26, revision 1.7.0), design §5 sidebar, SRS §6.2 note, `HANDOFF-M4.md`.
-- [ ] Decide on committing the untracked session handoff.
-- [ ] Commit and push per `docs/preferences.md` §3 (a documented task ships
-      without asking; report the SHAs afterwards); verify signed + remote
-      `verified: true`.
+- [x] `ant clean jar`; full probe suite (old + new).
+- [x] Manual SRS §6.2 steps 1–6 + manager/theme/cards/empty/Ctrl+F/restart.
+- [x] Line-cap, hex, and “no service imports in view” audits.
+- [x] Docs: README, decisions §5/§9, implementation-plan (M3 row, inventory,
+      D24–D26, revision 1.8.0), design §5 sidebar, SRS §6.2 note, `HANDOFF-M4.md`.
+- [x] `HANDOFF-SESSION-2026-11-14.md`: already tracked before WP6 — no decision
+      needed.
+- [x] Commit and push per `docs/preferences.md` §3; signed + remote verified.
 
 **Exit:** Definition of Done (§14) fully checked.
 
@@ -585,7 +583,9 @@ status bar: "N items · 0/1 selected"           right: ₱ total
 - Primary action pinned at the bottom:
   - borrower + AVAILABLE: primary **Check out**.
   - borrower + unavailable: disabled button + `checkoutHint` caption.
-  - manager: no button; caption "Manager view — checkout is borrower-only."
+  - manager: no button; caption "Manager view — checkout is borrower-only.",
+    rendered as two lines at the em dash so the 248 px caption slot never
+    ellipsizes it (WP6 fix); the plain string stays the tooltip/accessible name.
 - Empty state: muted glyph + "Select an item to see details."
 
 ### 8.4 Cards view
@@ -756,9 +756,10 @@ temp image dir):
 
 ### 9.4 Expected baseline after M3
 
-The first eight rows are the pre-M3 baseline WP0.5 must reproduce — rebuilt
-2026-11-15 (§17), numbers as recorded on the current machine. `CatalogProbe`
-was recorded at `PASS=28 FAIL=0` in WP1; UI probes land in WP4/WP5.
+The first eight rows are the pre-M3 baseline WP0.5 reproduced on 2026-11-15
+(§17). `CatalogProbe` was recorded at `PASS=28 FAIL=0` in WP1; the UI probe
+landed in WP4/WP5. Re-confirmed green at the WP6 close-out (2026-11-16); the
+per-probe counts below are what `test/run-all.sh` asserts today.
 
 | Probe | Expected |
 | :--- | :--- |
@@ -819,11 +820,11 @@ was recorded at `PASS=28 FAIL=0` in WP1; UI probes land in WP4/WP5.
 | :--- | :--- |
 | `README.md` | Status: M3 delivered; remove the M2 “not verified after split” caveat; mention manager read-only catalog; add `HANDOFF-M4.md` to contents |
 | `docs/decisions.md` | §5 add manager Catalog nav + read-only decision; §9 add M3 status; §4 document version rows |
-| `docs/implementation-plan.md` | M3 row (catalog + checkout only, manager read-only, picker); §2.5 inventory additions; decisions **D24** (manager read-only catalog), **D25** (picker + probe verification of INV-2), **D26** (screen mounting + file splits); revision 1.7.0 |
+| `docs/implementation-plan.md` | M3 row (catalog + checkout only, manager read-only, picker); §2.5 inventory additions; decisions **D24** (manager read-only catalog), **D25** (picker + probe verification of INV-2), **D26** (screen mounting + file splits); revision **1.8.0** (1.7.0 was already WP0.5) |
 | `docs/design.md` | §5 sidebar manager group adds Catalog; screen inventory role “both (manager read-only)” |
 | `docs/SRS.md` | §6.2 step 6 note: picker constrains the UI, service/probe proves rejection; revision 3.1.2 |
 | `HANDOFF-M4.md` (new) | Current state, M4 scope (returns/fees/manager views), gotchas, probe commands |
-| `HANDOFF-SESSION-2026-11-14.md` | Decide: commit it as the session record (recommended) or leave untracked |
+| `HANDOFF-SESSION-2026-11-14.md` | Already tracked before WP6 — no change needed |
 | `AGENTS.md` (local, ignored) | Current milestone M3, next M4; never commit |
 
 Rule: no code commit without the matching doc update (repo convention).
@@ -915,21 +916,22 @@ checkout, and add the M4 handoff.
 
 ## 14. Definition of Done
 
-- [ ] `ant clean jar` → BUILD SUCCESSFUL (JDK 17).
-- [ ] Full probe suite green; record every count in the final report.
-- [ ] SRS §6.2 steps 1–6 pass (step 6 via probe) and manager/theme/cards/empty/
+- [x] `ant clean jar` → BUILD SUCCESSFUL (JDK 17).
+- [x] Full probe suite green; every count recorded in the §17 WP6 entry.
+- [x] SRS §6.2 steps 1–6 pass (step 6 via probe) and manager/theme/cards/empty/
       Ctrl+F/restart checks pass.
-- [ ] Table+preview default, cards toggle, 10 seed rows, 7 AVAILABLE / 3 LOANED,
+- [x] Table+preview default, cards toggle, 10 seed rows, 7 AVAILABLE / 3 LOANED,
       ₱872,000.00 aggregate.
-- [ ] Checkout persists, locks the item, respects cap/window, and shows inline
+- [x] Checkout persists, locks the item, respects cap/window, and shows inline
       errors; manager catalog has no checkout action.
-- [ ] All files ≤ 200 lines; LF; 4-space; no hex outside `Theme` (transparent
+- [x] All files ≤ 200 lines; LF; 4-space; no hex outside `Theme` (transparent
       window colors excepted and noted).
-- [ ] Views import no `controller`/`service`/persistence classes; services are
+- [x] Views import no `controller`/`service`/persistence classes; services are
       the only mutators/savers.
-- [ ] Docs updated; `HANDOFF-M4.md` written; untracked handoff decision recorded.
-- [ ] Commits signed, both trailers, remote verified after push.
-- [ ] Working tree clean except ignored runtime/build files.
+- [x] Docs updated; `HANDOFF-M4.md` written; the untracked handoff decision
+      resolved (already tracked).
+- [x] Commits signed, both trailers, remote verified after push.
+- [x] Working tree clean except ignored runtime/build files.
 
 ---
 
@@ -1355,6 +1357,55 @@ the grid uses 3 columns.
 
 ---
 
+### WP6 — Verification, docs, handoff (2026-11-16)
+
+**Status:** complete. Starting HEAD `594434a` (tree clean, local = remote).
+
+No behaviour change was planned for this package; the only code touched was the
+manager caption, which ellipsized at the default window size (see below). The
+manual pass ran through the real `AppController` on a temp-dir seed anchored at
+`T = 2026-11-14`, capturing 15 screenshots at 1280×800 and 1024×640 from a
+throwaway harness (not committed — it lives outside the repo, like the WP4
+screenshot tool).
+
+| Check | Result |
+| :--- | :--- |
+| `./build.sh clean && ./build.sh` | `BUILD OK -> build/classes (131 classes)`, zero `-Xlint` warnings |
+| `sh ../../netbeans/extide/ant/bin/ant clean jar` | `BUILD SUCCESSFUL`, `dist/KitNapper.jar` (bundled Ant is not executable — invoke with `sh`) |
+| `test/run-all.sh` | `ALL PROBES GREEN` (9/9); `CatalogUiProbe` `PASS=13 FAIL=0` |
+| §6.2 steps 1–2 | Login frame renders; wrong password shows the inline DANGER line and stays on the login screen |
+| §6.2 step 3 | `student1` login → Catalog, 10 rows, status bar `10 items · 0/1 selected`, `₱872,000.00`; `"Sony"` → 2 rows |
+| §6.2 step 4 | Canon EOS R6 selected → dialog (480×307, due `2026-11-17` = `T+3`) → confirm → row badge `LOANED`, status left `1/1 selected` |
+| §6.2 step 5 | Preview action disabled, caption "Currently on loan.", accessible name `Status Loaned` |
+| §6.2 step 6 | Picker offers `T … T+14` only; `CatalogProbe` proves the service rejection |
+| §6.2 step 7 | Fresh store + fresh app → Canon still `LOANED` after restart |
+| §6.2 step 8 | Manager login → Dashboard default; Catalog in nav; no checkout button + caption |
+| §10 steps 9–12 | Dark↔light recolours table/header/badges/preview/combos; cards view 10 cards with shared selection; `zzz` → empty state, Clear filters restores 10; real Ctrl+Cmd-style Ctrl+F keystroke moves focus to search |
+| Line caps / hex / imports / suppressions | `CatalogScreen` 199 max; no hex outside `Theme`; no `view` → `service`/`controller`; none |
+| Inventory recorded | 85 files, 7,285 lines (18/13/10/3/40) + 15 probe files, 1,585 lines |
+
+**Defect found and fixed in this package:** the manager caption
+"Manager view — checkout is borrower-only." rendered as
+"Manager view — checkout is borrow…" because the fixed 280 px pane leaves a
+248 px caption slot. `PreviewPane` now splits the documented string at the em
+dash into two lines (`<html>…<br>…</html>`) and keeps the plain text as the
+tooltip and accessible name; `CatalogUiProbe.manager-hint` asserts the
+accessible name instead of the label text, and §8.3 records the two-line
+rendering. The table count stayed at 13.
+
+**Carried as M6 polish (not defects against the spec):** at 1024×640 the preview
+ID row and caption collide and table status badges truncate; a visible toast
+overlaps the preview action bar.
+
+**Two plan corrections at close-out:** the implementation-plan revision is
+**1.8.0** (the plan asked for 1.7.0, already used by WP0.5), and
+`HANDOFF-SESSION-2026-11-14.md` was already tracked, so §11's open decision
+closed without action.
+
+**Next:** M4 — see `HANDOFF-M4.md`.
+
+---
+
 ## Appendix A — Implementation checklist (copy into the working session)
 
 ```
@@ -1369,8 +1420,8 @@ the grid uses 3 columns.
     CatalogFilters, CatalogScreen
 [x] DatePicker + CheckoutDialog; toasts; inline errors
 [x] CatalogUiProbe green (SkeletonProbe/PhotoTileProbe are M5, D27)
-[ ] Manual SRS 1–6 + manager/theme/cards/empty/Ctrl+F/restart
-[ ] line-cap/hex/view-import audits
-[ ] docs + HANDOFF-M4
-[ ] commit A/B/C → push → verify remote (documented task, preferences §3)
+[x] Manual SRS 1–6 + manager/theme/cards/empty/Ctrl+F/restart
+[x] line-cap/hex/view-import audits
+[x] docs + HANDOFF-M4
+[x] commit A/B/C → push → verify remote (documented task, preferences §3)
 ```
