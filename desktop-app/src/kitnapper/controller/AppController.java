@@ -61,8 +61,11 @@ public final class AppController {
         };
         mounts = new ScreenMounts(context, frame, status);
         mounts.mount(user.getRole());
-        mainFrame.showScreen(defaultKey(user.getRole()));
+        // Show first: the screens report their status from onShown, and the
+        // status sink ignores frames without a peer (stale sessions), so a
+        // pre-show routing would drop the default screen's first status line.
         mainFrame.setVisible(true);
+        mainFrame.showScreen(defaultKey(user.getRole()));
         if (loginFrame != null) {
             loginFrame.dispose();
             loginFrame = null;
