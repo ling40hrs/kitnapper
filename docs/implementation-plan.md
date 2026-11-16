@@ -3,7 +3,7 @@ project_name: "KitNapper"
 team_name: "YAPPERS"
 course: "CS203 – Object-Oriented Programming"
 artifact_type: "Implementation Plan (structure, persistence format, build order)"
-derived_from: "PRD.md v3.1.1, SRS.md v3.1.4, design.md"
+derived_from: "PRD.md v3.1.1, SRS.md v3.1.5, design.md"
 version: "1.9.0"
 ---
 
@@ -206,9 +206,30 @@ sizes: `CatalogScreen` 199, `PreviewPane` 197, `EquipmentCard` 144, `Badges` 130
 | `service/CatalogService(+Impl)` | name/serial search, category + status filters, deterministic sort | 27 + 54 |
 | `service/LoanMessages.java` / `LoanQueries.java` / `LoanServiceImpl.java` | user-facing failure text, derived status/fee queries, checkout/return rules | 32 / 84 / 147 |
 
+M4 also delivered the loan/penalty files this plan predicted, plus the splits
+the cap and the controller extraction forced (M4 = 2026-11-16):
+
+| File | Contents | Lines |
+| :--- | :--- | --: |
+| `controller/LoansController.java` | my/all/overdue queries, return-date list, return logging, fee on a date | 103 |
+| `controller/DashboardController.java` | KPI counts, overdue rows, derived activity (D28) | 76 |
+| `controller/LoanRows.java` | the single row builder for loans and penalties (D29) | 144 |
+| `controller/LoansActions.java` / `CatalogActions.java` | view-facing callback contracts | 58 / 70 |
+| `controller/ScreenMounts.java` | screen construction, mounting and theme refresh, extracted from `AppController` (183 → 116) | 116 |
+| `service/PenaltyService(+Impl)` / `PenaltyMessages.java` | settlement interface, one-way rules, user-facing failures (D31) | 36 + 128 / 13 |
+| `view/LoansTable.java` / `LoansTableModel.java` | typed, non-opaque loan table + per-mode columns | 178 / 151 |
+| `view/LoansTableSection.java` / `LoansWidthPolicy.java` | table + empty state in one section; scroll-until-fits resize policy | 77 / 52 |
+| `view/LoanPreviewPane.java` / `PenaltyPreviewPane.java` | 280 px loan and penalty previews with the pinned action | 194 / 195 |
+| `view/MyLoansScreen.java` / `AllLoansScreen.java` / `OverdueScreen.java` / `PenaltiesScreen.java` | the four loan screens | 156 / 166 / 166 / 176 |
+| `view/DashboardScreen.java` / `KpiCard.java` / `ActivityList.java` | KPI row, overdue table, activity rail | 135 / 61 / 105 |
+| `view/ReturnDialog.java` / `SettlePenaltyDialog.java` | §8.8 return and §8.9 settlement dialogs | 127 / 145 |
+| `view/LoanRow.java` / `PenaltyRow.java` / `ActivityEntry.java` | view records built by controllers (D29) | 22 / 18 / 14 |
+| `view/PenaltiesTable.java` / `PenaltiesTableModel.java` | penalty table + typed model | 171 / 105 |
+
 Total 117 files after M4 + the width pass (18 model, 16 service, 10 persistence,
 10 controller, **62 view**, `Main`; 10,788 lines), plus 25 probe files
-(2,791 lines) under `desktop-app/test/` that never compile into the app jar.
+(2,811 lines, 12 registered probes) under `desktop-app/test/` that never compile
+into the app jar.
 Every file stays under the 200-line cap; the current maximum is
 `CatalogScreen.java` at 199 lines, so split it before adding to it.
 
@@ -334,7 +355,7 @@ before moving on. **Do not batch milestones.**
 | M1 | JSON persistence + seed | `service.persistence` files, `AppData`, `DataStore` + impl, `LoanService` skeleton | scratch entry point (a temporary `main` in a persistence package file, **deleted after M1**) writes the seed, re-reads it, and the round-trip matches — the fixture must also include a `BASE`-kind item, a `RETURNED` loan, a `WAIVED` penalty and an `UNDER_MAINTENANCE` item to exercise every restore path (D14, D18); corrupt-file and model-validation fallbacks checked by hand |
 | M2 | Shell + login (Win11 chrome) | `Main`, `Theme`, `Fonts`, `UiFactory`, `AppContext`, `AuthService(+Impl)`, `WindowChrome`, `TitleBar`, `Omnibar`, `StatusBar`, `LoginFrame`, `MainFrame`, `AppController`, `Formats`, `Dialogs` | steps 1–3: login screen, wrong password rejected, student login lands on catalog shell; chrome drag/resize/maximize checked |
 | M3 | Catalog + checkout | `CatalogScreen` + `CatalogPresenter`, `CatalogFilters`, `CatalogTable(Model)`, `CatalogCards`, `EquipmentCard`, `PreviewPane`, `GradientTile`, `SegmentedControl`, `Badges`, `EmptyState`, `PageHeader`, `CheckoutDialog`, `DatePicker`, `CatalogController`, `CatalogService(+Impl)`, `BorrowingController`, `LoanService(+Impl)`, `Ids`, `Toasts` | steps 3–6: search/filter, checkout, availability lock, 15-day rejection; exceptions never reach the EDT (D16, D21); managers get a read-only catalog and no checkout action (D24); the due-date picker makes an out-of-window date unreachable, so step 6 is proven by `CatalogProbe`/`CatalogUiProbe` (D25); media is the gradient tile only — photos and skeletons are M5 (D27); `./build.sh` + `test/run-all.sh` (9 probes) are the gate |
-| M4 | Returns, fees, manager views | `DashboardScreen`, `AllLoansScreen`, `OverdueScreen`, `MyLoansScreen`, `LoansTableModel`, `PenaltiesScreen`, `PenaltiesTableModel`, `ReturnDialog`, `SettlePenaltyDialog`, `PenaltyController`, `PenaltyService(+Impl)`, `Badges` | **Delivered 2026-11-16 (WP0–WP5 + width pass).** steps 7–10: persistence round-trip (restart), overdue dashboard ₱200, return freezes penalty, waive; extra checks: a due-date return creates **no** penalty and a maintenance-flagged item stays `UNDER_MAINTENANCE` (D15, D20); tables use `effectiveStatus(now)`, fees come from `LoanService` (D21) |
+| M4 | Returns, fees, manager views | `DashboardScreen`, `AllLoansScreen`, `OverdueScreen`, `MyLoansScreen`, `LoansTableModel`, `PenaltiesScreen`, `PenaltiesTableModel`, `ReturnDialog`, `SettlePenaltyDialog`, `PenaltyController`, `PenaltyService(+Impl)`, `Badges` | **Delivered 2026-11-16 (WP0–WP5 + width pass).** steps 7–10: persistence round-trip (restart), overdue dashboard ₱200, return freezes penalty, waive; extra checks: a due-date return creates **no** penalty and a maintenance-flagged item stays `UNDER_MAINTENANCE` (D15, D20); tables use `effectiveStatus(now)`, fees come from `LoanService` (D21); `./build.sh` + `test/run-all.sh` (12 probes, `LoansUiProbe` registered) are the gate |
 | M5 | Inventory, photos + reset | `InventoryScreen`, `InventoryTableModel`, `InventoryController`, `InventoryService(+Impl)`, `ImageStore(+Impl)`, `EquipmentDialog`, `SettingsScreen`, `EmptyState` | steps 11–12: add item **with photo** + decommission, reset restores the §6.1 baseline and wipes `kitnapper-images/`; extra checks: kind preserved on category edit (D19), photo filename safety (D22); `PhotoTile`, `SkeletonPanel`/`SkeletonGate` and photo import skeleton land here (D27), plus the "Animate loading placeholders" switch (design §13.4) |
 | M6 | Polish | `ThinScrollBarUI`, dark/light toggle, Fluent-motion fades (design §7), icon-codepoint verification (§10), HiDPI/text-scale pass, **skeleton audit per design §13** | full 12-step walkthrough + design §8 contrast/keyboard checks + gradient spot-check (§3.4) at 1080p and 1366×768; skeleton audit: reduced-motion, watchdog, no permanent skeletons |
 
@@ -402,4 +423,4 @@ them. Logged here so implementation sessions don't re-litigate them.
 | 1.6.0 | 2026-11-15 | Photos and skeleton loading deferred from M3 to M5 (D27): the M3 catalog renders `GradientTile` only; M3/M5 milestone rows and the view inventory adjusted |
 | 1.7.0 | 2026-11-15 | WP0.5 executed: eight probes rebuilt under `desktop-app/test/kitnapper/` (+ `run-all.sh`; `EdgeProbe`/`SizeProbe` in `kitnapper.view` for package-private surfaces), suite green, baselines re-recorded in `HANDOFF-M3-PLAN.md` §9.4 |
 | 1.8.0 | 2026-11-16 | M3 delivered and recorded: catalog screen + preview + cards + filters + checkout dialog, manager read-only catalog (D24), picker/probe verification of INV-2 (D25), mounting + split strategy (D26); §2.5/§2.6 inventory updated to the delivered 85 files / 7,285 lines with `CatalogScreen` at the 199-line maximum; milestone row and revision numbering corrected |
-| 1.9.0 | 2026-11-16 | M4 delivered: returns, late fees, penalty settlement, My Loans / All Loans / Overdue / Penalties screens, manager Dashboard, `PenaltyService(+Impl)`, `PenaltyController`, `LoansController`, `DashboardController`, `LoanRows`, `ScreenMounts`, `CatalogActions`, width pass; inventory 117 files / 10,788 lines, 25 probe files / 2,791 lines; decisions D28–D31 added |
+| 1.9.0 | 2026-11-16 | M4 delivered: returns, late fees, penalty settlement, My Loans / All Loans / Overdue / Penalties screens, manager Dashboard, `PenaltyService(+Impl)`, `PenaltyController`, `LoansController`, `DashboardController`, `LoanRows`, `ScreenMounts`, `CatalogActions`, width pass; inventory 117 files / 10,788 lines, 25 probe files / 2,811 lines; decisions D28–D31 added; 12 probes registered (`LoansUiProbe` joins the suite) |

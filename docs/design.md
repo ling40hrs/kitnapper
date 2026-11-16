@@ -216,14 +216,24 @@ The login screen uses the same title bar but hides omnibar, sidebar, and status 
 | Screen | Role | Primary content |
 | :--- | :--- | :--- |
 | Login | both | Centered 420 px card on `BG_APP` (email, password, sign-in, inline error; collapsed "Demo accounts" hint) |
-| Dashboard | Manager | 3 KPI cards (out now, overdue, unpaid penalties), overdue table, recent activity |
+| Dashboard | Manager | 3 KPI cards (out now, overdue, unpaid penalties), overdue table, recent activity (the six newest borrow/return events, derived from loans — D28) |
 | Catalog | both (manager read-only) | Omnibar (search, filters, layout toggle); **details table + preview pane by default**; cards view optional via the toggle; managers get the "Manager view — checkout is borrower-only." caption and no checkout action |
-| My Loans | Borrower | Active/Overdue/Returned segmented control; loans table + loan preview with fee breakdown |
+| My Loans | Borrower | Active/Overdue/Returned segmented control; loans table + loan preview with the fee breakdown and the loan's penalty state |
 | All Loans | Manager | Sortable table + loan preview; return action |
-| Overdue | Manager | Overdue table, longest-overdue first, days-late column, live accrued fees |
+| Overdue | Manager | Overdue table, longest-overdue first, days-late column, live accrued fees, return action |
 | Penalties | Manager | Per-loan penalty list + paid/waive actions + preview |
 | Inventory | Manager | Items table + preview (photo, metadata, Edit/Flag/Decommission); "Add item" command with photo picker |
 | Settings / Data | Manager | Theme, save-file location, photo-folder location, reset demo data |
+
+**M4 loan screens (delivered 2026-11-16).** All Loans and Overdue share one 280 px
+loan preview whose pinned action is **Log return** — the same action on both screens
+(D30) — and the return dialog offers the borrow date … today, defaults to today and
+previews the fee that will freeze. My Loans uses the same pane with the action hidden
+and adds the loan's penalty state: **Accrued now** while the loan is out, **Frozen
+penalty** with UNPAID / PAID / WAIVED and the waive reason once it is returned. The
+Dashboard's "recent activity" is derived, never stored: the six newest borrow/return
+events, date descending then loan id, with a return sitting above its checkout on the
+same day (D28).
 
 ## 6. Components
 

@@ -1,27 +1,27 @@
 # HANDOFF — M4 done, next: M5 (inventory, photos, reset)
 
-> **Status (2026-11-16):** M4 is **delivered** (WP0–WP5 + width pass committed and
-> pushed at `2e54c42`; 11/11 probes green in `run-all.sh`, `LoansUiProbe PASS=101`
-> manual). M5 is **not started**. This file is the working scope note for M5. The
-> detailed M5 plan (data contracts, work packages, probe plan, docs list, definition
-> of done) should be written as `HANDOFF-M5-PLAN.md` before implementation begins,
-> following the pattern of `HANDOFF-M4-PLAN.md`.
+> **Status (2026-11-16, M4 close-out):** M4 is **delivered and closed** — WP0–WP6,
+> the width pass and two close-out fixes pushed at `cf5a838`; **12/12 probes** green
+> in `run-all.sh` with `LoansUiProbe PASS=105 FAIL=0` registered. M5 is **not
+> started**. This file is the working scope note for M5. The detailed M5 plan (data
+> contracts, work packages, probe plan, docs list, definition of done) should be
+> written as `HANDOFF-M5-PLAN.md` before implementation begins, following the
+> pattern of `HANDOFF-M4-PLAN.md`.
 
 Read `docs/preferences.md` §2–§3 and `docs/implementation-plan.md` §4 before
 starting.
 
 ## 1. Where things stand
 
-- `main` @ `2e54c42`, tree clean, local = remote (as of 2026-11-16 close-out).
+- `main` @ `cf5a838`, tree clean, local = remote (as of 2026-11-16 close-out).
 - Build: `cd desktop-app && ./build.sh clean && ./build.sh` → `BUILD OK`, 187
   classes, zero `-Xlint:all` warnings. `sh ../../netbeans/extide/ant/bin/ant
   clean jar` is the literal DoD check.
-- Probes: `cd desktop-app && ./test/run-all.sh` → `ALL PROBES GREEN` (11/11).
-  `LoansUiProbe` exists but is **not** registered in `run-all.sh` (manual:
-  `PASS=101 FAIL=0`).
+- Probes: `cd desktop-app && ./test/run-all.sh` → `ALL PROBES GREEN` (12/12).
+  `LoansUiProbe` is registered (display): `PASS=105 FAIL=0`.
 - Inventory: 117 Java files / 10,788 lines (18 model, 16 service, 10
   persistence, 10 controller, 62 view, `Main` 1) plus 25 probe files
-  (2,791 lines).
+  (2,811 lines).
 - Tallest files: `view/CatalogScreen.java` 199, `view/PreviewPane.java` 197,
   `view/PenaltyPreviewPane.java` 195, `view/LoanPreviewPane.java` 194,
   `view/SegmentedControl.java` 189. **Split before adding** to anything near
@@ -78,7 +78,14 @@ locked; do not rewrite them except for wiring (e.g. showing `PhotoTile` where a
 - **Probe captures.** `frame.paint(g)` can replay stale buffers on a realized window; use `printAll(g)` for screenshots in probes.
 - **Probes need a display** for paint probes; `test/run-all.sh` uses `xvfb-run -a`. Run the suite **serially** — it wipes and recompiles `test/out`.
 - **Seed facts**: 10 items (7 AVAILABLE / 3 LOANED), 3 users, 3 loans, `₱872,000.00` total replacement value; no penalties, no photos. Seed dates are relative to the seeding date (D4).
-- **`LoansUiProbe` is not in `run-all.sh`** (manual, PASS=101). Decide in M5 plan whether to register it (WP6-style close-out item carried forward).
+- **Modal dialogs cannot be driven from a probe**: `JDialog.setVisible` blocks the
+  EDT under xvfb, so `LoansUiProbe` asserts the dialog *bodies* and the controller
+  paths instead. The full click-through lives in the throwaway manual harness
+  (outside the repo) that a maintainer runs at each close-out.
+- **The status sink ignores frames without a peer** (`AppController.openMain` guards
+  on `frame.isDisplayable()` so a signed-out session cannot write). Show the frame
+  before routing, or the first screen's status line is dropped — the bug the M4
+  close-out fixed.
 - **`ImageObserver.WIDTH`/`HEIGHT` shadow enclosing constants** inside `JPanel` subclasses — use `PILL_HEIGHT`-style names.
 - **`git log --format=%G?` may print `N`** even when commits are SSH-signed; GitHub verification is authoritative.
 

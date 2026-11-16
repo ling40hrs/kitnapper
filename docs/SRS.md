@@ -143,9 +143,9 @@ Run in order; each step lists the requirement it proves.
 5. **Confirm the lock**: the loaned item is still listed, but its **Check out** action is disabled and the preview reads "Currently on loan." (FR-02).
 6. **Try a due date 15+ days out** → the due-date picker only offers `T … T+14`, so the date cannot be entered; the service still rejects an out-of-window date and `CatalogProbe` asserts that rejection (FR-04, INV-2).
 7. **Close and relaunch, then log in again** → the new loan is still present (FR-12, NFR-07).
-8. **Log in as manager** → Overdue Dashboard shows L-003 first with **₱200.00 accrued** (FR-08); All Loans lists every loan (FR-09).
-9. **Log the return of L-003** with return date `T` → loan becomes `RETURNED`; exactly one ₱200.00 `LATE_FEE` penalty is created; item returns to `AVAILABLE` (FR-06, FR-07).
-10. **Open the penalty and mark it WAIVED** with a reason → status updates immediately (FR-11, NFR-02).
+8. **Log in as manager** → the Dashboard opens with L-003 first in **Overdue now** at **₱200.00 accrued** (FR-08); All Loans lists every loan, newest first (FR-09).
+9. **Log the return of L-003** from All Loans or Overdue with the return date defaulting to `T` (the picker offers the borrow date … `T`) → the loan becomes `RETURNED`; exactly one ₱200.00 `LATE_FEE` penalty is created; item returns to `AVAILABLE` (FR-06, FR-07).
+10. **Open the penalty on Penalties and choose Waive with a reason** (a blank reason is rejected inline and the dialog stays open) → the badge shows `WAIVED` immediately and the reason appears in the preview (FR-11, NFR-02).
 11. **Add a new inventory item with a photo, then decommission it** → the photo shows on the card/preview; the retired item remains listed but cannot be checked out (FR-10, NFR-08).
 12. **Trigger "Reset demo data"** → state returns to the §6.1 baseline (FR-12).
 
@@ -181,3 +181,4 @@ Seed dataset details: PRD §9; rationale and file placement: `seed-data.md`.
 | 3.1.2 | 2026-11-16 | §6.2 steps 4–6 aligned with the delivered catalog: checkout flips the row to `LOANED` immediately, the availability lock disables the action instead of hiding the row, and the 14-day limit is enforced by a `T … T+14` picker plus a service rejection proven by `CatalogProbe`; no requirement changed |
 | 3.1.3 | 2026-11-16 | FR-06 acceptance added: the return dialog offers borrow date … today, defaults to today, previews the fee to freeze, and is reachable from All Loans and Overdue; no requirement changed |
 | 3.1.4 | 2026-11-16 | FR-11 acceptance added: the penalties list columns, the settle dialog as the confirmation, the mandatory waive reason with its inline error, and the one-way settlement rule; no requirement changed |
+| 3.1.5 | 2026-11-16 | §6.2 steps 8–10 aligned with the delivered M4 screens: the manager lands on the Dashboard (not a separate overdue view), All Loans lists newest first, the return is logged from All Loans or Overdue with the return-date picker defaulting to `T`, and the waive step names the Penalties screen, the mandatory reason and the inline rejection; no requirement changed |

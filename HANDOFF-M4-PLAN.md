@@ -6,22 +6,18 @@
 > Written: 2026-11-16 · Status: **approved, WP0 committed**
 > Previous plan: `HANDOFF-M3-PLAN.md` (M3 record, complete). Scope note: `HANDOFF-M4.md`.
 
-> **Resume here (fresh session):** M4 WP5 and the width pass are **done**
-> (see §17). **WP6 — Verification, docs, handoff** remains open: register
-> `LoansUiProbe` in `run-all.sh` (if desired), complete static audits,
-> `ant clean jar`, SRS §6.2 steps 7–10 by hand, finalize docs per §11
-> (including `HANDOFF-M5.md`), and record the WP6 close-out in §17. Read this
-> file end to end, then `AGENTS.md` and `docs/preferences.md`; `HANDOFF-M4.md`
-> §4–§5 is still the reuse map and gotcha list. Every WP ends with `./build.sh`
-> + `./test/run-all.sh` green, a log entry in §17, and a commit under the
-> documented-task rule. Current state (post width pass, `2e54c42`): 117 Java
-> files / 10,788 lines; 25 probe files / 2,791 lines; 11/11 probes green in
-> `run-all.sh` (`LoansLayoutProbe` registered; `LoanProbe` PASS=35);
-> `LoansUiProbe` (manual) `PASS=101`; tallest file `CatalogScreen` 199. Reuse
-> for WP6: `DashboardUiChecks`, `DashboardScreen.section()`, the mount smoke
-> recipe in §17 WP5. Note: core M4 docs and `HANDOFF-M5.md` were drafted during
-> a 2026-11-16 documentation audit — verify completeness against §11 before
-> closing WP6.
+> **Resume here (fresh session):** **M4 is complete** — WP0–WP6, the width pass
+> and two close-out fixes are pushed (see §17, final commits `cf5a838` + this
+> docs change). Next milestone: **M5 — inventory, photos, reset, settings**;
+> read `HANDOFF-M5.md` (scope note) and write `HANDOFF-M5-PLAN.md` before any
+> code, following the M3/M4 pattern. Read this file end to end, then
+> `AGENTS.md` and `docs/preferences.md`. Every WP ends with `./build.sh` +
+> `./test/run-all.sh` green, a log entry in §17, and a commit under the
+> documented-task rule. Final M4 state: 117 Java files / 10,788 lines; 25 probe
+> files / 2,811 lines; **12/12 probes green** (`LoansUiProbe PASS=105`,
+> `LoansLayoutProbe PASS=12`, `LoanProbe PASS=35`); tallest file
+> `CatalogScreen` 199. Carried to M6: the penalties table clips its Assessed
+> column at 1280 (no width policy), toast overlap at small sizes.
 
 ---
 
@@ -47,7 +43,7 @@ placeholders until M5; chrome/motion/DPI polish stays M6.
 ### Milestone exit criteria
 
 1. `ant clean jar` succeeds on JDK 17 (bundled Ant via `sh`).
-2. The M3 probe suite is still green and the two new probes are green (11/11).
+2. The M3 probe suite is still green and the two new probes are green (12/12).
 3. SRS §6.2 steps 7–10 pass: restart persistence, manager overdue ₱200, return
    freezes exactly one `LATE_FEE`, waive with a reason.
 4. Every Java file ≤ 200 lines; no hex outside `Theme`; no `service`/`controller`
@@ -465,12 +461,18 @@ table row `L-003` at ₱200.00 / 4 days late, activity `L-001` → `L-002` →
 `L-003`; after the return `2 / 0 / 1`, empty overdue table, return event above
 its checkout). Suite 10/10, mount smoke 8/8, `ant clean jar` green. See §17.
 
-### WP6 — Verification, docs, handoff
+### WP6 — Verification, docs, handoff (DONE 2026-11-16)
 
 Steps: complete `LoansUiProbe` (§9.3) and add it to `run-all.sh` (display);
 static audits (line caps, hex, view imports, suppressions); `ant clean jar`;
-full suite (11/11); SRS §6.2 steps 7–10 by hand; docs per §11; write
+full suite (12/12); SRS §6.2 steps 7–10 by hand; docs per §11; write
 `HANDOFF-M5.md` and update `.opencode/HANDOFF.md`; commits + push.
+
+**Result (2026-11-16):** gate met — suite 12/12, `LoansUiProbe` `PASS=105`
+(+`all-sort-due`, +`navigation`), manual pass 33/33 through the real
+`AppController`, `ant clean jar` green, audits clean. Two defects found and
+fixed (settle-dialog listener order, first-paint status line). Deviations from
+§9.3 recorded in §17. See §17.
 
 **Gate:** §14 Definition of Done.
 
@@ -684,15 +686,15 @@ Expected: `PASS≈10`, `FAIL=0` (record exact counts).
 | :--- | :--- |
 | `DataProbe` | `PASS=26` (unchanged) |
 | `CatalogProbe` | `PASS=28` (unchanged) |
-| `LoanProbe` | `PASS≈26` (WP1) |
-| `SkinProbe` | `PASS=2`; `light_pixels≈260` |
+| `LoanProbe` | `PASS=35` (WP1) |
+| `SkinProbe` | `PASS=4`; `light_pixels=260` |
 | `EdgeProbe` | `PASS=4` |
 | `SizeProbe` | `PASS=3` |
 | `FontProbe` | `PASS=2` |
 | `FrameProbe` | `PASS=12` |
 | `CloseProbe` | `PASS=1` + `EXITED_OK` |
 | `CatalogUiProbe` | `PASS=13` |
-| `LoansUiProbe` | `PASS≈10` (WP6) |
+| `LoansUiProbe` | `PASS=105` (WP6, registered) |
 
 ---
 
@@ -798,8 +800,7 @@ Push after each commit, then report local SHA, remote SHA, and `verified`.
 
 1. `cd desktop-app && ./build.sh clean && ./build.sh` → `BUILD OK`, zero warnings.
 2. `sh ../../netbeans/extide/ant/bin/ant clean jar` → `BUILD SUCCESSFUL`.
-3. `./test/run-all.sh` → **11/11 green**, counts match §9.4 (updated with real
-   numbers).
+3. `./test/run-all.sh` → **12/12 green**, counts match §9.4.
 4. SRS §6.2 steps 7–10 pass by hand; §10.1 extras pass.
 5. All Java files ≤ 200 lines (`find … | xargs wc -l` max reported).
 6. No hex outside `Theme` (transparent-window exceptions aside); no
@@ -1186,3 +1187,95 @@ and stretches to fill at 1600.
 Audits: no file over 200 (`LoansTable` 178, `LoansWidthPolicy` 52); no hex
 outside `Theme`; no `service`/`controller` imports under `view`; no
 `@SuppressWarnings`.
+
+### WP6 — Verification, docs, handoff (2026-11-16)
+
+**Status:** complete. Starting HEAD `2e54c42` (tree clean, local = remote).
+M4 closes here.
+
+**§9.3 completion.** `LoansUiProbe` is registered in `run-all.sh` as the
+twelfth probe (display mode). Two gaps in the original §9.3 list were closed in
+`LoansUiChecks`:
+
+- `all-sort-due` (§9.3.4) — toggling the Due header sorts earliest first, so
+  `L-003` (due `T-4`) leads the All Loans table.
+- `navigation` (§9.3.10) — `ScreenCatalog.navKeys` returns the six manager
+  routes and the two borrower routes, and `defaultKey` resolves to
+  dashboard/catalog. It lives in `kitnapper.view` because `ScreenCatalog` is
+  package-private.
+
+Counts: `LoansUiProbe` `PASS=105 FAIL=0` (was 101; +4 checks).
+
+**Deviations recorded, not coded** (§9.3 items 1, 5, 9): the probe mounts each
+screen in a bare `JFrame` rather than `MainFrame` (`FrameProbe` owns the shell),
+the modal return/settle dialogs and their toasts are driven by the manual
+harness instead of the probe (a modal `JDialog` blocks the EDT under xvfb —
+§17 WP5), and the probe frames are 1180×700. §9.3 item 5's "Penalties gains one
+row / preview ₱200 UNPAID" is proven by the penalties pass, which shares the
+store the All Loans pass returns `L-003` on.
+
+Commands and results:
+
+```bash
+cd desktop-app && ./build.sh clean && ./build.sh   # BUILD OK -> 187 classes, zero warnings
+./test/run-all.sh                                  # ALL PROBES GREEN (12/12)
+sh ../../netbeans/extide/ant/bin/ant clean jar     # BUILD SUCCESSFUL
+```
+
+| Probe | Result |
+| :--- | :--- |
+| `DataProbe` / `CatalogProbe` / `LoanProbe` | `PASS=26` / `28` / `35` |
+| `SkinProbe` / `FontProbe` / `EdgeProbe` / `SizeProbe` | `PASS=4` (`light_pixels=260`) / `2` / `4` / `3` |
+| `FrameProbe` / `CloseProbe` | `PASS=12` / `PASS=1` + `EXITED_OK` |
+| `CatalogUiProbe` / `LoansLayoutProbe` | `PASS=13` / `PASS=12` |
+| `LoansUiProbe` | **`PASS=105`** (registered at WP6) |
+
+Audits: no file over 200 (`CatalogScreen` 199, `PreviewPane` 197,
+`PenaltyPreviewPane` 195, `LoanPreviewPane` 194, `SegmentedControl` 189, new
+`LoansUiChecks` 176); no hex outside `Theme`; no `service`/`controller` imports
+under `view`; no `@SuppressWarnings`. Inventory: 117 Java files / 10,788 lines;
+25 probe files / 2,811 lines.
+
+**SRS §6.2 steps 7–10 by hand.** A throwaway harness
+(`/tmp/opencode/m4-manual/ManualPass.java`, not committed) drove the real
+`AppController`, `MainFrame` and the real modal dialogs on a temp-dir seed
+anchored at today, capturing eight 1280×800 screenshots and **33/33 checks**:
+
+- step 7 — student checkout, close, relaunch, log in: My Loans shows
+  `3 loans · 1 overdue` with the new loan on the Active tab.
+- step 8 — manager login lands on the Dashboard: `Out now: 4`, `Overdue: 1`,
+  `Unpaid penalties: 0`, `L-003` first at ₱200.00 / 4 days late; All Loans 4 rows.
+- step 9 — `Log return` on `L-003` through the dialog (date defaults to `T`):
+  row RETURNED, exactly one ₱200.00 penalty, `e-007` AVAILABLE, overdue list
+  empty, toast shown.
+- step 10 — `Waive…` with a reason: badge WAIVED, reason in the preview,
+  `Unpaid penalties: 0`.
+- extras — the return and the waiver survive a relaunch; an early return of
+  `L-002` creates no penalty; a loaned item flagged `UNDER_MAINTENANCE` stays
+  flagged after its return (D15).
+
+**Two defects found and fixed in this package:**
+
+1. `SettlePenaltyDialog.show` styled the segments before registering the change
+   listener and then set the initial index, so opening it from the preview's
+   `Waive…` action arrived with Waive selected but the reason field disabled and
+   the confirm button still primary (§8.9 wants a mandatory reason and a
+   destructive confirm). Fixed by registering the listener first (`fix(view)`).
+2. `AppController.openMain` routed to the default screen before showing the
+   frame, and the status sink ignores frames without a peer, so the first
+   `onShown` status was dropped: a manager's status bar read
+   `10 items · 0 selected` until the next navigation. Fixed by showing the
+   frame before routing (`fix(m4)`). Borrowers were masked because the catalog's
+   own text matches the pre-mount placeholder.
+
+**Carried to M6** (recorded per §10.2, not fixed in M4): the penalties table
+clips its Assessed column at 1280 because `PenaltiesTable` has no
+`LoansWidthPolicy` equivalent; the visible toast overlaps the preview action bar.
+
+**Docs in this change:** `docs/SRS.md` §6.2 steps 8–10 wording + revision
+**3.1.5**; `docs/design.md` §5 screen inventory + the M4 loan-screen notes;
+`docs/decisions.md` §9 M4 entry with the real numbers and both fixes;
+`docs/implementation-plan.md` 1.9.0 (D28–D31, M4 file inventory, 2,811 probe
+lines); `README.md` (12 probes, M4 status); `HANDOFF-M5.md` (active scope note);
+`HANDOFF-M4.md` (historical). Commits: `f18fc4a` (probe), `f69303f` +
+`cf5a838` (fixes), the docs commit for this entry.

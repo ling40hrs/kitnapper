@@ -37,8 +37,10 @@ Finals/                       (the repository root)
 ├── HANDOFF-M1.md             working docs for finished milestones
 ├── HANDOFF-M2.md
 ├── HANDOFF-M3.md
-├── HANDOFF-M3-PLAN.md        active M3 plan and execution log
-├── HANDOFF-M4.md             M4 handoff: returns, fees, manager views
+├── HANDOFF-M3-PLAN.md        M3 record: plan and execution log
+├── HANDOFF-M4.md             M4 scope note (historical at close-out)
+├── HANDOFF-M4-PLAN.md        M4 record: plan and execution log
+├── HANDOFF-M5.md             active M5 scope note: inventory, photos, reset
 ├── HANDOFF-SESSION-2026-11-14.md
 ├── .editorconfig             shared formatting
 ├── .gitattributes            LF everywhere; binary assets not normalized
@@ -125,12 +127,12 @@ Build output is written to `build/` and `dist/`, both of which are ignored by Gi
 | [`docs/SRS.md`](docs/SRS.md) | Numbered requirements, invariants, acceptance criteria, demo script |
 | [`docs/design.md`](docs/design.md) | Windows 11 / Fluent visual spec (v2.0): tokens, custom chrome, components, photo uploads, skeleton loading states (§13) |
 | [`docs/decisions.md`](docs/decisions.md) | Record of confirmed decisions and known gaps |
-| [`docs/implementation-plan.md`](docs/implementation-plan.md) | Build order, class/file inventory, JSON persistence spec, decisions D1–D27 |
+| [`docs/implementation-plan.md`](docs/implementation-plan.md) | Build order, class/file inventory, JSON persistence spec, decisions D1–D31 |
 | [`docs/seed-data.md`](docs/seed-data.md) | Where seed data lives and when to split it out |
 | [`docs/preferences.md`](docs/preferences.md) | Tracked, machine-independent working preferences: planning, one-phase execution, document-commit-push, verification |
 | [`HANDOFF-M4.md`](HANDOFF-M4.md) | M4 scope note: current state, reuse map, gotchas, probe commands (historical at M4 close-out; the contract was `HANDOFF-M4-PLAN.md`) |
 | [`HANDOFF-M4-PLAN.md`](HANDOFF-M4-PLAN.md) | M4 record: plan, work packages, probe plan, execution log, width pass |
-| [`HANDOFF-M5.md`](HANDOFF-M5.md) | **Active working document:** M5 plan — inventory, photos, reset, data contracts, work packages, probe plan, docs list, definition of done |
+| [`HANDOFF-M5.md`](HANDOFF-M5.md) | **Active working document:** M5 scope note — where things stand, M5 scope, reuse map, gotchas, commands; the detailed `HANDOFF-M5-PLAN.md` is written before M5 code |
 | [`HANDOFF-M3-PLAN.md`](HANDOFF-M3-PLAN.md) | M3 record: plan, work packages, probe plan, execution log |
 | [`HANDOFF-M3.md`](HANDOFF-M3.md), [`HANDOFF-M2.md`](HANDOFF-M2.md), [`HANDOFF-M1.md`](HANDOFF-M1.md), [`HANDOFF-SESSION-2026-11-14.md`](HANDOFF-SESSION-2026-11-14.md) | Historical records of finished milestones (machine-specific paths and probe commands are stale) |
 
@@ -152,6 +154,6 @@ Documentation complete; M0 (domain core), M1 (JSON persistence), M2 (Win11 shell
 
 M3 ships the real Catalog screen: search plus category/status filters, a details table with a 280 px preview pane, a cards view with shared selection, an empty state, and a 480 px checkout dialog whose due date is a `T … T+14` picker. Checkout persists, locks the item, and keeps validation errors inline. Managers get the same catalog read-only — no checkout action, an explicit caption instead. The successful 2026-11-15 debt pass cleared every 200-line violation, enabled `-Xlint:all`, and added `desktop-app/build.sh` plus `.gitattributes`.
 
-Verification lives **inside** the repository: `desktop-app/test/run-all.sh` builds the app and runs eleven probes (`DataProbe`, `CatalogProbe`, `LoanProbe`, `SkinProbe`, `FontProbe`, `EdgeProbe`, `SizeProbe`, `FrameProbe`, `CloseProbe`, `CatalogUiProbe`, `LoansLayoutProbe`), using `xvfb-run -a` for the paint probes so they work with or without a display. It is the gate for every remaining work package, together with the SRS §6.2 walkthrough.
+Verification lives **inside** the repository: `desktop-app/test/run-all.sh` builds the app and runs twelve probes (`DataProbe`, `CatalogProbe`, `LoanProbe`, `SkinProbe`, `FontProbe`, `EdgeProbe`, `SizeProbe`, `FrameProbe`, `CloseProbe`, `CatalogUiProbe`, `LoansLayoutProbe`, `LoansUiProbe`), using `xvfb-run -a` for the paint probes so they work with or without a display. It is the gate for every remaining work package, together with the SRS §6.2 walkthrough.
 
 Next: M5 — inventory CRUD, per-item photo import, `kitnapper-images/` storage, photo fallback tiles, and the demo reset. M4 (returns, late fees, penalty settlement, My Loans / All Loans / Overdue / Penalties screens, manager Dashboard) is implemented, probed, and pushed. Then M6 (polish). See `docs/decisions.md` for the decision record, `docs/implementation-plan.md` for the build order, and `HANDOFF-M4-PLAN.md` for the M4 record.
