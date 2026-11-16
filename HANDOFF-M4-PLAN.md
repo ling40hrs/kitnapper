@@ -902,7 +902,7 @@ Starting HEAD `bc9ff3c` (WP1 close-out); tree clean; local == `origin/main`.
 Commands and results:
 
 ```bash
-cd desktop-app && ./build.sh      # BUILD OK -> build/classes (159 classes)
+cd desktop-app && ./build.sh      # BUILD OK -> build/classes (158 classes)
 ./test/run-all.sh                 # ALL PROBES GREEN (10/10)
 xvfb-run -a java -cp "build/classes:test/out" kitnapper.view.LoansUiProbe
                                   # PASS=33 FAIL=0
