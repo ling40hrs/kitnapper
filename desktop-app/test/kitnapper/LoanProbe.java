@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import kitnapper.controller.DashboardController;
@@ -40,6 +41,10 @@ public final class LoanProbe {
             LoanChecks.seedReads(context, store, t);
             LoanChecks.controllerRows(loans, context, t);
             DashboardChecks.seed(dashboard);
+            for (Map.Entry<String, Boolean> entry
+                    : QueryTimingChecks.loans(context, loans, dashboard).entrySet()) {
+                ProbeSupport.check(entry.getKey(), entry.getValue());
+            }
             LoanChecks.returns(loans, dashboard, context, store, t);
             DashboardChecks.afterReturns(loans, dashboard, context, store, t);
             clock.set(t.plusDays(3));

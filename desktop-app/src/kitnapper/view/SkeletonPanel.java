@@ -42,6 +42,10 @@ final class SkeletonPanel extends JPanel {
     SkeletonPanel(Variant variant) {
         this.variant = variant;
         setOpaque(false);
+        // design §13.5: a skeleton is never focusable and never in the tab
+        // order — stated here rather than inherited from a JVM default.
+        setFocusable(false);
+        setRequestFocusEnabled(false);
         getAccessibleContext().setAccessibleName("Loading photo");
         pulse = new Timer(PULSE_TICK_MS, event -> tick());
         pulse.setCoalesce(true);

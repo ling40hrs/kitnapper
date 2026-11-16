@@ -692,7 +692,66 @@ documented tasks. Never tag/branch/amend/revert without a new “yes”.
   D38–D43 and revision 2.1.0; plan §3 D42/D43 amended with the measurements.
 - Commit `fix(m6): keep tables and previews usable at the minimum size`.
 
-### WP4 — pending
+### WP4 — icon, DPI and skeleton audits (D40) (2026-11-16)
+
+- Starting HEAD: `3de29cc` (clean, local == remote).
+- **Icon audit found a real defect.** With the bundled Inter resolved as the text family,
+  `Fonts.icons()` handed back that physical font whenever no Windows icon font was
+  installed, and Inter has no glyph for `U+2315`, `U+2750`, `U+2500`, `U+2692`, `U+25A3`,
+  `U+263E`, `U+2715`, `U+25CE`, `U+25AD` or `U+25A6` — so on Linux the title-bar brand and
+  window controls, the close glyph, the maintenance wrench, every empty-state magnifier and
+  **every category tile** (the media block of every seed item, which ships without photos)
+  painted as missing-glyph boxes. Fixed in its own commit `3f955db`
+  (`fix(m6): draw fallback glyphs with a font that can display them`): `Fonts.symbol()` is
+  the logical `Dialog` font (composites the system fonts, falls back per glyph — 16/16
+  codepoints displayable here), `Fonts.icons()` is the Windows icon font *or* `symbol()`,
+  and `GradientTile` draws category glyphs with `symbol()` because they are Unicode, not
+  Fluent codepoints. Design §10 gained the resolution rule, the brand-mark and history
+  rows, and §14.2 gained `D-Icons`. Pushed, remote `main` at the same SHA, `verified: true`.
+- **`GlyphChecks`** (new, `test/kitnapper/view`, 4 checks): the 12 pairs the app ships
+  (search, restore, maximize, minimize, repair, history, brand, moon, sun, chevron,
+  checkmark, close) must resolve to the codepoint or the fallback, be paintable, and every
+  fallback must be paintable by the symbol font; all six `GradientTile.glyphFor` category
+  glyphs must be paintable. `FontProbe` folds the map into its own tally (4 → 5 checks) and
+  the old single `glyph-fallback` line is gone.
+- **D40 closed by measurement.** New `QueryTimingChecks` (20-run warmup, 100 timed runs,
+  min/median/max printed) called from `CatalogProbe` (3 checks) and `LoanProbe` (5 checks):
+  catalog all `0.056 ms` median / `0.165` max, catalog text `0.023` / `0.131`, catalog
+  filter `0.013` / `0.066`, loans mine `0.117` / `0.460`, loans all `0.052` / `0.334`, loans
+  overdue `0.023` / `0.291`, dashboard activity `0.025` / `0.077`, dashboard overdue
+  `0.014` / `0.231`. Slowest single run **0.46 ms** against the 150 ms gate — no query
+  gating (D32 closed).
+- **Skeleton audit** (design §13): four gaps had no assertion, now in `SkeletonAuditChecks`
+  (new, `test/kitnapper/view`, 5 checks) called from `PhotoTileChecks`: skeletons are not
+  focusable (this JDK reports `isFocusable() == true` for a plain `JPanel`, so
+  `SkeletonPanel` now opts out explicitly with `setFocusable(false)` /
+  `setRequestFocusEnabled(false)`); the pulse stops when the frame is hidden; the
+  accessible name is announced exactly once and cleared exactly once over a gated load; the
+  10 s watchdog takes the failure path on a decode that never returns, leaves exactly one
+  painted skeleton, removes it, and clears the name — so no skeleton outlives its work.
+  Delay/minimum/fade/watchdog constants and the reduced-motion switch were already
+  asserted. `PhotoUiProbe` went 27 → 31 checks and now takes ~13 s.
+- **Theme sweep**: `ThemeSweepChecks` (new, 2 checks per screen) drives dark and light over
+  catalog, inventory, penalties and Settings (at 1024×640, from `GeometryProbe`) and asserts
+  every role-marked `JLabel` carries `UiFactory.colorFor(role)` — a screen that missed the
+  refresh leaves stale tokens and fails. `UiFactory.colorFor` dropped to package-private so
+  the probe applies the shipped rule instead of a copy. `GeometryProbe` 114 → 122 checks.
+- **DPI proxy**: `run-all.sh` now expands `KITNAPPER_UI_SCALE` into
+  `-Dsun.java2d.uiScale=<value>` for every display probe (`MotionProbe` keeps motion on,
+  everything else keeps motion off). The whole suite is green at **1.0, 1.25 and 1.5** with
+  no layout break, so nothing was changed for scaling; design §11 records that the proxy
+  scales device pixels, not OS font metrics, and the Windows pass stays authoritative.
+- Inventory: 158 source files / 15,059 lines, 46 probe files / 5,271 lines, 20 registered
+  probes. Tallest source `LoanPreviewPane` 199; tallest probe `M5FlowProbe`/`LoansUiChecks`
+  176 (`SkeletonAuditChecks` 170).
+- Static audits clean: no file > 200 lines, no `@SuppressWarnings`, no hex outside `Theme`,
+  no `service`/`controller` imports under `view`, no `System.exit` outside `Main`, and
+  `GradientTile` is still the only `GradientPaint` (design §3.4).
+- `./build.sh` → `BUILD OK`, 253 classes, zero warnings; `sh ../../netbeans/extide/ant/bin/ant
+  clean jar` → `BUILD SUCCESSFUL`; `./test/run-all.sh` → `ALL PROBES GREEN`, 20/20.
+- Docs in the same change: design §10/§11/§13.1/§13.5/§13.6/§13.7/§14.2, implementation plan
+  D32/D40 closed + revision 2.1.1.
+- Commit `test(m6): audit icons, DPI and skeleton gating` (after `3f955db` for the fix).
 
 ### WP5 — pending
 

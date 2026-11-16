@@ -59,18 +59,27 @@ run kitnapper.view.SizeProbe headless
 # motion on and is the only probe that measures the fades.
 MOTION_OFF=-Dkitnapper.motion=off
 
-run kitnapper.FrameProbe display "$MOTION_OFF"
-run kitnapper.CloseProbe display "$MOTION_OFF"
-run kitnapper.view.CatalogUiProbe display "$MOTION_OFF"
-run kitnapper.view.PhotoUiProbe display "$MOTION_OFF"
-run kitnapper.view.InventoryEditorProbe display "$MOTION_OFF"
-run kitnapper.view.InventoryUiProbe display "$MOTION_OFF"
-run kitnapper.view.SettingsUiProbe display "$MOTION_OFF"
-run kitnapper.view.M5FlowProbe display "$MOTION_OFF"
-run kitnapper.view.LoansLayoutProbe display "$MOTION_OFF"
-run kitnapper.view.LoansUiProbe display "$MOTION_OFF"
-run kitnapper.view.GeometryProbe display "$MOTION_OFF"
-run kitnapper.view.MotionProbe display
+# Optional DPI proxy (plan §4.4, §8.1): KITNAPPER_UI_SCALE=1.25 or 1.5 adds
+# -Dsun.java2d.uiScale to every display probe. Unset by default; the Windows
+# 100/125/150 % pass stays the authoritative check.
+SCALE_ARG=
+if [ -n "${KITNAPPER_UI_SCALE:-}" ]; then
+    SCALE_ARG="-Dsun.java2d.uiScale=${KITNAPPER_UI_SCALE}"
+fi
+DISPLAY_ARGS="$MOTION_OFF $SCALE_ARG"
+
+run kitnapper.FrameProbe display "$DISPLAY_ARGS"
+run kitnapper.CloseProbe display "$DISPLAY_ARGS"
+run kitnapper.view.CatalogUiProbe display "$DISPLAY_ARGS"
+run kitnapper.view.PhotoUiProbe display "$DISPLAY_ARGS"
+run kitnapper.view.InventoryEditorProbe display "$DISPLAY_ARGS"
+run kitnapper.view.InventoryUiProbe display "$DISPLAY_ARGS"
+run kitnapper.view.SettingsUiProbe display "$DISPLAY_ARGS"
+run kitnapper.view.M5FlowProbe display "$DISPLAY_ARGS"
+run kitnapper.view.LoansLayoutProbe display "$DISPLAY_ARGS"
+run kitnapper.view.LoansUiProbe display "$DISPLAY_ARGS"
+run kitnapper.view.GeometryProbe display "$DISPLAY_ARGS"
+run kitnapper.view.MotionProbe display "$SCALE_ARG"
 
 if [ "$fail" -eq 0 ]; then
     echo "ALL PROBES GREEN"

@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.Optional;
 
 import kitnapper.controller.BorrowingController;
@@ -53,6 +54,9 @@ public final class CatalogProbe {
 
     private static void run(AppContext ctx, DataStoreImpl store, Path dir) {
         CatalogSearchChecks.run(ctx.catalog());
+        for (Map.Entry<String, Boolean> entry : QueryTimingChecks.catalog(ctx).entrySet()) {
+            ProbeSupport.check(entry.getKey(), entry.getValue());
+        }
         Borrower s1 = (Borrower) ProbeSupport.user(store, "student1@institution.edu");
         Borrower s2 = (Borrower) ProbeSupport.user(store, "student2@institution.edu");
         Manager admin = (Manager) ProbeSupport.user(store, "admin@institution.edu");

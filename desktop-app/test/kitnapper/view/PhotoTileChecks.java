@@ -108,6 +108,8 @@ final class PhotoTileChecks {
         AtomicBoolean faded = new AtomicBoolean();
         onEdtRun(() -> skeleton.fadeOut(0, () -> faded.set(true)));
         UiProbeSupport.check("a zero-length fade completes at once", faded.get());
+
+        SkeletonAuditChecks.run();
     }
 
     /** Tears the fixture down; must run on the EDT. */

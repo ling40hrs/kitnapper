@@ -134,6 +134,9 @@ public final class GeometryProbe {
             if ("settings".equals(key)) {
                 GeometryChecks.settingsFit(tag, screen);
             }
+            if (size[0] == SIZES[0][0]) {
+                ThemeSweepChecks.sweep(tag, frame, screen);
+            }
             frame.dispose();
         });
     }

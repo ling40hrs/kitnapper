@@ -409,7 +409,7 @@ displayable by the physical Inter font — the symbol-font resolution above is t
 | Thin overlay scrollbars | Swing scrollbars are blocky | `BasicScrollBarUI` subclass, always-thin, no overlay animation; the 8 px lane keeps layout space (D38) |
 | Per-pixel translucency | Supported but platform-dependent | Used only for the dialog fade; guarded by `isWindowTranslucencySupported`, instant fallback (§7) |
 | Window drag / resize / maximize | Manual | `WindowChrome` owns: drag, double-click maximize, 8 px edge resize bands, min size, restore bounds |
-| Multi-monitor / DPI change mid-session | Resize quirks | Accept; verify at 100 / 125 / 150 % |
+| Multi-monitor / DPI change mid-session | Resize quirks | Accept; verify at 100 / 125 / 150 %. M6 (WP4) ran the whole probe suite at `KITNAPPER_UI_SCALE=1.25` and `1.5` (`-Dsun.java2d.uiScale`): 20/20 green at 1.0, 1.25 and 1.5, so no layout break was found at the proxy scales. The Windows pass stays authoritative because the proxy scales device pixels, not the OS font metrics. |
 | `prefers-reduced-motion` | Not exposed by Java | Session setting in Settings (M5), §13.4 |
 
 Painting notes: custom surfaces use `setOpaque(false)` with cached `RoundRectangle2D`
@@ -464,7 +464,7 @@ import and the reduced-motion switch later in M5, audited in M6.
 | Surface | Skeleton | What is shown |
 | :--- | :--- | :--- |
 | Launch / `DataStore.load()` | **No** | The save file is a few KB and loads before the first frame paints; the window appears fully populated. Deliberate non-application — not a candidate for "loading theater". |
-| Catalog / dashboard / loan queries | **Gated** | In-memory list scans, applied synchronously on the EDT (`NFR-02` immediacy). A query is only handed to a worker, and its skeleton shown, when it *measures* ≥ 150 ms first. Never speculative. |
+| Catalog / dashboard / loan queries | **Gated** | In-memory list scans, applied synchronously on the EDT (`NFR-02` immediacy). A query is only handed to a worker, and its skeleton shown, when it *measures* ≥ 150 ms first. Never speculative. **Measured in M6 (D40 closed):** at seed scale the slowest of catalog-all/text/filter and loans-mine/all/overdue, dashboard activity and dashboard overdue is **0.46 ms** (medians 0.01–0.12 ms, 100 runs after a 20-run warmup). Three orders of magnitude under the gate, so no query gets a skeleton and none should. |
 | Photo decode (160 px card thumb, 640 px preview, inventory row) | **Yes** | Media block over the 16:9 area while `ImageIO` runs off the EDT; resolves to the photo or the §12 fallback tile. |
 | Photo import (choose → downscale → re-encode) | **Yes** | Media block for the whole import; the confirming button enters a disabled busy state. |
 | Reset demo data | **No** | Confirmed dialog → synchronous reset → screen refresh + toast. |
@@ -514,6 +514,11 @@ exist while the component is not showing or while reduced motion is on.
 
 - Skeletons are **never focusable**, never in the tab order, never clickable, and never
   announced as content.
+  *Delivered note (M6, WP4):* the panel states this itself —
+  `setFocusable(false)` + `setRequestFocusEnabled(false)` in the constructor — because
+  this JDK reports `isFocusable()` as `true` for a plain `JPanel`, so the promise held only
+  by luck. `SkeletonAuditChecks` asserts both flags and that `requestFocusInWindow()` is
+  refused.
 - The host region exposes the state instead: accessible name **"Loading photo" / "Loading
   items"**, role `PROGRESS_BAR` (indeterminate), and exactly one name-change event when
   loading starts and one when it ends — no per-tick announcements.
@@ -534,6 +539,11 @@ exist while the component is not showing or while reduced motion is on.
   uncaught.
 - **No skeleton may outlive its work** (success, failure, or timeout). This is a standing
   review item for M3–M6.
+  *Audited in M6 (WP4):* `SkeletonAuditChecks` runs a decode that never returns and waits
+  the real 10 s, then asserts the watchdog took the failure path, exactly one skeleton was
+  ever painted, no `SkeletonPanel` remains, and the accessible loading name was cleared.
+  The accessible name is also asserted to be announced exactly once and cleared exactly
+  once over a normal gated load.
 
 ### 13.7 Code placement & milestones
 
@@ -544,9 +554,12 @@ exist while the component is not showing or while reduced motion is on.
 
 `PhotoTile`, `PreviewPane`, and the table hosts call `SkeletonGate`; there are no
 per-screen skeleton subclasses. Milestones: **M5 delivered 2026-11-16** — first use for card/preview decode and photo
-import, plus the reduced-motion switch (deferred from M3 by D27); query gating stays
-specified for M6 (D32), with the audit (reduced-motion, watchdog, no permanent skeletons,
-gradient spot-check) also in M6.
+import, plus the reduced-motion switch (deferred from M3 by D27); **M6 audited 2026-11-16
+(WP4)** — 150/300/167/10 s asserted, the pulse stopping when hidden and the focus opt-out
+asserted, the accessible name announced and cleared once, the watchdog proven against a
+decode that never returns, reduced motion still stopping the pulse, and D32 closed by
+measurement (no query gating). Gradient spot-check: `GradientTile` is still the only file
+that constructs a `GradientPaint`.
 
 ## 14. Decisions Log
 
@@ -593,3 +606,4 @@ added (files.community, shelf.nu); implementation plan written (`M0–M6`, D1–
 | **D-Toasts** | Amended in M6 (2026-11-16): 96 px bottom inset measured 1 px short of the 280 px preview's action bar at 1024×640, and the inventory bar (120 px, three actions) is crossed by any bottom-anchored toast. `Toasts` keeps 16/96 and shifts left of a showing preview column (320 px right inset); Settings, with no preview, keeps the plain bottom-right corner. Recorded as D43 in `implementation-plan.md` (design §6). |
 | **D-Motion** | Shipped in M6 (2026-11-16): dialog open fade + 98→100 % grow and close fade at 83 ms, the 120 ms screen fade, and the existing 167 ms toast slide + fade, all through one `Motion` facade with decelerate easing and a `Timer` tick of 16 ms; the screen wash is a click-through `FadeOverlay` on `MODAL_LAYER`. The theme crossfade is **not** shipped — the switch stays instant. `-Dkitnapper.motion=off` is a probe switch, not a user setting. Dialog fades fall back to the instant path when the platform lacks per-pixel translucency (§7). Recorded as D39 in `implementation-plan.md`. |
 | **D-Icons** | Fixed in M6 (2026-11-16) during the WP4 icon audit: `Fonts.icons()` used to hand back the *text* family when no Windows icon font was installed, so on Linux the §10 fallback column was drawn with the bundled physical Inter font, which has no glyph for 8 of the 12 landscape glyphs — title-bar brand, close, wrench, search, moon, minimize, restore and every category tile rendered as missing-glyph boxes. `Fonts` now splits the two roles: `icons()` is the Windows icon font *or* `symbol()`, and `symbol()` is the logical `Dialog` font, which composites the system fonts and falls back per glyph. `GradientTile` draws the category glyphs with `symbol()`, never with an icon font (§10). |
+| **D-Audit** | M6 WP4 audits (2026-11-16): icons verified pair by pair (`GlyphChecks`, 12 shipped pairs + 6 category glyphs), the suite run at `KITNAPPER_UI_SCALE` 1.25 and 1.5 (20/20 each), query timings measured to close D32 (`max 0.46 ms` against the 150 ms gate, so no query gating), the skeleton §13 list closed with four new assertions plus a real 10 s watchdog run, and a both-theme sweep over catalog, inventory, penalties and Settings asserting every role-marked label follows the active token set. |

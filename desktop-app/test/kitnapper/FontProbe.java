@@ -1,13 +1,16 @@
 package kitnapper;
 
+import java.util.Map;
+
 import kitnapper.view.Fonts;
+import kitnapper.view.GlyphChecks;
 
 /**
  * Font resolution probe (plan §6.4, §9.4): the text/display/mono stacks
  * resolve to installed families (a missing physical font falls back to
- * "Dialog", which must never win) and the glyph helper always answers.
- * Kept thin by design (WP0.5 note). Runs headless; prints the resolved
- * families for the baseline table.
+ * "Dialog", which must never win) and the §10 glyph table resolves to
+ * paintable characters ({@link GlyphChecks}). Kept thin by design (WP0.5
+ * note). Runs headless; prints the resolved families for the baseline table.
  */
 public final class FontProbe {
 
@@ -27,7 +30,9 @@ public final class FontProbe {
 
         check("families-resolve", !"Dialog".equals(text) && !"Dialog".equals(display)
             && !"Dialog".equals(mono));
-        check("glyph-fallback", !Fonts.glyph("\uE80F", "\u25A3").isEmpty());
+        for (Map.Entry<String, Boolean> entry : GlyphChecks.results().entrySet()) {
+            check(entry.getKey(), entry.getValue());
+        }
 
         System.out.println("PASS=" + passed + " FAIL=" + failed);
         if (failed > 0) {
