@@ -126,6 +126,7 @@ public final class MainFrame extends JFrame {
             return;
         }
         cards.show(content, key);
+        Motion.fadeScreen(content);
         titleBar.setScreenTitle(meta.title());
         omnibar.setScreen(meta.title());
         statusBar.setRight("");

@@ -289,6 +289,16 @@ instantly — no hover animation. No bounce, no overshoot, no animated gradients
 timing and pulse are specified in §13. Destructive actions
 (decommission, waive, reset, photo replace) require confirmation dialogs.
 
+**Shipped in M6 (D39):** the dialog open fade + 98→100 % grow and its close fade (83 ms,
+`Motion`), the 120 ms screen fade on every navigation after the first (`FadeOverlay` on
+`MODAL_LAYER`, click-through), and the existing toast slide + fade (167 ms, now reading
+`Motion.NORMAL_MS`). **Not shipped:** the theme crossfade — the theme switches instantly
+(fewer moving parts, the switch is one click in Settings and never appears in the SRS §6.2
+demo). A package-private `-Dkitnapper.motion=off` switch disables both fades; it is a probe
+switch, not a user setting — Settings keeps its two session switches (dark theme, skeleton
+pulse). Dialog fades are guarded by `GraphicsDevice.isWindowTranslucencySupported` and fall
+back to the instant path, so nothing depends on an X server supporting translucency.
+
 ## 8. Accessibility
 
 - Text contrast ≥ 4.5:1 in both themes for: `TEXT_PRIMARY`/`TEXT_SECONDARY` on every
@@ -367,7 +377,7 @@ fallback glyph column wins.
 | Snap layouts / `Win+←/→` | Lost with custom chrome | Accepted limitation, documented here and in the README |
 | Segoe UI Variable / Fluent Icons | System fonts on Win11 / Win10 | Probe at startup; documented fallback chains (§4, §10) |
 | Thin overlay scrollbars | Swing scrollbars are blocky | `BasicScrollBarUI` subclass, always-thin, no overlay animation; the 8 px lane keeps layout space (D38) |
-| Per-pixel translucency | Supported but unnecessary | Not used |
+| Per-pixel translucency | Supported but platform-dependent | Used only for the dialog fade; guarded by `isWindowTranslucencySupported`, instant fallback (§7) |
 | Window drag / resize / maximize | Manual | `WindowChrome` owns: drag, double-click maximize, 8 px edge resize bands, min size, restore bounds |
 | Multi-monitor / DPI change mid-session | Resize quirks | Accept; verify at 100 / 125 / 150 % |
 | `prefers-reduced-motion` | Not exposed by Java | Session setting in Settings (M5), §13.4 |
@@ -548,3 +558,4 @@ added (files.community, shelf.nu); implementation plan written (`M0–M6`, D1–
 | **D-Skeleton** | Resolved in §13 (2026-11-14): 150 ms delay / 300 ms minimum / 167 ms fade, flat 4 px blocks with a 1,000 ms pulse (`SKELETON_BLOCK` token), no launch skeleton, query skeletons gated behind a measured ≥ 150 ms, reduced motion via a session setting, 10 s watchdog. |
 | **D-Skeleton-M5** | Deferred to M5 (2026-11-15): seed items carry no photos and catalog queries are synchronous, so `PhotoTile`, `SkeletonPanel`, and `SkeletonGate` ship with the inventory photo picker instead of M3. Recorded as D27 in `implementation-plan.md`. |
 | **D-Scrollbars** | Thin scrollbars shipped in M6 (2026-11-16): `ThinScrollBarUI` — 8 px lane, transparent track, 4 px thumb widening to the full lane on hover, radius 2, no arrow buttons, installed once through `UIManager` in `Theme.installDefaults()` so all five scroll surfaces and every future `JScrollPane` pick it up; thumb colour is read at paint time, so both themes work without a UI rebuild. The lane keeps layout space — a true overlay was rejected (§6). Recorded as D38 in `implementation-plan.md`. |
+| **D-Motion** | Shipped in M6 (2026-11-16): dialog open fade + 98→100 % grow and close fade at 83 ms, the 120 ms screen fade, and the existing 167 ms toast slide + fade, all through one `Motion` facade with decelerate easing and a `Timer` tick of 16 ms; the screen wash is a click-through `FadeOverlay` on `MODAL_LAYER`. The theme crossfade is **not** shipped — the switch stays instant. `-Dkitnapper.motion=off` is a probe switch, not a user setting. Dialog fades fall back to the instant path when the platform lacks per-pixel translucency (§7). Recorded as D39 in `implementation-plan.md`. |

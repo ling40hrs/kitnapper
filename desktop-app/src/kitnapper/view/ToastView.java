@@ -22,8 +22,6 @@ final class ToastView extends JPanel {
     private static final int PAD = 12;
     private static final int RADIUS = 8;
     private static final int ICON_SIZE = 16;
-    private static final int ANIM_MS = 167;
-    private static final int ANIM_TICK_MS = 16;
     private static final int SLIDE = 8;
     private static final String CHECK = Fonts.glyph("\uE73E", "\u2713");
 
@@ -58,9 +56,9 @@ final class ToastView extends JPanel {
         if (animator != null) {
             animator.stop();
         }
-        animator = new Timer(ANIM_TICK_MS, null);
+        animator = new Timer(Motion.TICK_MS, null);
         animator.addActionListener(e -> {
-            float step = (float) ANIM_TICK_MS / ANIM_MS;
+            float step = (float) Motion.TICK_MS / Motion.NORMAL_MS;
             phase = target > phase ? Math.min(target, phase + step)
                 : Math.max(target, phase - step);
             repaint();

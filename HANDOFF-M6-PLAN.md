@@ -596,7 +596,46 @@ documented tasks. Never tag/branch/amend/revert without a new “yes”.
   it, and the §14.2 decision log gains `D-Scrollbars`.
 - Commit `feat(m6): add thin scrollbars`.
 
-### WP2 — pending
+### WP2 — Fluent motion shipped (2026-11-16)
+
+- Starting HEAD: `a73d9cc` (clean, local == remote).
+- Added `view/Motion` (162 lines): `FAST_MS 83` / `NORMAL_MS 167` / `SCREEN_MS 120` /
+  `TICK_MS 16`, decelerate `ease(t) = t(2-t)`, `enabled()` reading
+  `-Dkitnapper.motion=off`, `openDialog`, `closeDialog`, `fadeScreen`, and one shared
+  `Timer` loop. Translucency guard: `isWindowTranslucencySupported(PERPIXEL_TRANSLUCENT)`
+  plus a `setOpacity` probe in a narrow catch, so unsupported platforms take the instant path.
+- Added `view/FadeOverlay` (77 lines): `BG_APP` wash thinning by eased progress, click-through
+  (`contains` → false), `MODAL_LAYER` mount, removes itself from its parent and then runs its
+  callback (which clears the per-root-pane client property).
+- Wiring: `DialogSkin` calls `Motion.openDialog(dialog)` after `pack()`/`resize()` and routes
+  both close paths (`confirm`, `cancel`, `Esc`) through `Motion.closeDialog`, hiding the scrim
+  and disposing inside the callback — the accepted result is captured before the fade, so
+  `show()` still returns the right boolean (163 → 167 lines). `MainFrame.showScreen` fades the
+  routed content after `cards.show` (161 → 162); the constructor's first `showScreen` runs
+  before the frame is showing, so the initial screen never fades. `AppController.applyTheme`
+  untouched — the theme switch is instant (D39).
+- `ToastView` now reads `Motion.NORMAL_MS`/`Motion.TICK_MS` instead of its own 167/16 pair;
+  one constants home, no behaviour change (117 → 115 lines).
+- `test/run-all.sh`: `run(probe, mode, jvm)` takes JVM flags; every display probe passes
+  `-Dkitnapper.motion=off`, `MotionProbe` runs with motion on; suite is now **19** probes.
+- Added `test/kitnapper/view/MotionProbe` (138 lines, 12 checks): constants, easing endpoints
+  + clamp + monotonicity, `enabled()` default and the property via a child JVM, no overlay on
+  frame show, exactly one overlay per `showScreen`, click-through, no stacking on a second
+  navigation, removal after the wash, no overlay on a theme switch, no overlay for a hidden
+  frame.
+- `./build.sh` → `BUILD OK`, 247 classes, zero warnings; `sh ../../netbeans/extide/ant/bin/ant
+  clean jar` → `BUILD SUCCESSFUL`.
+- `./test/run-all.sh` → `ALL PROBES GREEN`, 19/19. `MotionProbe PASS=12 FAIL=0` with motion on;
+  re-run with `-Dkitnapper.motion=off` fails 4 checks as designed (`enabled-default`,
+  `screen-fade-one-overlay`, `screen-fade-click-through`, `screen-fade-not-stacked`), which
+  proves the switch is load-bearing. `InventoryEditorProbe` with motion **on** →
+  `PASS=27 FAIL=0`, so the dialog path does not hang when the fade is active.
+- Static audits clean: no file > 200 lines (tallest unchanged at `PreviewPane` 198), no
+  `@SuppressWarnings`, no hex outside `Theme`, no `service`/`controller` imports under `view`,
+  no `System.exit` outside `Main`.
+- Docs in the same change: design §7 records what shipped and that the crossfade did not,
+  §11 now says translucency is used for the dialog fade only, §14.2 gains `D-Motion`.
+- Commit `feat(m6): add the Fluent motion fades`.
 
 ### WP3 — pending
 

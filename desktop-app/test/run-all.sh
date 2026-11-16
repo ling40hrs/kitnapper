@@ -22,10 +22,11 @@ fail=0
 run() {
     probe=$1
     mode=$2
+    jvm=${3:-}
     if [ "$mode" = display ]; then
-        out=$(xvfb-run -a java -cp "build/classes:$OUT" "$probe" 2>&1)
+        out=$(xvfb-run -a java $jvm -cp "build/classes:$OUT" "$probe" 2>&1)
     else
-        out=$(java -Djava.awt.headless=true -cp "build/classes:$OUT" "$probe" 2>&1)
+        out=$(java -Djava.awt.headless=true $jvm -cp "build/classes:$OUT" "$probe" 2>&1)
     fi
     if printf '%s\n' "$out" | grep -q '^FAIL=[1-9]'; then
         fail=1
@@ -53,16 +54,22 @@ run kitnapper.SkinProbe headless
 run kitnapper.FontProbe headless
 run kitnapper.view.EdgeProbe headless
 run kitnapper.view.SizeProbe headless
-run kitnapper.FrameProbe display
-run kitnapper.CloseProbe display
-run kitnapper.view.CatalogUiProbe display
-run kitnapper.view.PhotoUiProbe display
-run kitnapper.view.InventoryEditorProbe display
-run kitnapper.view.InventoryUiProbe display
-run kitnapper.view.SettingsUiProbe display
-run kitnapper.view.M5FlowProbe display
-run kitnapper.view.LoansLayoutProbe display
-run kitnapper.view.LoansUiProbe display
+# Motion off for every display probe: the fades would corrupt paint
+# assertions (UiProbeSupport.settle() does not wait). MotionProbe runs with
+# motion on and is the only probe that measures the fades.
+MOTION_OFF=-Dkitnapper.motion=off
+
+run kitnapper.FrameProbe display "$MOTION_OFF"
+run kitnapper.CloseProbe display "$MOTION_OFF"
+run kitnapper.view.CatalogUiProbe display "$MOTION_OFF"
+run kitnapper.view.PhotoUiProbe display "$MOTION_OFF"
+run kitnapper.view.InventoryEditorProbe display "$MOTION_OFF"
+run kitnapper.view.InventoryUiProbe display "$MOTION_OFF"
+run kitnapper.view.SettingsUiProbe display "$MOTION_OFF"
+run kitnapper.view.M5FlowProbe display "$MOTION_OFF"
+run kitnapper.view.LoansLayoutProbe display "$MOTION_OFF"
+run kitnapper.view.LoansUiProbe display "$MOTION_OFF"
+run kitnapper.view.MotionProbe display
 
 if [ "$fail" -eq 0 ]; then
     echo "ALL PROBES GREEN"

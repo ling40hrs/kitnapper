@@ -115,6 +115,7 @@ final class DialogSkin {
         });
         dialog.pack();
         resize(dialog, owner);
+        Motion.openDialog(dialog);
         dialog.setVisible(true);
         return accepted[0];
     }
@@ -156,8 +157,11 @@ final class DialogSkin {
         return scrim;
     }
 
+    /** The §7 close: fade out first, then hide the scrim and dispose. */
     private static void close(JDialog dialog, JComponent scrim) {
-        scrim.setVisible(false);
-        dialog.dispose();
+        Motion.closeDialog(dialog, () -> {
+            scrim.setVisible(false);
+            dialog.dispose();
+        });
     }
 }
