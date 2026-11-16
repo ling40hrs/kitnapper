@@ -9,6 +9,7 @@ import kitnapper.model.Equipment;
 import kitnapper.model.EquipmentStatus;
 import kitnapper.model.LoanRecord;
 import kitnapper.model.User;
+import kitnapper.service.AppContext;
 import kitnapper.service.DataStore;
 
 /**
@@ -85,6 +86,15 @@ final class ProbeSupport {
         return store.users().stream()
                 .filter(u -> u.getEmail().equalsIgnoreCase(email))
                 .findFirst().orElse(null);
+    }
+
+    /** Switches the session to the account with the given email. */
+    static void signIn(AppContext context, DataStore store, String email) {
+        User account = user(store, email);
+        if (account == null) {
+            throw new IllegalStateException("probe account missing: " + email);
+        }
+        context.setCurrentUser(account);
     }
 
     static void deleteTree(Path dir) {

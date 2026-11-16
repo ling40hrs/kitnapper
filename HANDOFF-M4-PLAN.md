@@ -6,15 +6,17 @@
 > Written: 2026-11-16 · Status: **approved, WP0 committed**
 > Previous plan: `HANDOFF-M3-PLAN.md` (M3 record, complete). Scope note: `HANDOFF-M4.md`.
 
-> **Resume here (fresh session):** M4 is planned, not implemented. Execute **one
-> work package per turn**, in order, starting with **WP1 — data contracts +
-> penalty service + controllers + `LoanProbe`**. Read this file end to end, then
-> `AGENTS.md` and `docs/preferences.md`; `HANDOFF-M4.md` §4–§5 is still the
-> reuse map and gotcha list. Every WP ends with `./build.sh` + (from WP1)
+> **Resume here (fresh session):** M4 WP1 is **done** (contracts, penalty
+> service, controllers, `LoanProbe` — see §17). Execute **one work package
+> per turn**, in order, next **WP2 — shared loan UI** (`LoansTableModel`,
+> `LoansTable`, `LoanPreviewPane`, `PenaltyPreviewPane`, `StatusBadges`;
+> modified `Badges`, `TableCells`, `DatePicker`). Read this file end to end,
+> then `AGENTS.md` and `docs/preferences.md`; `HANDOFF-M4.md` §4–§5 is still
+> the reuse map and gotcha list. Every WP ends with `./build.sh` +
 > `./test/run-all.sh` green, a log entry in §17, and a commit under the
-> documented-task rule. Current state at WP0: 85 Java files / 7,298 lines;
-> 15 probe files / 1,585 lines; 9/9 probes green; tallest file
-> `CatalogScreen` 199 (no headroom).
+> documented-task rule. Current state at WP1: 95 Java files / 7,916 lines;
+> 19 probe files / 2,002 lines; 10/10 probes green (`LoanProbe` PASS=35);
+> tallest file `CatalogScreen` 199 (no headroom).
 
 ---
 
@@ -831,3 +833,56 @@ commit per work package (git plan §12).
 
 Plan committed as `docs(m4): add the M4 implementation plan` (SHA in the
 handoff note).
+
+### WP1 — Data contracts, penalty service, controllers, `LoanProbe` (2026-11-16)
+
+Starting HEAD `909cb1f` (the plan commit); tree clean; local == `origin/main`.
+
+Commands and results:
+
+```bash
+cd desktop-app && ./build.sh      # BUILD OK -> build/classes (141 classes)
+./test/run-all.sh                 # ALL PROBES GREEN (10/10)
+# LoanProbe alone: PASS=35 FAIL=0 (headless)
+```
+
+Delivered (plan §5–§7 WP1): view records `LoanRow` / `PenaltyRow` /
+`ActivityEntry`; `PenaltyService` / `PenaltyServiceImpl` / `PenaltyMessages`
+(manager-only, one-way, reason-mandatory settle; reads reuse the
+`LoanQueries` shapes, no new query); fee overload `accruedFee(loanId, asOf)`
+through `LoanService` / `LoanServiceImpl` / `LoanQueries`; controllers
+`LoanRows` / `LoansController` / `PenaltyController` / `DashboardController`
+(rows + reload-on-change listeners, no screen Actions yet — attached in
+WP3–WP5); `AppContext.penalties()`. `LoanProbe` (+ `LoanChecks`,
+`DashboardChecks`, `PenaltyChecks`, `ProbeSupport.signIn`) wired into
+`run-all.sh` headless: 35 named checks, `PASS=35 FAIL=0`.
+
+Realities vs plan §9.2 (counts recorded, ~26 → 35):
+
+- The blank-reason, mark-paid and waive-success checks each need an UNPAID
+  penalty, so one frozen fee cannot cover all three. The probe advances the
+  pinned clock once (T → T+3) and returns L-002 to freeze a second fee
+  (p-002, ₱100); p-001 is then marked PAID and p-002 waived with
+  "First offense". No checkout was needed.
+- Dashboard states hit: seed 3/1/0 `₱0.00`; after L-003's return 2/0/1
+  `₱200.00` (plan check 26); after L-001's zero-fee return (D15) 1/0/1.
+- Same-day return ties in the activity list: loan id desc puts L-003 above
+  L-001; a documented final tiebreak puts a loan's return above its checkout
+  on the same day (`LoanRows.activity()`).
+
+Audits: no file over 200 (max `CatalogScreen` 199; largest new src file
+`LoanServiceImpl` 152 after the overload; largest new test file
+`LoanChecks` 154); no hex outside `Theme` (two known javadoc `{@link #...}`
+regex false positives in `LoanRecord` / `AppContext`); no
+`service`/`controller` imports under `view`; no `@SuppressWarnings`.
+Inventory: 95 Java files / 7,916 lines (model 18, service 16,
+persistence 10, controller 7, view 43, `Main` 1); 19 probe files /
+2,002 lines.
+
+Decisions taken during the pass (promote with D28–D31 at WP6): the
+`PenaltyMessages` set (manager-only / missing / already settled / reason
+required), and null waive reason normalized to the blank-reason rejection
+(`IllegalArgumentException`, not the model's NPE).
+
+Committed: `feat(m4): add penalty settlement and loan row contracts`,
+`test(m4): probe return and settlement rules`.
