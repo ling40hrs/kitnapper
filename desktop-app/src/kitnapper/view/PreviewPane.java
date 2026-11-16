@@ -79,7 +79,9 @@ final class PreviewPane extends JPanel {
         checkout.setVisible(actionVisible);
         checkout.setEnabled(actionEnabled);
         boolean hasHint = hintText != null && !hintText.isBlank();
-        hint.setText(hasHint ? hintText : "");
+        hint.setText(hasHint ? captionLines(hintText) : "");
+        hint.setToolTipText(hasHint ? hintText : null);
+        hint.getAccessibleContext().setAccessibleName(hasHint ? hintText : null);
         hint.setVisible(hasHint);
         mediaSlot.revalidate();
         statusSlot.revalidate();
@@ -157,6 +159,17 @@ final class PreviewPane extends JPanel {
         bar.add(Box.createVerticalStrut(8));
         bar.add(hint);
         return bar;
+    }
+
+    /**
+     * Two lines for the documented manager caption (plan §8.3) so the 248 px
+     * slot shows it whole; tooltip and accessible name keep the plain text.
+     */
+    private static String captionLines(String caption) {
+        int dash = caption.indexOf(" — ");
+        return dash < 0 ? caption
+            : "<html>" + caption.substring(0, dash + 2) + "<br>"
+                + caption.substring(dash + 3) + "</html>";
     }
 
     private static JPanel row(String labelText, JComponent value) {

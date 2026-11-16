@@ -82,7 +82,7 @@ public final class CatalogUiProbe {
         table.setRowSelectionInterval(0, 0);
         JButton action = UiProbeSupport.button(screen.preview(), "Check out");
         UiProbeSupport.check("manager-readonly", action == null || !action.isVisible());
-        UiProbeSupport.check("manager-hint", UiProbeSupport.hasLabel(screen.preview(),
+        UiProbeSupport.check("manager-hint", UiProbeSupport.hasAccessibleName(screen.preview(),
             "Manager view — checkout is borrower-only."));
         frame.dispose();
         borrowerFrame.dispose();
