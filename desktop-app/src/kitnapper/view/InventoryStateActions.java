@@ -73,6 +73,17 @@ final class InventoryStateActions extends JPanel {
         repaint();
     }
 
+    /** Why the state actions are limited, or an empty string. */
+    static String hintFor(Equipment item, boolean onLoan) {
+        if (item.getStatus() == EquipmentStatus.DECOMMISSIONED) {
+            return "Decommissioned items are read-only.";
+        }
+        if (onLoan) {
+            return "This item is still on loan; clear or retire it after the return.";
+        }
+        return "";
+    }
+
     /** Nothing selected: drop the target so a stale action cannot fire. */
     void clear() {
         shown = null;

@@ -58,7 +58,7 @@ public final class LoansLayoutProbe {
         SwingUtilities.invokeAndWait(() -> {
             JTable table = tableOf(holder[0]);
             LoansTableModel model = (LoansTableModel) table.getModel();
-            boolean fits = LoansWidthPolicy.totalWidth(model) <= NARROW;
+            boolean fits = TableWidthPolicy.total(TableWidthPolicy.preferredWidths(table)) <= NARROW;
             UiProbeSupport.check(label + "-narrow-no-clipping", !clips(table));
             UiProbeSupport.check(label + "-narrow-mode", table.getAutoResizeMode()
                 == (fits ? JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS : JTable.AUTO_RESIZE_OFF));

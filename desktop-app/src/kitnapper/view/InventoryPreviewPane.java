@@ -7,12 +7,12 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -47,6 +47,8 @@ final class InventoryPreviewPane extends JPanel {
     private final JLabel extraValue = valueLabel(false);
     private final JPanel extraRow;
     private final InventoryStateActions stateActions;
+    private JPanel info;
+    private boolean compact;
 
     InventoryPreviewPane(PhotoSource photos, Consumer<Equipment> onEdit,
                          Consumer<Equipment> onFlag, Consumer<Equipment> onClear,
@@ -59,12 +61,29 @@ final class InventoryPreviewPane extends JPanel {
         setMinimumSize(new Dimension(WIDTH, 0));
         stack.setOpaque(false);
         statusSlot.setOpaque(false);
-        extraRow = row(extraLabel, extraValue);
+        extraRow = PreviewLayout.row(extraLabel, extraValue);
+        info = infoPanel();
         stack.add(detail(), "detail");
         stack.add(new EmptyState(Fonts.glyph("\uE721", "\u2315"),
             "Select an item to see details.", null, null), "empty");
         add(stack, BorderLayout.CENTER);
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent event) {
+                setCompact(PreviewLayout.compactFor(getHeight()));
+            }
+        });
         clear();
+    }
+
+    /** Tightens the metadata spacing below 560 px of preview height (D42). */
+    private void setCompact(boolean next) {
+        if (compact == next) {
+            return;
+        }
+        compact = next;
+        PreviewLayout.applyDensity(info, compact);
+        revalidate();
     }
 
     /** Paints the selection; {@code onLoan} blocks the state actions. */
@@ -79,7 +98,7 @@ final class InventoryPreviewPane extends JPanel {
         moneyValue.setText(Formats.money(item.getReplacementValue()));
         idValue.setText(item.getId());
         showKindRow(item);
-        stateActions.show(item, onLoan, hintFor(item, onLoan));
+        stateActions.show(item, onLoan, InventoryStateActions.hintFor(item, onLoan));
         statusSlot.revalidate();
         states.show(stack, "detail");
         revalidate();
@@ -111,17 +130,6 @@ final class InventoryPreviewPane extends JPanel {
         g2.dispose();
     }
 
-    /** Why the state actions are limited, or an empty string. */
-    private static String hintFor(Equipment item, boolean onLoan) {
-        if (item.getStatus() == kitnapper.model.EquipmentStatus.DECOMMISSIONED) {
-            return "Decommissioned items are read-only.";
-        }
-        if (onLoan) {
-            return "This item is still on loan; clear or retire it after the return.";
-        }
-        return "";
-    }
-
     /** D19: only the concrete kind's own field is shown. */
     private void showKindRow(Equipment item) {
         if (item instanceof DigitalEquipment digital) {
@@ -142,45 +150,32 @@ final class InventoryPreviewPane extends JPanel {
         JPanel detail = new JPanel(new BorderLayout());
         detail.setOpaque(false);
         detail.setBorder(BorderFactory.createEmptyBorder(PAD, PAD, PAD, PAD));
-        detail.add(info(), BorderLayout.NORTH);
+        detail.add(PreviewLayout.scroll(info), BorderLayout.CENTER);
         detail.add(stateActions, BorderLayout.SOUTH);
         return detail;
     }
 
-    private JPanel info() {
+    private JPanel infoPanel() {
         JPanel info = new JPanel();
         info.setOpaque(false);
         info.setLayout(new BoxLayout(info, BoxLayout.Y_AXIS));
         media.setOpaque(false);
         info.add(media);
-        info.add(Box.createVerticalStrut(12));
+        info.add(PreviewLayout.mediaGap());
         title.setFont(Fonts.display(16, Font.BOLD));
         title.putClientProperty(UiFactory.ROLE, "title");
         title.setForeground(Theme.textPrimary);
         title.setAlignmentX(0f);
         info.add(title);
-        info.add(Box.createVerticalStrut(12));
-        info.add(row(UiFactory.label("Status", "secondary"), statusSlot));
-        info.add(row(UiFactory.label("Category", "secondary"), categoryValue));
-        info.add(row(UiFactory.label("Serial", "secondary"), serialValue));
-        info.add(row(UiFactory.label("Replacement value", "secondary"), moneyValue));
-        info.add(row(UiFactory.label("ID", "secondary"), idValue));
+        info.add(PreviewLayout.mediaGap());
+        info.add(PreviewLayout.row(UiFactory.label("Status", "secondary"), statusSlot));
+        info.add(PreviewLayout.row(UiFactory.label("Category", "secondary"), categoryValue));
+        info.add(PreviewLayout.row(UiFactory.label("Serial", "secondary"), serialValue));
+        info.add(PreviewLayout.row(UiFactory.label("Replacement value", "secondary"),
+            moneyValue));
+        info.add(PreviewLayout.row(UiFactory.label("ID", "secondary"), idValue));
         info.add(extraRow);
         return info;
-    }
-
-    private static JPanel row(JComponent label, JComponent value) {
-        JPanel row = new JPanel();
-        row.setOpaque(false);
-        row.setLayout(new BoxLayout(row, BoxLayout.Y_AXIS));
-        label.setAlignmentX(0f);
-        value.setAlignmentX(0f);
-        row.add(label);
-        row.add(Box.createVerticalStrut(2));
-        row.add(value);
-        row.add(Box.createVerticalStrut(10));
-        row.setAlignmentX(0f);
-        return row;
     }
 
     private static JLabel valueLabel(boolean mono) {

@@ -7,13 +7,14 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -47,7 +48,9 @@ final class PenaltyPreviewPane extends JPanel {
     private final JPanel reasonRow;
     private final JButton markPaid = UiFactory.primaryButton("Mark paid");
     private final JButton waive = UiFactory.secondaryButton("Waive\u2026");
+    private JPanel info;
     private PenaltyRow shown;
+    private boolean compact;
 
     PenaltyPreviewPane(Consumer<PenaltyRow> onMarkPaid, Consumer<PenaltyRow> onWaive) {
         super(new BorderLayout());
@@ -58,13 +61,30 @@ final class PenaltyPreviewPane extends JPanel {
         setMinimumSize(new Dimension(WIDTH, 0));
         stack.setOpaque(false);
         statusSlot.setOpaque(false);
-        reasonRow = row("Waive reason", reasonValue);
+        reasonRow = PreviewLayout.row("Waive reason", reasonValue);
         reasonRow.setVisible(false);
+        info = infoPanel();
         stack.add(detail(), "detail");
         stack.add(new EmptyState(Fonts.glyph("\uE721", "\u2315"),
             "Select a penalty to see details.", null, null), "empty");
         add(stack, BorderLayout.CENTER);
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent event) {
+                setCompact(PreviewLayout.compactFor(getHeight()));
+            }
+        });
         clear();
+    }
+
+    /** Tightens the metadata spacing below 560 px of preview height (D42). */
+    private void setCompact(boolean next) {
+        if (compact == next) {
+            return;
+        }
+        compact = next;
+        PreviewLayout.applyDensity(info, compact);
+        revalidate();
     }
 
     /** Paint state for the selection; actions only while UNPAID (§8.6). */
@@ -116,12 +136,12 @@ final class PenaltyPreviewPane extends JPanel {
         JPanel detail = new JPanel(new BorderLayout());
         detail.setOpaque(false);
         detail.setBorder(BorderFactory.createEmptyBorder(PAD, PAD, PAD, PAD));
-        detail.add(info(), BorderLayout.NORTH);
+        detail.add(PreviewLayout.scroll(info), BorderLayout.CENTER);
         detail.add(actionBar(), BorderLayout.SOUTH);
         return detail;
     }
 
-    private JPanel info() {
+    private JPanel infoPanel() {
         JPanel info = new JPanel();
         info.setOpaque(false);
         info.setLayout(new BoxLayout(info, BoxLayout.Y_AXIS));
@@ -131,14 +151,14 @@ final class PenaltyPreviewPane extends JPanel {
         amountValue.putClientProperty(UiFactory.ROLE, "title");
         amountValue.setAlignmentX(0f);
         info.add(caption);
-        info.add(Box.createVerticalStrut(4));
+        info.add(PreviewLayout.gap(4, 3));
         info.add(amountValue);
-        info.add(Box.createVerticalStrut(16));
-        info.add(row("Status", statusSlot));
-        info.add(row("Loan", loanValue));
-        info.add(row("Item", itemValue));
-        info.add(row("Borrower", borrowerValue));
-        info.add(row("Assessed", assessedValue));
+        info.add(PreviewLayout.gap(16, 10));
+        info.add(PreviewLayout.row("Status", statusSlot));
+        info.add(PreviewLayout.row("Loan", loanValue));
+        info.add(PreviewLayout.row("Item", itemValue));
+        info.add(PreviewLayout.row("Borrower", borrowerValue));
+        info.add(PreviewLayout.row("Assessed", assessedValue));
         info.add(reasonRow);
         return info;
     }
@@ -153,36 +173,15 @@ final class PenaltyPreviewPane extends JPanel {
             bar.add(button);
             bar.add(Box.createVerticalStrut(8));
         }
-        markPaid.addActionListener(e -> notifyPaid());
-        waive.addActionListener(e -> notifyWaive());
+        markPaid.addActionListener(e -> notify(onMarkPaid));
+        waive.addActionListener(e -> notify(onWaive));
         return bar;
     }
 
-    private void notifyPaid() {
+    private void notify(Consumer<PenaltyRow> action) {
         if (shown != null) {
-            onMarkPaid.accept(shown);
+            action.accept(shown);
         }
-    }
-
-    private void notifyWaive() {
-        if (shown != null) {
-            onWaive.accept(shown);
-        }
-    }
-
-    private static JPanel row(String labelText, JComponent value) {
-        JPanel row = new JPanel();
-        row.setOpaque(false);
-        row.setLayout(new BoxLayout(row, BoxLayout.Y_AXIS));
-        JLabel label = UiFactory.label(labelText, "secondary");
-        label.setAlignmentX(0f);
-        value.setAlignmentX(0f);
-        row.add(label);
-        row.add(Box.createVerticalStrut(2));
-        row.add(value);
-        row.add(Box.createVerticalStrut(10));
-        row.setAlignmentX(0f);
-        return row;
     }
 
     private static JLabel valueLabel(boolean mono) {

@@ -69,6 +69,7 @@ run kitnapper.view.SettingsUiProbe display "$MOTION_OFF"
 run kitnapper.view.M5FlowProbe display "$MOTION_OFF"
 run kitnapper.view.LoansLayoutProbe display "$MOTION_OFF"
 run kitnapper.view.LoansUiProbe display "$MOTION_OFF"
+run kitnapper.view.GeometryProbe display "$MOTION_OFF"
 run kitnapper.view.MotionProbe display
 
 if [ "$fail" -eq 0 ]; then

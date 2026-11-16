@@ -7,13 +7,14 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -49,7 +50,9 @@ final class LoanPreviewPane extends JPanel {
     private final LoanFeeBlock fee = new LoanFeeBlock();
     private final JButton returnButton = UiFactory.primaryButton("Log return");
     private final JLabel hint = UiFactory.label("", "muted");
+    private final JPanel info;
     private LoanRow shown;
+    private boolean compact;
 
     LoanPreviewPane(Consumer<LoanRow> onReturn) {
         super(new BorderLayout());
@@ -59,11 +62,28 @@ final class LoanPreviewPane extends JPanel {
         setMinimumSize(new Dimension(WIDTH, 0));
         stack.setOpaque(false);
         statusSlot.setOpaque(false);
+        info = infoPanel();
         stack.add(detail(), "detail");
         stack.add(new EmptyState(Fonts.glyph("\uE721", "\u2315"),
             "Select a loan to see details.", null, null), "empty");
         add(stack, BorderLayout.CENTER);
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent event) {
+                setCompact(PreviewLayout.compactFor(getHeight()));
+            }
+        });
         clear();
+    }
+
+    /** Tightens the metadata spacing below 560 px of preview height (D42). */
+    private void setCompact(boolean next) {
+        if (compact == next) {
+            return;
+        }
+        compact = next;
+        PreviewLayout.applyDensity(info, compact);
+        revalidate();
     }
 
     /** Paint state for the selection, as decided by the screen. */
@@ -121,31 +141,31 @@ final class LoanPreviewPane extends JPanel {
         JPanel detail = new JPanel(new BorderLayout());
         detail.setOpaque(false);
         detail.setBorder(BorderFactory.createEmptyBorder(PAD, PAD, PAD, PAD));
-        detail.add(info(), BorderLayout.NORTH);
+        detail.add(PreviewLayout.scroll(info), BorderLayout.CENTER);
         detail.add(actionBar(), BorderLayout.SOUTH);
         return detail;
     }
 
-    private JPanel info() {
+    private JPanel infoPanel() {
         JPanel info = new JPanel();
         info.setOpaque(false);
         info.setLayout(new BoxLayout(info, BoxLayout.Y_AXIS));
         mediaSlot.setOpaque(false);
         info.add(mediaSlot);
-        info.add(Box.createVerticalStrut(12));
+        info.add(PreviewLayout.mediaGap());
         title.setFont(Fonts.display(16, Font.BOLD));
         title.putClientProperty(UiFactory.ROLE, "title");
         title.setForeground(Theme.textPrimary);
         title.setAlignmentX(0f);
         info.add(title);
-        info.add(Box.createVerticalStrut(12));
-        info.add(row("Status", statusSlot));
-        info.add(row("Borrower", borrowerValue));
-        info.add(row("Borrowed", borrowedValue));
-        info.add(row("Due", dueValue));
-        info.add(row("Returned", returnedValue));
-        info.add(row("Days late", daysLateValue));
-        info.add(row("ID", idValue));
+        info.add(PreviewLayout.mediaGap());
+        info.add(PreviewLayout.row("Status", statusSlot));
+        info.add(PreviewLayout.row("Borrower", borrowerValue));
+        info.add(PreviewLayout.row("Borrowed", borrowedValue));
+        info.add(PreviewLayout.row("Due", dueValue));
+        info.add(PreviewLayout.row("Returned", returnedValue));
+        info.add(PreviewLayout.row("Days late", daysLateValue));
+        info.add(PreviewLayout.row("ID", idValue));
         info.add(fee);
         return info;
     }
@@ -167,21 +187,6 @@ final class LoanPreviewPane extends JPanel {
         bar.add(Box.createVerticalStrut(8));
         bar.add(hint);
         return bar;
-    }
-
-    private static JPanel row(String labelText, JComponent value) {
-        JPanel row = new JPanel();
-        row.setOpaque(false);
-        row.setLayout(new BoxLayout(row, BoxLayout.Y_AXIS));
-        JLabel label = UiFactory.label(labelText, "secondary");
-        label.setAlignmentX(0f);
-        value.setAlignmentX(0f);
-        row.add(label);
-        row.add(Box.createVerticalStrut(2));
-        row.add(value);
-        row.add(Box.createVerticalStrut(10));
-        row.setAlignmentX(0f);
-        return row;
     }
 
     private static JLabel valueLabel(boolean mono) {

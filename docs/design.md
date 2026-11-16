@@ -261,11 +261,21 @@ same day (D28).
   only — no shadow, no gradient.
 - **Preview pane (280 px):** 16:9 media, title 16 px semibold, metadata rows (12 px
   secondary label / 14 px value), primary action pinned at the bottom with secondary
-  actions beneath; empty state when nothing is selected.
+  actions beneath; empty state when nothing is selected. **Compact density (D42):**
+  below 560 px of preview height the media gap, label gap and row gap tighten (12→8,
+  2→1, 10→6 px) and the manager hint drops to one line, while the 16:9 media and the
+  action bar keep their geometry. Compacting alone cannot close the measured 48 px
+  (catalog) to 174 px (inventory) shortfall at 1024×640, so the metadata area — never
+  the action bar — sits in a borderless thin-scrollbar guard that scrolls only when
+  the rows still do not fit. At 1280×800 and wider nothing scrolls.
 - **Dialogs:** 480 px default, radius 8, title 20 px, body 14 px, footer right-aligned
   with the primary rightmost; `Enter` confirms, `Esc` cancels; scrim per §5.
 - **Toasts:** bottom-right, 320 px, `BG_ELEVATED` + `BORDER_SUBTLE`, radius 8, icon +
-  text, auto-dismiss after 4 s, max 3 stacked.
+  text, auto-dismiss after 4 s, max 3 stacked. **Placement (D43):** 16 px from the
+  screen edge and 96 px above the bottom (clears the 32 px status bar). When the
+  visible screen shows a preview column the toast's right edge stops at the preview's
+  left edge instead (320 px inset), because the inventory preview's three pinned
+  actions make its bar 120 px tall — any bottom-anchored toast would cover it.
 - **Empty states:** glyph (`TEXT_MUTED`), 14 px explanation, 12 px secondary line, and
   the action that fixes it ("No gear matches this filter. Clear filters.").
 - **Scrollbars:** thin overlay style — transparent track, 4 px thumb (`#5A5A5A` dark /
@@ -325,11 +335,14 @@ back to the instant path, so nothing depends on an X server supporting transluce
 - **Heights & widths:** title bar 32, omnibar 48, status bar 32, sidebar 240, preview 280,
   buttons/inputs 32 (28 compact), table row 40, table header 36, badge 20, KPI card ≥ 96.
 - **Window:** minimum 1024×640; opens at 1280×800 (user-resizable, maximizable).
-- **Loan tables:** the shared loan table never shrinks a column below the width
-  its content needs. The 280 px preview leaves ~670 px of a 1280 px window, which
-  fits My Loans and Overdue but not the eight All Loans columns, so that table
-  scrolls horizontally instead of clipping dates, badges or money; when the
-  viewport is wide enough the columns stretch to fill it.
+- **Tables (D41):** all four tables — catalog, inventory, penalties and loans — follow
+  one rule: a column never shrinks below the width its content needs. When the
+  viewport is narrower than the summed preferred widths the table keeps those widths
+  and scrolls horizontally (`AUTO_RESIZE_OFF`) instead of clipping badges, dates or
+  money; the preferred widths are restored first, so narrowing a previously stretched
+  table scrolls fairly. When the viewport is wide enough the columns stretch to fill
+  it. Measured at 1024×640: catalog needs 670 px of a 414 px viewport, inventory 720,
+  penalties 782 (still scrolling at 1280, which gives it 678).
 - **Elevation:** border + one surface step; no drop shadows anywhere (scrim + border for
   dialogs, border for toasts).
 
@@ -558,4 +571,7 @@ added (files.community, shelf.nu); implementation plan written (`M0–M6`, D1–
 | **D-Skeleton** | Resolved in §13 (2026-11-14): 150 ms delay / 300 ms minimum / 167 ms fade, flat 4 px blocks with a 1,000 ms pulse (`SKELETON_BLOCK` token), no launch skeleton, query skeletons gated behind a measured ≥ 150 ms, reduced motion via a session setting, 10 s watchdog. |
 | **D-Skeleton-M5** | Deferred to M5 (2026-11-15): seed items carry no photos and catalog queries are synchronous, so `PhotoTile`, `SkeletonPanel`, and `SkeletonGate` ship with the inventory photo picker instead of M3. Recorded as D27 in `implementation-plan.md`. |
 | **D-Scrollbars** | Thin scrollbars shipped in M6 (2026-11-16): `ThinScrollBarUI` — 8 px lane, transparent track, 4 px thumb widening to the full lane on hover, radius 2, no arrow buttons, installed once through `UIManager` in `Theme.installDefaults()` so all five scroll surfaces and every future `JScrollPane` pick it up; thumb colour is read at paint time, so both themes work without a UI rebuild. The lane keeps layout space — a true overlay was rejected (§6). Recorded as D38 in `implementation-plan.md`. |
+| **D-Width** | Shipped in M6 (2026-11-16): `TableWidthPolicy` replaces the loans-only policy and serves catalog, inventory, penalties and loans. Columns keep their preferred widths and the table scrolls horizontally when the viewport is narrower; a reusable viewport listener re-evaluates and restores preferred widths before stretching, so a shrunk window never inherits a stretch. `GeometryProbe` asserts the mode and the visible horizontal bar at four window sizes. Recorded as D41 in `implementation-plan.md` (design §9). |
+| **D-Preview** | Amended in M6 (2026-11-16) after measurement: compact density alone cannot rescue the 1024×640 preview — the gap is 48 px for catalog and 174 px for inventory, not ~28 px. `PreviewLayout` centralizes the row factory, the density-adjusted gaps and the caption lines; below 560 px of preview height the gaps tighten, and the metadata rows sit in a borderless thin-scrollbar guard while the action bar stays pinned. At 1280×800 and wider nothing scrolls. Recorded as D42 in `implementation-plan.md` (design §6, §9). |
+| **D-Toasts** | Amended in M6 (2026-11-16): 96 px bottom inset measured 1 px short of the 280 px preview's action bar at 1024×640, and the inventory bar (120 px, three actions) is crossed by any bottom-anchored toast. `Toasts` keeps 16/96 and shifts left of a showing preview column (320 px right inset); Settings, with no preview, keeps the plain bottom-right corner. Recorded as D43 in `implementation-plan.md` (design §6). |
 | **D-Motion** | Shipped in M6 (2026-11-16): dialog open fade + 98→100 % grow and close fade at 83 ms, the 120 ms screen fade, and the existing 167 ms toast slide + fade, all through one `Motion` facade with decelerate easing and a `Timer` tick of 16 ms; the screen wash is a click-through `FadeOverlay` on `MODAL_LAYER`. The theme crossfade is **not** shipped — the switch stays instant. `-Dkitnapper.motion=off` is a probe switch, not a user setting. Dialog fades fall back to the instant path when the platform lacks per-pixel translucency (§7). Recorded as D39 in `implementation-plan.md`. |

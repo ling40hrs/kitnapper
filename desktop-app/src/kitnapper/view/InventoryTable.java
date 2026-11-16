@@ -84,6 +84,7 @@ final class InventoryTable extends JTable {
         pane.setOpaque(false);
         pane.getViewport().setBackground(Theme.bgSurface);
         pane.getVerticalScrollBar().setUnitIncrement(TableSkins.ROW_HEIGHT);
+        TableWidthPolicy.install(this, pane);
         return pane;
     }
 

@@ -85,7 +85,7 @@ final class LoansTable extends JTable {
         pane.getViewport().setBackground(Theme.bgSurface);
         pane.getVerticalScrollBar().setUnitIncrement(TableSkins.ROW_HEIGHT);
         pane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        LoansWidthPolicy.install(this, model, pane);
+        TableWidthPolicy.install(this, pane);
         return pane;
     }
 
@@ -114,7 +114,11 @@ final class LoansTable extends JTable {
 
     /** Restores the §8.1 widths after a stretch, so narrowing re-scrolls fairly. */
     private void applyPreferredWidths() {
-        LoansWidthPolicy.applyPreferred(this, model);
+        int[] widths = new int[model.getColumnCount()];
+        for (int column = 0; column < widths.length; column++) {
+            widths[column] = model.widthOf(column);
+        }
+        TableWidthPolicy.applyPreferred(this, widths);
     }
 
     private static TableCellRenderer rendererFor(LoansTableModel.Kind kind) {

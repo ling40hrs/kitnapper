@@ -81,8 +81,8 @@ performed on a real display.
 | D39 | Which §7 motions ship? | **Dialog and screen transitions only**: dialog open/close fade + 98→100 % scale (83 ms) and the screen fade (120 ms). The theme switches **instantly**; the crossfade is an allowed §7 motion left unshipped. A package-private `-Dkitnapper.motion=off` switch disables the two that ship; probes run with it off except `MotionProbe`. | §7 lists these as allowed, not required. The crossfade is the only snapshot-based animation and SRS §6.2 never switches themes; the screen fade is seen on every navigation, so the risk budget goes there. The switch is not a user setting (the Settings toggle stays skeleton-only, design §13.4). |
 | D40 | Do catalog/dashboard/loan queries get skeletons? | **No code change; close D32 by measurement.** The audit records per-query timings at seed scale and asserts they are far below the 150 ms gate; gating stays measurement-driven, as design §13.1 specifies. | A 10-item scan is microseconds; adding a worker to locked screens buys nothing and risks NFR-02 immediacy. |
 | D41 | Which tables get the width policy? | **All four tables**: catalog, inventory, penalties, loans. Columns never shrink below preferred width; narrow viewports scroll horizontally. `LoansWidthPolicy` becomes the shared `TableWidthPolicy`. | Fixes the 1024×640 badge truncation and the 1280 px penalties clip with one rule, and matches the existing loan behavior. |
-| D42 | How does the preview survive 1024×640? | **Compact density below 560 px of preview height**: tighter struts/row gaps and a one-line hint (tooltip keeps the full text); the 16:9 media and pinned action stay. | The current layout leaves roughly 4 px of slack at 640; a font-metric change or 125 % scaling overflows. Compact mode buys ~28 px without a scrollbar inside the preview. |
-| D43 | Where do toasts sit? | **Bottom-right with a 96 px bottom inset and 16 px side inset**, clearing the status bar (32 px) and the pinned preview action (~64 px). | The current 16 px inset covers the status bar and the preview hint for 4 s; a constant inset is simpler and more honest than teaching `Toasts` about screen layouts. Record in design §6. |
+| D42 | How does the preview survive 1024×640? | **Compact density below 560 px of preview height** (tighter struts/row gaps, one-line hint) **plus an internal scroll guard**: the metadata area sits in a borderless thin-scrollbar pane that appears only when the rows still do not fit; the 16:9 media and the pinned action bar never scroll. | **Amended after measurement (WP3 step 1):** the shortfall at 1024×640 is **48 px** (catalog, info 405 + bar 38 vs 395 available) and **174 px** (inventory, info 449 + bar 120), not ~28 px. Compacting alone would still leave the inventory bar and rows fighting for 395 px, so the scroll guard is required. At 1280×800+ nothing scrolls. |
+| D43 | Where do toasts sit? | **Bottom-right, 16 px side / 96 px bottom**, and **left of the preview column while one is showing** (320 px right inset). Settings, with no preview, keeps the plain corner. | **Amended after measurement (WP3 step 1):** 96 px measured 1 px short of the preview's action bar at 1024×640, and inventory's bar is 120 px tall (three actions), so any bottom-anchored toast crosses it — a huge bottom inset would be needed. Shifting left of the preview is exact and keeps the 96 px inset. |
 
 ### Locked constraints carried into M6 (do not re-litigate)
 
@@ -637,7 +637,60 @@ documented tasks. Never tag/branch/amend/revert without a new “yes”.
   §11 now says translucency is used for the dialog fade only, §14.2 gains `D-Motion`.
 - Commit `feat(m6): add the Fluent motion fades`.
 
-### WP3 — pending
+### WP3 — Minimum-size and width fixes shipped (2026-11-16)
+
+- Starting HEAD: `7516bac` (clean, local == remote).
+- **Step 1 — measure first** (throwaway `test/kitnapper/view/Measure`, deleted before the
+  commit). At 1024×640 the preview is 280×427 with 395 px of inner height: catalog needs
+  443 px (info 405 + bar 38), inventory 569 (449 + 120), penalties 250. Tables: catalog
+  preferred 670 vs 414 viewport (32 clipped cells), inventory 720 vs 414 (33 clipped),
+  penalties 782 vs 678 at 1280. Settings fits with no scroll. Toasts sat at y 574–622 over
+  the status bar at 606–638. This is what amended D42 and D43: the assumed ~28 px preview
+  gap was really 48 / 174, and 96 px did not clear the action bar.
+- **Step 2 — `TableWidthPolicy`** (71 lines): `install(table, pane)` (and an explicit-width
+  overload), `preferredWidths`, `applyPreferred`, `total`, and a viewport
+  `componentResized` listener that restores preferred widths *before* choosing
+  `AUTO_RESIZE_SUBSEQUENT_COLUMNS` (fits) or `AUTO_RESIZE_OFF` (scrolls). Wired into
+  `CatalogTable`, `InventoryTable`, `PenaltiesTable` (+ `HORIZONTAL_SCROLLBAR_AS_NEEDED`)
+  and `LoansTable`; `LoansWidthPolicy` deleted; `LoansLayoutProbe` moved to the shared
+  `total(preferredWidths(...))`.
+- **Step 3 — `PreviewLayout`** (135 lines): `PAD`, `COMPACT_BELOW 560`, `compactFor`,
+  `mediaGap`, `gap(normal, compact)`, `row(label, value)` plus the caller-label overload,
+  `applyDensity`, `scroll`, `captionLines`, and a private `Gap extends Filler` whose
+  height follows the density. All four panes now build their info block once in the
+  constructor, put it in `PreviewLayout.scroll(...)` as `CENTER`, keep the action bar
+  `SOUTH`, and toggle compact from a `ComponentAdapter` on resize. Previews went 198→192
+  (catalog), 193→188 (inventory), 195→194 (penalties), 194→199 (loan); the loan pane is
+  the tallest production file at 199. `hintFor` moved to `InventoryStateActions` and the
+  penalty pane's two notify methods merged into one to pay for the new fields.
+- **Step 4 — toasts**: `BOTTOM_MARGIN 96` / `SIDE_MARGIN 16`, and while a preview pane is
+  showing the toast's right edge stops at the preview's left edge (`PREVIEW_MARGIN 320`),
+  found by walking the frame's content for a showing `*PreviewPane`. Settings keeps the
+  plain corner. Verified: 114 geometry checks over four sizes, including toast/action and
+  toast/status intersections.
+- **Step 5 — `GeometryProbe`** (173 lines) + `GeometryChecks` (146 lines), 114 checks:
+  at 1024×640, 1280×800, 1366×768 and 1920×1080, for catalog (borrower), inventory,
+  penalties and Settings (manager) — action bar inside the preview, info bottom never past
+  the bar top, every showing label inside the preview, the scroll guard on when the rows
+  do not fit, table mode vs measured fit, horizontal bar shown exactly when scrolling, the
+  column sum never below the preferred total, toast clear of the status bar and the action
+  bar, Settings fit-or-scroll, and >500 non-blank sampled pixels from `printAll`. The
+  probe seeds two `Penalty` rows (`ctx.dataStore().penalties().add(...)`) because the seed
+  freezes none and the screen would otherwise show its empty card. Layout events are
+  flushed by a `Thread.sleep` + `invokeAndWait` settle outside the mount block; asserting
+  inside a single `invokeAndWait` body reads the pre-resize mode (this cost a debugging
+  round — worth remembering for future probes).
+- `test/run-all.sh` registers `GeometryProbe` with `-Dkitnapper.motion=off`; suite is **20**.
+- `./build.sh` → `BUILD OK`, 253 classes, zero warnings; `sh ../../netbeans/extide/ant/bin/ant
+  clean jar` → `BUILD SUCCESSFUL`; `./test/run-all.sh` → `ALL PROBES GREEN` (20/20),
+  `GeometryProbe PASS=114 FAIL=0`.
+- Static audits clean: no file > 200 lines (tallest `LoanPreviewPane` 199), no
+  `@SuppressWarnings`, no hex outside `Theme`, no `service`/`controller` imports under
+  `view`, no `System.exit` outside `Main`, no debug prints.
+- Docs in the same change: design §6 (preview compact/guard, toast placement), §9 (one
+  width rule), §14.2 `D-Width` / `D-Preview` / `D-Toasts`; implementation plan gains
+  D38–D43 and revision 2.1.0; plan §3 D42/D43 amended with the measurements.
+- Commit `fix(m6): keep tables and previews usable at the minimum size`.
 
 ### WP4 — pending
 

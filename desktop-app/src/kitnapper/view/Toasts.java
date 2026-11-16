@@ -1,5 +1,7 @@
 package kitnapper.view;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Window;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +21,15 @@ public final class Toasts {
 
     static final int WIDTH = 320;
     static final int HEIGHT = 48;
-    private static final int MARGIN = 16;
+    /** Clears the 32 px status bar (D43). */
+    private static final int BOTTOM_MARGIN = 96;
+    private static final int SIDE_MARGIN = 16;
+    /**
+     * Right inset when a preview column is showing (D43): the 280 px preview,
+     * the 32 px page padding around it, and an 8 px gap, so a toast can never
+     * cover the pinned preview action — the inventory bar alone is 120 px tall.
+     */
+    private static final int PREVIEW_MARGIN = 320;
     private static final int GAP = 8;
     private static final int MAX = 3;
     private static final int LIFETIME_MS = 4000;
@@ -86,11 +96,36 @@ public final class Toasts {
     }
 
     private static void layout(JLayeredPane pane, Stack stack) {
-        int bottom = pane.getHeight() - MARGIN;
+        int bottom = pane.getHeight() - BOTTOM_MARGIN;
+        int right = rightInset(pane);
         for (int i = 0; i < stack.toasts.size(); i++) {
             int y = bottom - HEIGHT - i * (HEIGHT + GAP);
-            stack.toasts.get(i).setBounds(pane.getWidth() - MARGIN - WIDTH, y, WIDTH, HEIGHT);
+            stack.toasts.get(i).setBounds(pane.getWidth() - right - WIDTH, y,
+                WIDTH, HEIGHT);
         }
+    }
+
+    /** The right inset: clear of the preview column when one is showing. */
+    private static int rightInset(JLayeredPane pane) {
+        Window window = SwingUtilities.getWindowAncestor(pane);
+        if (window instanceof RootPaneContainer container
+                && showsPreview(container.getContentPane())) {
+            return PREVIEW_MARGIN;
+        }
+        return SIDE_MARGIN;
+    }
+
+    private static boolean showsPreview(Container root) {
+        for (Component child : root.getComponents()) {
+            if (child.isShowing()
+                    && child.getClass().getSimpleName().endsWith("PreviewPane")) {
+                return true;
+            }
+            if (child instanceof Container container && showsPreview(container)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static Stack stackOf(JLayeredPane pane) {

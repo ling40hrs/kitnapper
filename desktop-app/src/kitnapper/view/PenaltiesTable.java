@@ -84,6 +84,8 @@ final class PenaltiesTable extends JTable {
         pane.setOpaque(false);
         pane.getViewport().setBackground(Theme.bgSurface);
         pane.getVerticalScrollBar().setUnitIncrement(TableSkins.ROW_HEIGHT);
+        pane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        TableWidthPolicy.install(this, pane);
         return pane;
     }
 

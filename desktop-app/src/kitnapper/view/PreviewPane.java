@@ -7,13 +7,14 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -46,7 +47,9 @@ final class PreviewPane extends JPanel {
     private final JLabel idValue = valueLabel(true);
     private final JButton checkout = UiFactory.primaryButton("Check out");
     private final JLabel hint = UiFactory.label("", "muted");
+    private final JPanel info;
     private Equipment shown;
+    private boolean compact;
 
     PreviewPane(Consumer<Equipment> onCheckout, PhotoSource photos) {
         super(new BorderLayout());
@@ -57,11 +60,28 @@ final class PreviewPane extends JPanel {
         setMinimumSize(new Dimension(WIDTH, 0));
         stack.setOpaque(false);
         statusSlot.setOpaque(false);
+        info = infoPanel();
         stack.add(detail(), "detail");
         stack.add(new EmptyState(Fonts.glyph("\uE721", "\u2315"),
             "Select an item to see details.", null, null), "empty");
         add(stack, BorderLayout.CENTER);
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent event) {
+                setCompact(PreviewLayout.compactFor(getHeight()));
+            }
+        });
         clear();
+    }
+
+    /** Tightens the metadata spacing below 560 px of preview height (D42). */
+    private void setCompact(boolean next) {
+        if (compact == next) {
+            return;
+        }
+        compact = next;
+        PreviewLayout.applyDensity(info, compact);
+        revalidate();
     }
 
     /** Paint state for the current selection, as decided by {@link CatalogScreen}. */
@@ -79,7 +99,7 @@ final class PreviewPane extends JPanel {
         checkout.setVisible(actionVisible);
         checkout.setEnabled(actionEnabled);
         boolean hasHint = hintText != null && !hintText.isBlank();
-        hint.setText(hasHint ? captionLines(hintText) : "");
+        hint.setText(hasHint ? PreviewLayout.captionLines(hintText, compact) : "");
         hint.setToolTipText(hasHint ? hintText : null);
         hint.getAccessibleContext().setAccessibleName(hasHint ? hintText : null);
         hint.setVisible(hasHint);
@@ -118,29 +138,29 @@ final class PreviewPane extends JPanel {
         JPanel detail = new JPanel(new BorderLayout());
         detail.setOpaque(false);
         detail.setBorder(BorderFactory.createEmptyBorder(PAD, PAD, PAD, PAD));
-        detail.add(info(), BorderLayout.NORTH);
+        detail.add(PreviewLayout.scroll(info), BorderLayout.CENTER);
         detail.add(actionBar(), BorderLayout.SOUTH);
         return detail;
     }
 
-    private JPanel info() {
+    private JPanel infoPanel() {
         JPanel info = new JPanel();
         info.setOpaque(false);
         info.setLayout(new BoxLayout(info, BoxLayout.Y_AXIS));
         media.setOpaque(false);
         info.add(media);
-        info.add(Box.createVerticalStrut(12));
+        info.add(PreviewLayout.mediaGap());
         title.setFont(Fonts.display(16, Font.BOLD));
         title.putClientProperty(UiFactory.ROLE, "title");
         title.setForeground(Theme.textPrimary);
         title.setAlignmentX(0f);
         info.add(title);
-        info.add(Box.createVerticalStrut(12));
-        info.add(row("Status", statusSlot));
-        info.add(row("Category", categoryValue));
-        info.add(row("Serial", serialValue));
-        info.add(row("Replacement value", moneyValue));
-        info.add(row("ID", idValue));
+        info.add(PreviewLayout.mediaGap());
+        info.add(PreviewLayout.row("Status", statusSlot));
+        info.add(PreviewLayout.row("Category", categoryValue));
+        info.add(PreviewLayout.row("Serial", serialValue));
+        info.add(PreviewLayout.row("Replacement value", moneyValue));
+        info.add(PreviewLayout.row("ID", idValue));
         return info;
     }
 
@@ -160,32 +180,6 @@ final class PreviewPane extends JPanel {
         bar.add(Box.createVerticalStrut(8));
         bar.add(hint);
         return bar;
-    }
-
-    /**
-     * Two lines for the documented manager caption (plan §8.3) so the 248 px
-     * slot shows it whole; tooltip and accessible name keep the plain text.
-     */
-    private static String captionLines(String caption) {
-        int dash = caption.indexOf(" — ");
-        return dash < 0 ? caption
-            : "<html>" + caption.substring(0, dash + 2) + "<br>"
-                + caption.substring(dash + 3) + "</html>";
-    }
-
-    private static JPanel row(String labelText, JComponent value) {
-        JPanel row = new JPanel();
-        row.setOpaque(false);
-        row.setLayout(new BoxLayout(row, BoxLayout.Y_AXIS));
-        JLabel label = UiFactory.label(labelText, "secondary");
-        label.setAlignmentX(0f);
-        value.setAlignmentX(0f);
-        row.add(label);
-        row.add(Box.createVerticalStrut(2));
-        row.add(value);
-        row.add(Box.createVerticalStrut(10));
-        row.setAlignmentX(0f);
-        return row;
     }
 
     private static JLabel valueLabel(boolean mono) {
