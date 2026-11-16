@@ -1164,7 +1164,7 @@ scroll at 1280 and 1024 stays readable.
 Commands and results:
 
 ```bash
-cd desktop-app && ./build.sh       # BUILD OK -> build/classes (188 classes)
+cd desktop-app && ./build.sh       # BUILD OK -> build/classes (187 classes)
 ./test/run-all.sh                  # ALL PROBES GREEN (11/11)
 ```
 
