@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+import kitnapper.model.Equipment;
 import kitnapper.model.LateFeeStrategy;
 import kitnapper.model.User;
 
@@ -25,6 +26,8 @@ public final class AppContext {
     private final CatalogService catalog;
     private final LoanService loans;
     private final PenaltyService penalties;
+    private final ImageStore images;
+    private final InventoryService inventory;
     private final Supplier<LocalDate> today;
     private User currentUser;
     private boolean darkTheme = true;
@@ -44,6 +47,12 @@ public final class AppContext {
                 this::currentUser, this::today, this::fireChanged);
         this.penalties = new PenaltyServiceImpl(store, today,
                 this::currentUser, this::fireChanged);
+        this.images = new ImageStoreImpl(store.folder());
+        this.inventory = new InventoryServiceImpl(store, images,
+                this::currentUser, this::fireChanged);
+        // Load-time orphan sweep (D11): runs after Main's load(), so the
+        // equipment list is the authoritative set of keepable photo ids.
+        this.images.sweep(store.equipment().stream().map(Equipment::getId).toList());
     }
 
     public DataStore dataStore() {
@@ -72,6 +81,16 @@ public final class AppContext {
         return penalties;
     }
 
+    /** Item photos beside the save file (M5, design §12). */
+    public ImageStore images() {
+        return images;
+    }
+
+    /** Inventory mutations for the manager screens (M5, FR-10). */
+    public InventoryService inventory() {
+        return inventory;
+    }
+
     /** The injected application clock; never null. */
     public LocalDate today() {
         return Objects.requireNonNull(today.get(), "today");
@@ -85,6 +104,26 @@ public final class AppContext {
     public void setCurrentUser(User user) {
         currentUser = user;
         fireChanged();
+    }
+
+    /**
+     * Re-binds the session to the freshly seeded account with the same email
+     * (D33). The demo reset replaces every user instance, so without this the
+     * signed-in manager would keep a {@link User} that is no longer in the
+     * store and every role check would read a stale object.
+     */
+    public void rebindCurrentUser() {
+        User current = currentUser;
+        if (current == null) {
+            return;
+        }
+        for (User candidate : store.users()) {
+            if (candidate.getEmail().equalsIgnoreCase(current.getEmail())) {
+                setCurrentUser(candidate);
+                return;
+            }
+        }
+        setCurrentUser(null);
     }
 
     /** Session-only theme state (D3); never persisted to the save file. */

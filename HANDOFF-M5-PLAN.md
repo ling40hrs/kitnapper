@@ -1,9 +1,11 @@
 # KitNapper M5 — Implementation Backbone
 
-> **Status (2026-11-16, WP0):** plan authored and preflight re-proved; M5 is **not yet
-> started**. Starting HEAD `4ff491e` (local = `origin/main`, tree clean). This file is
-> the working document for M5 and replaces `HANDOFF-M5.md` as the executable contract;
-> the scope note stays authoritative for *why* (design §12–§13, D27).
+> **Status (2026-11-16, WP1 done):** the service half of M5 is in: `ImageStore`/`PhotoCodec`
+> with the full design §12 pipeline, `InventoryService` with role and loan guards, and
+> `InventoryProbe` (81 checks) registered — `ALL PROBES GREEN` at 13/13. Screens start at
+> WP2. Starting HEAD `4ff491e` (local = `origin/main` before WP0). This file is the
+> working document for M5 and replaces `HANDOFF-M5.md` as the executable contract; the
+> scope note stays authoritative for *why* (design §12–§13, D27).
 >
 > Authoritative inputs: `docs/implementation-plan.md` §4 (M5 row) and §5 (D7, D8, D11,
 > D15, D19, D22, D27), `docs/design.md` §7, §12, §13, `docs/SRS.md` §3.4–§3.5 and §6.2
@@ -212,22 +214,31 @@ public interface ImageStore {
 
 ```java
 public interface InventoryService {
-    String peekNextId();                                  // Ids.nextEquipmentId, no reservation
-    Optional<String> add(ItemDraft draft);                // empty = saved
-    Optional<String> update(String equipmentId, ItemDraft draft);
-    Optional<String> setPhoto(String equipmentId, String stagedName);
-    Optional<String> removePhoto(String equipmentId);
-    Optional<String> flagMaintenance(String equipmentId);
-    Optional<String> clearMaintenance(String equipmentId);
-    Optional<String> decommission(String equipmentId);
+    String peekNextId();                       // Ids.nextEquipmentId, no reservation
+    void add(ItemDraft draft);                 // throws IAE/ISE
+    void update(String equipmentId, ItemDraft draft);
+    void setPhoto(String equipmentId, String stagedName);
+    void removePhoto(String equipmentId);
+    void flagMaintenance(String equipmentId);
+    void clearMaintenance(String equipmentId);
+    void decommission(String equipmentId);
     void resetDemoData();
 }
 ```
 
-- `Optional<String>` is the house style for a translated failure (D16): the dialog shows
-  the message inline, the screen shows it in a toast, nothing throws to the EDT.
-- **Role guard first** (D6/INV-3): not signed in as `Manager` → `"Only managers can change
-  the inventory."` Reset is guarded the same way.
+- **Corrected at WP1:** the service **throws** like `LoanService` does, and the
+  controller translates (`BorrowingController` is the template: `UncheckedIOException`
+  → "Could not save…", any other `RuntimeException` → its message). The house style is
+  *throw in the service, `Optional<String>` at the controller boundary*; this section
+  originally wrote the controller half into the service and is now fixed.
+- **Role guard first** (D6/INV-3): not signed in as `Manager` → `IllegalStateException`
+  with `InventoryMessages.MANAGER_ONLY`. Reset is guarded the same way.
+- **Loan-aware guards (new at WP1):** `clearMaintenance` and `decommission` are refused
+  with `"This item is still on loan."` while an unreturned loan references the item.
+  Without them, clearing maintenance on a flagged-but-loaned item would call
+  `markAvailable()` and make an out item borrowable again, and decommissioning it would
+  make `LoanServiceImpl.returnLoan` reject the return (it refuses a decommissioned item).
+  Recorded as a doc deviation for WP6.
 - `add` — `EquipmentFactory.create(peekNextId(), draft)`, insert into
   `store.equipment()`, `save()`, `fireChanged()`. A staged photo is promoted **after** the
   item exists, then `setPhotoFile`, then a second `save()`; failure after the first save
@@ -328,15 +339,18 @@ assert them instead of sleeping: `DELAY_MS = 150`, `MIN_VISIBLE_MS = 300`,
 
 ## 6. File inventory
 
-### 6.1 New — service (7 files, ~620 lines)
+### 6.1 New — service (10 files, ~700 lines)
 
 | File | Lines | Content |
 | :--- | ---: | :--- |
-| `service/ImageRules.java` | 40 | §5.1 constants |
-| `service/ImageStore.java` | 45 | §5.2 interface |
-| `service/ImageStoreImpl.java` | 175 | validate → scale → flatten → encode → atomic write; load/delete/sweep |
-| `service/InventoryService.java` | 45 | §5.3 interface |
-| `service/InventoryServiceImpl.java` | 190 | role guard, CRUD, photo promote/remove, reset; `fireChanged` |
+| `service/ImageRules.java` | 45 | §5.1 constants |
+| `service/ImageMessages.java` | 25 | photo rejection/cleanup messages |
+| `service/ImageStore.java` | 55 | §5.2 interface |
+| `service/ImageStoreImpl.java` | 191 | validate/decode/load/promote/delete/sweep; encode via `PhotoCodec` |
+| `service/PhotoCodec.java` | 112 | downscale, flatten, JPEG q0.85 write, atomic move (split at WP1) |
+| `service/InventoryMessages.java` | 25 | inventory messages, `LoanMessages` pattern |
+| `service/InventoryService.java` | 60 | §5.3 interface |
+| `service/InventoryServiceImpl.java` | 177 | role guard, CRUD, kind-preserving update, loan guards, reset |
 | `service/ItemDraft.java` | 25 | §5.4 record |
 | `service/EquipmentFactory.java` | 40 | §5.4 category→kind factory |
 
@@ -402,10 +416,10 @@ assert them instead of sleeping: `DELAY_MS = 150`, `MIN_VISIBLE_MS = 300`,
 
 | Group | Files | Lines |
 | :--- | ---: | ---: |
-| `service` | +7 (23) | +620 |
+| `service` | +10 (26) | +700 (delivered at WP1) |
 | `controller` | +3 (13) | +330 |
 | `view` | +13 (75) | +1,610 |
-| Probes | +3 (+3 support) (28→31) | +~1,000 |
+| Probes | +6 (+4 service, +2 display) (31) | +~1,000 (4 of 6 delivered at WP1) |
 | **Total source** | **117 → 140** | **10,793 → ~13,350** |
 
 ## 7. Work packages (execution order)
@@ -414,7 +428,7 @@ assert them instead of sleeping: `DELAY_MS = 150`, `MIN_VISIBLE_MS = 300`,
 
 Author this file; re-prove baseline; static audits; commit. No application code.
 
-### WP1 — Image store, inventory service, `InventoryProbe`
+### WP1 — Image store, inventory service, `InventoryProbe` (DONE 2026-11-16)
 
 - `ImageRules`, `ImageStore(+Impl)`, `ItemDraft`, `EquipmentFactory`,
   `InventoryService(+Impl)`, `DataStore.folder()`, `AppContext` additions (no view code).
@@ -739,6 +753,53 @@ WP6.
 **Not done in WP0:** no service, view, or probe code; the four decisions are not yet in
 `docs/implementation-plan.md` (WP6 owns that, per §11).
 
-**Next:** WP1 — `ImageRules`, `ImageStore(+Impl)`, `ItemDraft`, `EquipmentFactory`,
-`InventoryService(+Impl)`, `DataStore.folder()`, `AppContext` additions, and
-`InventoryProbe` (headless).
+**Next:** WP2 — `SkeletonPanel`, `SkeletonGate`, `PhotoCache`, `PhotoSource`, `PhotoTile`,
+the `PreviewPane` → `PreviewMedia` split, and card/preview wiring.
+
+### WP1 — Image store, inventory service, `InventoryProbe` (2026-11-16)
+
+**Starting HEAD:** `d9e04c9` (WP0 plan commit), tree clean.
+
+**What changed:** 10 new service files (`ImageRules`, `ImageMessages`, `ImageStore`,
+`ImageStoreImpl`, `PhotoCodec`, `InventoryMessages`, `InventoryService`,
+`InventoryServiceImpl`, `ItemDraft`, `EquipmentFactory`), `DataStore`/`DataStoreImpl`
+gained `folder()`, `AppContext` gained `images()`, `inventory()`, `rebindCurrentUser()`
+and the constructor sweep, and four new probe files registered in `run-all.sh`.
+
+**Commands run and results:**
+
+| Command | Result |
+| :--- | :--- |
+| `./build.sh clean && ./build.sh` | `BUILD OK -> build/classes (198 classes)`, zero warnings |
+| `./test/run-all.sh` | `ALL PROBES GREEN` — 13/13 registered |
+| `java -cp build/classes:test/out kitnapper.InventoryProbe` | `PASS=81 FAIL=0` |
+| `wc -l` sweep | no file > 200; tallest new is `ImageStoreImpl` 191 |
+| hex / view-import / suppression grep | all clean |
+
+**Deviations from the written plan, and why:**
+
+1. **`InventoryService` throws instead of returning `Optional<String>`** — §5.3 corrected
+   in this change. The real house pattern is `LoanService` throws →
+   `BorrowingController` translates; WP3's controller will do the same.
+2. **`PhotoCodec` was split out at 279 lines.** The store now composes it and lands at
+   191; the plan's §6.5 split rule applied exactly as written.
+3. **`ImageMessages` and `InventoryMessages`** were created rather than inlined, matching
+   `LoanMessages`/`PenaltyMessages`.
+4. **Two loan-aware guards added** (not in the plan): `clearMaintenance` and
+   `decommission` refuse while an unreturned loan references the item. Without them a
+   flagged-but-loaned item could be cleared back to `AVAILABLE` (double-lendable) or
+   decommissioned so `returnLoan` rejects the return. Probe-checked; documented as a
+   deviation for WP6.
+5. **`add` allocates the id via `peekNextId()`** exactly as planned; the controller will
+   promote the staged photo after `add` (two saves, tolerated orphan on failure, sweep
+   cleans it).
+
+**Not done in WP1:** no view, controller, or dialog code; no docs beyond this plan;
+`schemaVersion` untouched (1).
+
+**Coverage:** 81 checks — baseline (3), add/kinds/reload (11), validation (5),
+update/D19 (8), statuses and loan guards (14), roles (5), photos and decode (17), sweep
+and promote (13), reset and re-bind (15 was measured inside `ResetChecks`; totals are the
+probe's single `PASS=81`).
+
+**Next:** WP2 — skeleton and photo display.

@@ -48,6 +48,7 @@ run() {
 run kitnapper.DataProbe headless
 run kitnapper.CatalogProbe headless
 run kitnapper.LoanProbe headless
+run kitnapper.InventoryProbe headless
 run kitnapper.SkinProbe headless
 run kitnapper.FontProbe headless
 run kitnapper.view.EdgeProbe headless

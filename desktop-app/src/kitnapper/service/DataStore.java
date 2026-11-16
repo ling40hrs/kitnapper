@@ -1,5 +1,6 @@
 package kitnapper.service;
 
+import java.nio.file.Path;
 import java.util.List;
 
 import kitnapper.model.Equipment;
@@ -20,6 +21,12 @@ public interface DataStore {
      * (NFR-07, D18). Never throws for a bad file.
      */
     AppData load();
+
+    /**
+     * The application folder holding the save file; the photo directory
+     * ({@link ImageRules#FOLDER}) sits beside it (design §12).
+     */
+    Path folder();
 
     /** Persists the current aggregate atomically (tmp file + move). */
     void save();

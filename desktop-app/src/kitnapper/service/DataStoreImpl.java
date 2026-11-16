@@ -69,6 +69,12 @@ public final class DataStoreImpl implements DataStore {
     }
 
     @Override
+    public Path folder() {
+        Path parent = savePath.getParent();
+        return parent == null ? Paths.get("").toAbsolutePath() : parent;
+    }
+
+    @Override
     public void save() {
         try {
             Files.writeString(tmpPath, JsonWriter.write(rootMapper.toDocument(data)),
