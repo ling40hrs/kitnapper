@@ -9,6 +9,7 @@ import kitnapper.service.AppContext;
 import kitnapper.view.AllLoansScreen;
 import kitnapper.view.CatalogScreen;
 import kitnapper.view.DashboardScreen;
+import kitnapper.view.InventoryScreen;
 import kitnapper.view.MainFrame;
 import kitnapper.view.MyLoansScreen;
 import kitnapper.view.OverdueScreen;
@@ -26,22 +27,26 @@ final class ScreenMounts {
     private final AppContext context;
     private final MainFrame frame;
     private final BiConsumer<String, String> status;
+    private final ItemPhotos photos;
     private final List<Runnable> refreshers = new ArrayList<>();
     private CatalogController catalog;
     private LoansController loans;
     private PenaltyController penalties;
     private DashboardController dashboard;
+    private InventoryController inventory;
     private CatalogScreen catalogScreen;
     private MyLoansScreen myLoansScreen;
     private AllLoansScreen allLoansScreen;
     private OverdueScreen overdueScreen;
     private PenaltiesScreen penaltiesScreen;
     private DashboardScreen dashboardScreen;
+    private InventoryScreen inventoryScreen;
 
     ScreenMounts(AppContext context, MainFrame frame, BiConsumer<String, String> status) {
         this.context = context;
         this.frame = frame;
         this.status = status;
+        this.photos = new ItemPhotos(context);
     }
 
     /** Mounts the catalog every role gets, then the role's own screens. */
@@ -51,7 +56,7 @@ final class ScreenMounts {
         penalties = new PenaltyController(context);
         catalogScreen = new CatalogScreen(
             new CatalogActions(catalog, new BorrowingController(context), status),
-            frame.searchField(), new ItemPhotos(context));
+            frame.searchField(), photos);
         catalog.setOnChanged(catalogScreen::reload);
         frame.mount("catalog", catalogScreen, catalogScreen.commands(),
             catalogScreen::onShown);
@@ -71,6 +76,9 @@ final class ScreenMounts {
         allLoansScreen = new AllLoansScreen(actions, status);
         overdueScreen = new OverdueScreen(actions, status);
         penaltiesScreen = new PenaltiesScreen(penalties, status);
+        inventory = new InventoryController(context);
+        inventoryScreen = new InventoryScreen(
+            new InventoryActions(inventory, photos, status), frame.searchField());
         frame.mount("dashboard", dashboardScreen, dashboardScreen.commands(),
             dashboardScreen::onShown);
         frame.mount("allloans", allLoansScreen, allLoansScreen.commands(),
@@ -79,13 +87,16 @@ final class ScreenMounts {
             overdueScreen::onShown);
         frame.mount("penalties", penaltiesScreen, penaltiesScreen.commands(),
             penaltiesScreen::onShown);
+        frame.mount("inventory", inventoryScreen, null, inventoryScreen::onShown);
         dashboard.setOnChanged(dashboardScreen::reload);
         loans.setOnChanged(this::reloadLoanScreens);
         penalties.setOnChanged(penaltiesScreen::reload);
+        inventory.setOnChanged(inventoryScreen::reload);
         refreshers.add(dashboardScreen::refreshTheme);
         refreshers.add(allLoansScreen::refreshTheme);
         refreshers.add(overdueScreen::refreshTheme);
         refreshers.add(penaltiesScreen::refreshTheme);
+        refreshers.add(inventoryScreen::refreshTheme);
     }
 
     /** My Loans (§8.3). */

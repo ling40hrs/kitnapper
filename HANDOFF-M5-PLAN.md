@@ -1,12 +1,12 @@
 # KitNapper M5 — Implementation Backbone
 
-> **Status (2026-11-16, WP2 done):** photos and skeletons are live — `PhotoTile` +
-> `SkeletonGate`/`SkeletonPanel` + `PhotoCache`, wired into catalog cards and the preview
-> pane, with `PhotoUiProbe` (20 checks) registered: `ALL PROBES GREEN` at 14/14. The
-> inventory screen starts at WP3. Starting HEAD `4ff491e` (local = `origin/main` before
-> WP0). This file is the working document for M5 and replaces `HANDOFF-M5.md` as the
-> executable contract; the scope note stays authoritative for *why* (design §12–§13,
-> D27).
+> **Status (2026-11-16, WP3 done):** the manager Inventory route is real — table, omnibar
+> filter, photo preview, flag/clear/decommission with loan-aware enablement, and status
+> counts; `InventoryUiProbe` (27 checks) registered, `ALL PROBES GREEN` at 15/15. The
+> equipment dialog plus its Add/Edit entry points are WP4. Starting HEAD `4ff491e`
+> (local = `origin/main` before WP0). This file is the working document for M5 and
+> replaces `HANDOFF-M5.md` as the executable contract; the scope note stays authoritative
+> for *why* (design §12–§13, D27).
 >
 > Authoritative inputs: `docs/implementation-plan.md` §4 (M5 row) and §5 (D7, D8, D11,
 > D15, D19, D22, D27), `docs/design.md` §7, §12, §13, `docs/SRS.md` §3.4–§3.5 and §6.2
@@ -375,10 +375,12 @@ assert them instead of sleeping: `DELAY_MS = 150`, `MIN_VISIBLE_MS = 300`,
 | `view/PreviewMedia.java` | 55 | the preview pane's media slot (split from `PreviewPane`) |
 | `view/CatalogBody.java` | 76 | table/cards/preview layout (split from `CatalogScreen`) |
 | `view/ToggleSwitch.java` | 90 | 40×20 switch (§6 components), Space/Enter, accessible name |
-| `view/InventoryScreen.java` | 185 | header + "Add item", table, preview, omnibar search, status counts |
-| `view/InventoryTable.java` | 120 | `TableSkins` table, 5 columns, selection hook, `inScrollPane()` |
-| `view/InventoryTableModel.java` | 90 | typed columns like `CatalogTableModel` |
-| `view/InventoryPreviewPane.java` | 155 | 280 px pane: `PhotoTile`, badge, metadata, Edit/Flag/Decommission |
+| `view/InventoryScreen.java` | 188 | header, omnibar text filter, table/preview wiring, status counts |
+| `view/InventoryBody.java` | 56 | table + empty state + preview layout (split at WP3) |
+| `view/InventoryTable.java` | 171 | `TableSkins` table, 5 columns, hover band, silent selection |
+| `view/InventoryTableModel.java` | 80 | typed columns like `CatalogTableModel` |
+| `view/InventoryPreviewPane.java` | 181 | 280 px pane: `PhotoTile`, badge, metadata, kind row |
+| `view/InventoryStateActions.java` | 81 | flag/clear/decommission bar with status + loan enablement |
 | `view/EquipmentDialog.java` | 190 | add/edit form, category→field swap, photo well, inline errors |
 | `view/PhotoWell.java` | 130 | 16:9 well: `Choose photo…`/`Remove photo`, skeleton, busy state |
 | `view/SettingsScreen.java` | 165 | theme, paths, animate switch, reset |
@@ -453,18 +455,22 @@ Author this file; re-prove baseline; static audits; commit. No application code.
 - **Done when:** a saved photo shows on the card and preview; a missing one falls back;
   the skeleton only appears past 150 ms; reduced motion yields static blocks.
 
-### WP3 — Inventory screen
+### WP3 — Inventory screen (DONE 2026-11-16)
 
-- `InventoryTable(Model)`, `InventoryPreviewPane`, `InventoryScreen`, `InventoryController`,
-  `InventoryActions`, `PageHeader` action slot, `ScreenMounts` mount of `inventory`.
+- `InventoryTable(Model)`, `InventoryBody`, `InventoryPreviewPane`,
+  `InventoryStateActions`, `InventoryScreen`, `InventoryController`,
+  `InventoryActions`, `ScreenMounts` mount of `inventory`.
 - `test/kitnapper/view/InventoryUiProbe.java` + `InventoryUiChecks`.
 - **Done when:** the manager route renders 10 rows, omnibar filters, selection drives the
   preview, and the status bar counts; `inventory` no longer shows the placeholder.
+- **Boundary note:** Add/Edit and the `PageHeader` action slot moved to WP4 with the
+  dialog, so no commit ever ships a button that does nothing.
 
-### WP4 — `EquipmentDialog` + photo import flow
+### WP4 — `EquipmentDialog` + photo import flow + Add/Edit entries
 
-- `EquipmentDialog`, `PhotoWell`, `InventoryService.setPhoto/removePhoto` wiring,
-  replace-photo confirmation, inline `DANGER` messages, busy Save while importing.
+- `EquipmentDialog`, `PhotoWell`, `PageHeader` action slot, screen Add/Edit wiring,
+  `InventoryService.setPhoto/removePhoto` threading, replace-photo confirmation, inline
+  `DANGER` messages, busy Save while importing.
 - Extend `InventoryUiChecks` with dialog-body assertions per category (D19) and the
   import failure paths.
 - **Done when:** add-with-photo and edit work end to end through the controller; the kind
@@ -862,3 +868,47 @@ stops the pulse and makes the fade instant, and the timing constants are 150/300
 10 000 ms.
 
 **Next:** WP3 — the inventory screen.
+
+### WP3 — Inventory screen (2026-11-16)
+
+**Starting HEAD:** `5fdf7ae` (WP2), tree clean.
+
+**What changed:** new `InventoryTable`, `InventoryTableModel`, `InventoryBody`,
+`InventoryPreviewPane`, `InventoryStateActions`, `InventoryScreen` (view),
+`InventoryController`, `InventoryActions` (controller); `ScreenMounts` mounts the real
+route and shares one `ItemPhotos`; `InventoryUiProbe` + `InventoryUiChecks` registered.
+
+**Commands run and results:**
+
+| Command | Result |
+| :--- | :--- |
+| `./build.sh` | `BUILD OK -> build/classes (225 classes)`, zero warnings |
+| `./test/run-all.sh` | `ALL PROBES GREEN` — 15/15 |
+| `java ... kitnapper.view.InventoryUiProbe` (xvfb) | `PASS=27 FAIL=0` |
+| `sh ../../netbeans/extide/ant/bin/ant clean jar` | `BUILD SUCCESSFUL` |
+| `wc -l` sweep | no file > 200 (max `InventoryScreen` 188) |
+| hex / view-import / suppression grep | all clean |
+
+**Deviations from the written plan, and why:**
+
+1. **Two files measured over the cap on the first pass** — `InventoryPreviewPane` 222 and
+   `InventoryScreen` 215. The state-action bar moved to `InventoryStateActions` (81) and
+   the body layout to `InventoryBody` (56), landing at 181 and 188.
+2. **Add/Edit and the "Add item" header button moved to WP4**, together with the dialog
+   and the `PageHeader` action slot. Shipping them in WP3 would have meant a button with
+   no destination in one commit. WP3 therefore ships flag/clear/decommission only.
+3. **`InventoryScreen.Actions` gained `isManager()` and `onLoan(item)`** beyond the plan's
+   list, and does not yet have the dialog/photo methods: enablement needs the loan fact,
+   and the panel must not offer a transition the service rejects.
+4. **`ScreenMounts` now owns one `ItemPhotos`** for the session instead of constructing
+   one per screen (WP2 built it inline for the catalog).
+5. **`InventoryController` reads through `CatalogService`** (text only) rather than a new
+   query method, so ordering and filtering match the catalog exactly (D-M5 filtering).
+
+**Behaviour proven:** 10 seeded rows, exact status counts (`10 items · 0/1 selected`,
+`₱872,000.00`), name and serial filtering, the empty state, preview title/id/value,
+flag/clear/decommission enablement per status, decommission through the controller
+(terminal, read-only hint), the loan-aware block on a LOANED item, clear offered but
+disabled while out, and a non-blank paint.
+
+**Next:** WP4 — the equipment dialog and photo import.
