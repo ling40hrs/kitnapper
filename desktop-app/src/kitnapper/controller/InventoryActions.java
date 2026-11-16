@@ -5,8 +5,10 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 
 import kitnapper.model.Equipment;
+import kitnapper.view.EquipmentForm;
 import kitnapper.view.InventoryScreen;
 import kitnapper.view.PhotoSource;
+import kitnapper.view.PhotoStage;
 
 /**
  * The inventory screen's view-declared callbacks (M5 WP3): query state and
@@ -55,6 +57,27 @@ public final class InventoryActions implements InventoryScreen.Actions {
     @Override
     public Optional<String> decommission(Equipment item) {
         return inventory.decommission(item);
+    }
+
+    @Override
+    public Optional<String> add(EquipmentForm form, String stagedPhoto) {
+        return inventory.add(form, stagedPhoto);
+    }
+
+    @Override
+    public Optional<String> update(String equipmentId, EquipmentForm form, String stagedPhoto,
+                                   boolean removePhoto) {
+        return inventory.update(equipmentId, form, stagedPhoto, removePhoto);
+    }
+
+    @Override
+    public PhotoStage stagePhoto(java.nio.file.Path source) {
+        return inventory.stagePhoto(source);
+    }
+
+    @Override
+    public void discardStaged(String stagedName) {
+        inventory.discardStaged(stagedName);
     }
 
     @Override

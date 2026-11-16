@@ -22,28 +22,32 @@ final class InventoryStateActions extends JPanel {
 
     private static final long serialVersionUID = 1L;
 
+    private final JButton edit = UiFactory.primaryButton("Edit item");
     private final JButton flag = UiFactory.secondaryButton("Flag for maintenance");
     private final JButton clear = UiFactory.secondaryButton("Clear maintenance");
     private final JButton retire = UiFactory.destructiveButton("Decommission");
     private final JLabel hint = UiFactory.label("", "muted");
+    private final Consumer<Equipment> onEdit;
     private final Consumer<Equipment> onFlag;
     private final Consumer<Equipment> onClear;
     private final Consumer<Equipment> onRetire;
     private Equipment shown;
 
-    InventoryStateActions(Consumer<Equipment> onFlag, Consumer<Equipment> onClear,
-                          Consumer<Equipment> onRetire) {
+    InventoryStateActions(Consumer<Equipment> onEdit, Consumer<Equipment> onFlag,
+                          Consumer<Equipment> onClear, Consumer<Equipment> onRetire) {
+        this.onEdit = onEdit;
         this.onFlag = onFlag;
         this.onClear = onClear;
         this.onRetire = onRetire;
         setOpaque(false);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        for (JButton button : new JButton[] { flag, clear, retire }) {
+        for (JButton button : new JButton[] { edit, flag, clear, retire }) {
             button.setAlignmentX(0f);
             button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
             add(button);
             add(Box.createVerticalStrut(6));
         }
+        edit.addActionListener(e -> fire(onEdit));
         flag.addActionListener(e -> fire(onFlag));
         clear.addActionListener(e -> fire(onClear));
         retire.addActionListener(e -> fire(onRetire));
@@ -56,6 +60,7 @@ final class InventoryStateActions extends JPanel {
         shown = item;
         EquipmentStatus status = item.getStatus();
         boolean retired = status == EquipmentStatus.DECOMMISSIONED;
+        edit.setEnabled(!retired);
         flag.setEnabled(status == EquipmentStatus.AVAILABLE || status == EquipmentStatus.LOANED);
         clear.setVisible(status == EquipmentStatus.UNDER_MAINTENANCE);
         clear.setEnabled(!retired && !onLoan);

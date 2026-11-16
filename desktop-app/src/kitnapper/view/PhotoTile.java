@@ -43,13 +43,26 @@ final class PhotoTile extends JPanel implements SkeletonGate.Slot {
 
     /** A 16:9 tile {@code width} px wide; height follows the aspect ratio. */
     PhotoTile(Equipment item, int width, PhotoSource source, int edge) {
+        this(item == null ? null : item.getPhotoFile().orElse(null),
+            item == null ? EquipmentCategory.OTHER : item.getCategory(),
+            item == null ? null : item.getName(), width, source, edge);
+    }
+
+    /**
+     * A tile for any photo file, used by the editor's well while a staged
+     * import is not yet attached to an item (design §12).
+     */
+    PhotoTile(String photoFile, EquipmentCategory category, String label, int width,
+              PhotoSource source, int edge) {
         this.source = source == null ? PhotoSource.NONE : source;
         this.edge = edge;
         this.width = width;
+        this.category = category == null ? EquipmentCategory.OTHER : category;
         setOpaque(false);
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(width, Math.max(1, Math.round(width * 9f / 16f))));
-        load(item);
+        getAccessibleContext().setAccessibleName(label == null ? null : "Photo of " + label);
+        load(photoFile);
     }
 
     @Override
@@ -107,24 +120,19 @@ final class PhotoTile extends JPanel implements SkeletonGate.Slot {
         g2.dispose();
     }
 
-    private void load(Equipment item) {
-        if (item == null) {
-            return;
-        }
-        category = item.getCategory();
-        getAccessibleContext().setAccessibleName("Photo of " + item.getName());
-        photoFile = item.getPhotoFile().orElse(null);
-        if (photoFile == null) {
+    private void load(String file) {
+        photoFile = file;
+        if (file == null) {
             showResult(Optional.empty());
             return;
         }
-        BufferedImage cached = PhotoCache.get(photoFile, edge);
+        BufferedImage cached = PhotoCache.get(file, edge);
         if (cached != null) {
             image = cached;
             return;
         }
         cancel = SkeletonGate.run(this, this,
             new SkeletonPanel(SkeletonPanel.Variant.MEDIA),
-            () -> source.load(photoFile, edge));
+            () -> source.load(file, edge));
     }
 }

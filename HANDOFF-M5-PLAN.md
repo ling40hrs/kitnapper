@@ -1,12 +1,13 @@
 # KitNapper M5 — Implementation Backbone
 
-> **Status (2026-11-16, WP3 done):** the manager Inventory route is real — table, omnibar
-> filter, photo preview, flag/clear/decommission with loan-aware enablement, and status
-> counts; `InventoryUiProbe` (27 checks) registered, `ALL PROBES GREEN` at 15/15. The
-> equipment dialog plus its Add/Edit entry points are WP4. Starting HEAD `4ff491e`
-> (local = `origin/main` before WP0). This file is the working document for M5 and
-> replaces `HANDOFF-M5.md` as the executable contract; the scope note stays authoritative
-> for *why* (design §12–§13, D27).
+> **Status (2026-11-16, WP4 done):** the editor is live — `EquipmentDialog` with
+> kind-aware fields (D19), the photo well importing on file choice in a worker, staged
+> photos promoted on save and discarded on cancel, and Add/Edit wired into the inventory
+> screen; `InventoryEditorProbe` (27 checks) registered, `ALL PROBES GREEN` at 16/16.
+> Settings and the demo reset are WP5. Starting HEAD `4ff491e` (local = `origin/main`
+> before WP0). This file is the working document for M5 and replaces `HANDOFF-M5.md` as
+> the executable contract; the scope note stays authoritative for *why* (design §12–§13,
+> D27).
 >
 > Authoritative inputs: `docs/implementation-plan.md` §4 (M5 row) and §5 (D7, D8, D11,
 > D15, D19, D22, D27), `docs/design.md` §7, §12, §13, `docs/SRS.md` §3.4–§3.5 and §6.2
@@ -381,8 +382,11 @@ assert them instead of sleeping: `DELAY_MS = 150`, `MIN_VISIBLE_MS = 300`,
 | `view/InventoryTableModel.java` | 80 | typed columns like `CatalogTableModel` |
 | `view/InventoryPreviewPane.java` | 181 | 280 px pane: `PhotoTile`, badge, metadata, kind row |
 | `view/InventoryStateActions.java` | 81 | flag/clear/decommission bar with status + loan enablement |
-| `view/EquipmentDialog.java` | 190 | add/edit form, category→field swap, photo well, inline errors |
-| `view/PhotoWell.java` | 130 | 16:9 well: `Choose photo…`/`Remove photo`, skeleton, busy state |
+| `view/EquipmentDialog.java` | 176 | add/edit form + photo staging, inline errors, cancel cleanup |
+| `view/EquipmentFields.java` | 185 | the six inputs, kind-field swap (D19), inline validation |
+| `view/PhotoWell.java` | 123 | 16:9 well, chooser, remove, busy skeleton, status line |
+| `view/InventoryEditor.java` | 37 | opens the dialog, toasts, reloads only when saved |
+| `view/InventoryStateRunner.java` | 57 | confirm + toast + reload for flag/clear/decommission |
 | `view/SettingsScreen.java` | 165 | theme, paths, animate switch, reset |
 
 ### 6.4 Modified (11 files, ~+180 net, ~-90 moved out)
@@ -466,7 +470,7 @@ Author this file; re-prove baseline; static audits; commit. No application code.
 - **Boundary note:** Add/Edit and the `PageHeader` action slot moved to WP4 with the
   dialog, so no commit ever ships a button that does nothing.
 
-### WP4 — `EquipmentDialog` + photo import flow + Add/Edit entries
+### WP4 — `EquipmentDialog` + photo import flow + Add/Edit entries (DONE 2026-11-16)
 
 - `EquipmentDialog`, `PhotoWell`, `PageHeader` action slot, screen Add/Edit wiring,
   `InventoryService.setPhoto/removePhoto` threading, replace-photo confirmation, inline
@@ -912,3 +916,59 @@ flag/clear/decommission enablement per status, decommission through the controll
 disabled while out, and a non-blank paint.
 
 **Next:** WP4 — the equipment dialog and photo import.
+
+### WP4 — Equipment dialog, photo import, Add/Edit entries (2026-11-16)
+
+**Starting HEAD:** `340ca26` (WP3), tree clean.
+
+**What changed:** new `EquipmentDialog`, `EquipmentFields`, `PhotoWell`,
+`InventoryEditor`, `InventoryStateRunner`, `EquipmentForm`, `PhotoStage` (view);
+`PageHeader` gained the action slot; `InventoryStateActions` gained Edit;
+`PhotoTile` gained a file-name constructor for staged photos; `InventoryScreen`,
+`InventoryController`, `InventoryActions` wired to add/update/stage/remove; new
+`InventoryEditorProbe` + `EditorProbeSupport` registered.
+
+**Commands run and results:**
+
+| Command | Result |
+| :--- | :--- |
+| `./build.sh` | `BUILD OK -> build/classes (235 classes)`, zero warnings |
+| `./test/run-all.sh` | `ALL PROBES GREEN` — 16/16 |
+| `java ... kitnapper.view.InventoryEditorProbe` (xvfb) | `PASS=27 FAIL=0` |
+| `sh ../../netbeans/extide/ant/bin/ant clean jar` | `BUILD SUCCESSFUL` |
+| `wc -l` sweep | no file > 200 (`InventoryPreviewPane` 193, `InventoryController` 191) |
+| hex / view-import / suppression grep | all clean |
+
+**Deviations from the written plan, and why:**
+
+1. **Add/Edit landed here, not in WP3** (already noted in the WP3 entry): the
+   `PageHeader` action slot and both entry points arrived with the dialog.
+2. **The dialog split into `EquipmentDialog` (176) + `EquipmentFields` (185)** —
+   form fields and orchestration together were well past 200 from the start.
+3. **`EquipmentForm` carries raw text for the numeric fields.** The dialog validates
+   format inline for immediacy; the controller parses authoritatively and returns a
+   message, and the service re-validates (D16). `EquipmentFields.validationError()` is
+   named that way because `validate()` is `java.awt.Component.validate`.
+4. **Photo import runs on file choice in a plain `SwingWorker` with `SkeletonPanel`**,
+   not through `SkeletonGate`: the gate exists for speculative decode that may finish
+   under 150 ms, while an import is user-initiated and always shows the busy state
+   (design §13.1, §13.5).
+5. **`PhotoStage` and `EquipmentForm` are public records in `view`** because the public
+   `InventoryScreen.Actions` interface exposes them; `PhotoSource` set that precedent.
+6. **`PhotoTile` gained a file-name constructor** so the well can render a staged file
+   that does not belong to an item yet — same tile, same cache, same fallback.
+7. **The preview's hint text moved into `InventoryPreviewPane`** (it now takes only
+   `item` + `onLoan`) to keep `InventoryScreen` at 174; `InventoryStateRunner` took the
+   confirm/toast/reload logic out of the screen for the same reason.
+8. **`InventoryEditorProbe` measured 205**; its scratch-file fixtures moved to
+   `EditorProbeSupport` (left at 159).
+
+**Behaviour proven:** the kind field follows the category in add mode and the existing
+kind in edit mode (both directions, D19); staging writes one file; adding with a staged
+photo promotes it to `<id>.jpg` and the item reads it back; replacing a photo consumes
+the staged file; discarding a stage deletes it; removal clears the reference **and**
+deletes the file; a `.txt` import returns an inline message and writes nothing; and the
+controller returns the documented messages for a blank name, blank serial, non-numeric
+value, negative value, and bad interval.
+
+**Next:** WP5 — settings and the demo reset.

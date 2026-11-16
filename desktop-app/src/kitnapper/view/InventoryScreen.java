@@ -1,7 +1,6 @@
 package kitnapper.view;
 
 import java.awt.BorderLayout;
-import java.awt.Window;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -14,7 +13,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import kitnapper.model.Equipment;
-import kitnapper.model.EquipmentStatus;
 
 /**
  * The manager's inventory page (design §5 "Inventory"): the items table, the
@@ -41,6 +39,15 @@ public final class InventoryScreen extends JPanel {
 
         Optional<String> decommission(Equipment item);
 
+        Optional<String> add(EquipmentForm form, String stagedPhoto);
+
+        Optional<String> update(String equipmentId, EquipmentForm form, String stagedPhoto,
+                                boolean removePhoto);
+
+        PhotoStage stagePhoto(java.nio.file.Path source);
+
+        void discardStaged(String stagedName);
+
         PhotoSource photos();
 
         void setStatus(String left, String right);
@@ -50,6 +57,8 @@ public final class InventoryScreen extends JPanel {
     private final JTextField search;
     private final InventoryTable table = new InventoryTable();
     private final InventoryBody body;
+    private final InventoryEditor editor;
+    private final InventoryStateRunner runner;
     private String selectedId;
     private List<Equipment> results = List.of();
 
@@ -57,16 +66,20 @@ public final class InventoryScreen extends JPanel {
         super(new BorderLayout());
         this.actions = Objects.requireNonNull(actions, "actions");
         this.search = Objects.requireNonNull(searchField, "searchField");
+        this.editor = new InventoryEditor(actions);
+        this.runner = new InventoryStateRunner(actions, this, this::reload);
         InventoryPreviewPane preview = new InventoryPreviewPane(actions.photos(),
-            this::flag, this::clear, this::retire);
+            this::edit, runner::flag, runner::clear, runner::retire);
         JButton clearSearch = UiFactory.secondaryButton("Clear search");
         clearSearch.addActionListener(e -> search.setText(""));
         EmptyState empty = new EmptyState(Fonts.glyph("\uE721", "\u2315"),
             "No items match this filter.", "Try another search, or clear it.", clearSearch);
         this.body = new InventoryBody(table, empty, preview);
+        JButton add = UiFactory.primaryButton("Add item");
+        add.addActionListener(e -> addItem());
         setOpaque(false);
         ScreenCatalog.Meta meta = ScreenCatalog.meta("inventory");
-        add(new PageHeader(meta.title(), meta.subtitle()), BorderLayout.NORTH);
+        add(new PageHeader(meta.title(), meta.subtitle(), add), BorderLayout.NORTH);
         add(body, BorderLayout.CENTER);
         wire();
         reload();
@@ -126,7 +139,7 @@ public final class InventoryScreen extends JPanel {
             body.preview().clear();
             return;
         }
-        body.preview().show(selected, actions.onLoan(selected), hintFor(selected));
+        body.preview().show(selected, actions.onLoan(selected));
     }
 
     private Equipment selected() {
@@ -141,43 +154,16 @@ public final class InventoryScreen extends JPanel {
         return null;
     }
 
-    private String hintFor(Equipment item) {
-        if (item.getStatus() == EquipmentStatus.DECOMMISSIONED) {
-            return "Decommissioned items are read-only.";
+    private void addItem() {
+        if (editor.add(SwingUtilities.getWindowAncestor(this))) {
+            reload();
         }
-        if (actions.onLoan(item)) {
-            return "This item is still on loan; clear or retire it after the return.";
-        }
-        return "";
     }
 
-    private void flag(Equipment item) {
-        apply(actions.flagMaintenance(item), "Flagged " + item.getName() + " for maintenance.");
-    }
-
-    private void clear(Equipment item) {
-        apply(actions.clearMaintenance(item), "Cleared maintenance on " + item.getName() + ".");
-    }
-
-    private void retire(Equipment item) {
-        Window owner = SwingUtilities.getWindowAncestor(this);
-        if (!Dialogs.confirmDestructive(owner, "Decommission item?",
-                "“" + item.getName() + "” will be retired and can never be borrowed again.",
-                "Decommission")) {
-            return;
+    private void edit(Equipment item) {
+        if (editor.edit(SwingUtilities.getWindowAncestor(this), item)) {
+            reload();
         }
-        apply(actions.decommission(item), "Decommissioned " + item.getName() + ".");
-    }
-
-    /** Toasts the failure, or the success followed by a reload. */
-    private void apply(Optional<String> failure, String success) {
-        Window owner = SwingUtilities.getWindowAncestor(this);
-        if (failure.isPresent()) {
-            Toasts.show(owner, failure.get());
-            return;
-        }
-        Toasts.show(owner, success);
-        reload();
     }
 
     private void setStatus() {

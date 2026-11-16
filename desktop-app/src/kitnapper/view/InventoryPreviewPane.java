@@ -48,11 +48,12 @@ final class InventoryPreviewPane extends JPanel {
     private final JPanel extraRow;
     private final InventoryStateActions stateActions;
 
-    InventoryPreviewPane(PhotoSource photos, Consumer<Equipment> onFlag,
-                         Consumer<Equipment> onClear, Consumer<Equipment> onRetire) {
+    InventoryPreviewPane(PhotoSource photos, Consumer<Equipment> onEdit,
+                         Consumer<Equipment> onFlag, Consumer<Equipment> onClear,
+                         Consumer<Equipment> onRetire) {
         super(new BorderLayout());
         this.media = new PreviewMedia(MEDIA_WIDTH, photos);
-        this.stateActions = new InventoryStateActions(onFlag, onClear, onRetire);
+        this.stateActions = new InventoryStateActions(onEdit, onFlag, onClear, onRetire);
         setOpaque(false);
         setPreferredSize(new Dimension(WIDTH, 0));
         setMinimumSize(new Dimension(WIDTH, 0));
@@ -67,7 +68,7 @@ final class InventoryPreviewPane extends JPanel {
     }
 
     /** Paints the selection; {@code onLoan} blocks the state actions. */
-    void show(Equipment item, boolean onLoan, String hintText) {
+    void show(Equipment item, boolean onLoan) {
         media.show(item);
         title.setText(item.getName());
         title.setToolTipText(item.getName());
@@ -78,7 +79,7 @@ final class InventoryPreviewPane extends JPanel {
         moneyValue.setText(Formats.money(item.getReplacementValue()));
         idValue.setText(item.getId());
         showKindRow(item);
-        stateActions.show(item, onLoan, hintText);
+        stateActions.show(item, onLoan, hintFor(item, onLoan));
         statusSlot.revalidate();
         states.show(stack, "detail");
         revalidate();
@@ -108,6 +109,17 @@ final class InventoryPreviewPane extends JPanel {
         g2.setColor(Theme.borderSubtle);
         g2.fillRect(0, 0, 1, getHeight());
         g2.dispose();
+    }
+
+    /** Why the state actions are limited, or an empty string. */
+    private static String hintFor(Equipment item, boolean onLoan) {
+        if (item.getStatus() == kitnapper.model.EquipmentStatus.DECOMMISSIONED) {
+            return "Decommissioned items are read-only.";
+        }
+        if (onLoan) {
+            return "This item is still on loan; clear or retire it after the return.";
+        }
+        return "";
     }
 
     /** D19: only the concrete kind's own field is shown. */
