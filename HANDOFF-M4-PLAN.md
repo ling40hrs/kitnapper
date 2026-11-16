@@ -6,17 +6,19 @@
 > Written: 2026-11-16 · Status: **approved, WP0 committed**
 > Previous plan: `HANDOFF-M3-PLAN.md` (M3 record, complete). Scope note: `HANDOFF-M4.md`.
 
-> **Resume here (fresh session):** M4 WP1 is **done** (contracts, penalty
-> service, controllers, `LoanProbe` — see §17). Execute **one work package
-> per turn**, in order, next **WP2 — shared loan UI** (`LoansTableModel`,
-> `LoansTable`, `LoanPreviewPane`, `PenaltyPreviewPane`, `StatusBadges`;
-> modified `Badges`, `TableCells`, `DatePicker`). Read this file end to end,
+> **Resume here (fresh session):** M4 WP2 is **done** (shared loans table,
+> preview panes, status badges, date picker — see §17). Execute **one work
+> package per turn**, in order, next **WP3 — My Loans, All Loans, and return
+> logging** (`MyLoansScreen`, `AllLoansScreen`, `ReturnDialog`; extract
+> `CatalogActions`; mount in `AppController`). Read this file end to end,
 > then `AGENTS.md` and `docs/preferences.md`; `HANDOFF-M4.md` §4–§5 is still
 > the reuse map and gotcha list. Every WP ends with `./build.sh` +
 > `./test/run-all.sh` green, a log entry in §17, and a commit under the
-> documented-task rule. Current state at WP1: 95 Java files / 7,916 lines;
-> 19 probe files / 2,002 lines; 10/10 probes green (`LoanProbe` PASS=35);
-> tallest file `CatalogScreen` 199 (no headroom).
+> documented-task rule. Current state at WP2: 101 Java files / 8,891 lines;
+> 20 probe files / 2,193 lines; 10/10 probes green (`LoanProbe` PASS=35);
+> `LoansUiProbe` smoke PASS=33, registered in the runner at WP6; tallest file
+> `CatalogScreen` 199, then `PreviewPane` 197, `PenaltyPreviewPane` 195,
+> `LoanPreviewPane` 194.
 
 ---
 
@@ -228,8 +230,9 @@ Counts come from `LoanService`/`PenaltyService`; no entity math in the screen.
 ### 5.5 View-facing contracts (new records)
 
 ```java
-public record LoanRow(String loanId, String itemName, String borrowerName,
-    LocalDate borrowDate, LocalDate dueDate, LocalDate returnDate, // null when out
+public record LoanRow(String loanId, String itemName, EquipmentCategory category,
+    String borrowerName, LocalDate borrowDate, LocalDate dueDate,
+    LocalDate returnDate, // null when out
     LoanStatus status, long daysLate, double accruedFee, PenaltyRow penalty) {}
 
 public record PenaltyRow(String penaltyId, String loanId, String itemName,
@@ -239,6 +242,11 @@ public record PenaltyRow(String penaltyId, String loanId, String itemName,
 public record ActivityEntry(LocalDate date, String loanId, String itemName,
     String borrowerName, boolean checkout, double fee) {}
 ```
+
+`LoanRow.category` was added in WP2: §8.2 needs the item's category for the
+preview tile, and views cannot look it up through a service. `LoanRows`
+resolves it from the same `Equipment` lookup it already does for the name,
+falling back to `OTHER` when the item is missing.
 
 Screens declare their own `Actions`; the status sink is a constructor
 `BiConsumer<String,String>` (M4-D10):
@@ -886,3 +894,60 @@ required), and null waive reason normalized to the blank-reason rejection
 
 Committed: `feat(m4): add penalty settlement and loan row contracts`,
 `test(m4): probe return and settlement rules`.
+
+### WP2 — Shared loan UI (2026-11-16)
+
+Starting HEAD `bc9ff3c` (WP1 close-out); tree clean; local == `origin/main`.
+
+Commands and results:
+
+```bash
+cd desktop-app && ./build.sh      # BUILD OK -> build/classes (159 classes)
+./test/run-all.sh                 # ALL PROBES GREEN (10/10)
+xvfb-run -a java -cp "build/classes:test/out" kitnapper.view.LoansUiProbe
+                                  # PASS=33 FAIL=0
+```
+
+Delivered (plan §5.6, §8.1–§8.2): `LoansTableModel` (three column sets, typed
+values, per-column renderer kind and width), `LoansTable` (the `CatalogTable`
+skin, hover band, typed sorter, silent selection, selection kept by loan id),
+`StatusBadges` (loan/penalty pills built on the extracted
+`Badges.paintPill` / `pillWidth`), `LoanPreviewPane` + `LoanFeeBlock` (the pane
+passed 200 lines on the first draft, so §6.5's split applied), and
+`PenaltyPreviewPane`; `TableCells` gained one pill cell with equipment, loan
+and penalty painters plus the date renderer; `DatePicker` gained the
+range/default/label constructor, with the one-argument form delegating to
+`+3` / "Due date".
+
+Contract change confirmed with the maintainer before coding: `LoanRow` gained
+`EquipmentCategory category` because §8.2 needs the item's category for the
+preview tile and views cannot look it up. §5.5 updated above; `LoanRows`
+resolves it from the same `Equipment` lookup it already does for the name and
+falls back to `OTHER`.
+
+WP2 smoke (`test/kitnapper/view/LoansUiProbe`, not yet in `run-all.sh` — WP6
+registers it): seed at `T=2026-11-14`; ALL table 3 rows / 8 columns; L-003
+status cell OVERDUE and fee cell `₱200.00`; preview item, borrower, 4 days
+late, `₱200.00`, OVERDUE badge, visible `Log return`; returning L-003 flips it
+to RETURNED with the frozen `₱200.00 · Unpaid` line and hint; penalty pane
+shows `L-003`, amount, UNPAID badge and both actions; waiving with "First
+offense" shows the WAIVED badge and reason and hides the actions; dark and
+light paints clear the non-blank floor.
+
+Decisions taken (log only; promote with the M4 docs at WP6):
+
+- Loan badge dots follow design §3.3's analogues: ACTIVE → Loaned, OVERDUE →
+  Overdue, RETURNED → Decommissioned; words Active / Overdue / Returned.
+- No initial sort key: rows arrive in service order and the chevron appears on
+  the first header click (§8.1 "(service order)").
+- Penalty preview empty state: "Select a penalty to see details."
+- The preview's fee caption reads "Live until the loan is returned." rather
+  than naming the ₱50 rate, so the UI does not restate a service rule.
+
+Audits: no file over 200 (max `CatalogScreen` 199; new maximums
+`PenaltyPreviewPane` 195, `LoanPreviewPane` 194, probe 191); no hex outside
+`Theme`; no `service`/`controller` imports under `view`; no
+`@SuppressWarnings`. Inventory: 101 Java files / 8,891 lines (view 49);
+20 probe files / 2,193 lines.
+
+Committed: `feat(m4): add the shared loan table and preview panes`.

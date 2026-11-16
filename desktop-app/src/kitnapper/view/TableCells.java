@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.time.LocalDate;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
@@ -13,10 +14,13 @@ import javax.swing.SwingConstants;
 import javax.swing.table.TableCellRenderer;
 
 import kitnapper.model.EquipmentStatus;
+import kitnapper.model.LoanStatus;
+import kitnapper.model.PenaltyStatus;
 
 /**
- * Cell renderers for the §6 table: text, monospace, right-aligned money, and the
- * {@link Badges} status pill. Each cell is non-opaque and paints its own
+ * Cell renderers for the §6 tables: text, monospace, right-aligned money, the
+ * one date format, and the status pill families from {@link Badges} and
+ * {@link StatusBadges}. Each cell is non-opaque and paints its own
  * {@code ACCENT_TINT} selection plus the 1 px row separator, so the separator
  * stays continuous across columns.
  */
@@ -36,8 +40,40 @@ final class TableCells {
         return new Cell(true, SwingConstants.RIGHT);
     }
 
+    /** Dates shown as {@code yyyy-MM-dd} while the model keeps their type. */
+    static TableCellRenderer date() {
+        TableCellRenderer base = new Cell(false, SwingConstants.LEFT);
+        return (JTable table, Object value, boolean isSelected, boolean hasFocus, int row,
+            int column) -> base.getTableCellRendererComponent(table,
+                value instanceof LocalDate date ? Formats.date(date) : value,
+                isSelected, hasFocus, row, column);
+    }
+
+    /** Equipment status pill; the M3 catalog renderer. */
     static TableCellRenderer status() {
-        return new StatusCell();
+        return new PillCell((g, x, y, value) -> {
+            if (value instanceof EquipmentStatus status) {
+                Badges.paint(g, x, y, status);
+            }
+        });
+    }
+
+    /** Loan status pill (§8.1 mode tables). */
+    static TableCellRenderer loanStatus() {
+        return new PillCell((g, x, y, value) -> {
+            if (value instanceof LoanStatus status) {
+                StatusBadges.paintLoan(g, x, y, status);
+            }
+        });
+    }
+
+    /** Penalty status pill (penalties table, WP4). */
+    static TableCellRenderer penaltyStatus() {
+        return new PillCell((g, x, y, value) -> {
+            if (value instanceof PenaltyStatus status) {
+                StatusBadges.paintPenalty(g, x, y, status);
+            }
+        });
     }
 
     /** Shared row background + separator so every column lines up. */
@@ -95,22 +131,24 @@ final class TableCells {
         }
     }
 
-    /** Status cell: delegates to {@link Badges} so the pill is identical everywhere. */
-    private static final class StatusCell extends JComponent implements TableCellRenderer {
+    /** Pill cell: one class, one paint hook per status family. */
+    private static final class PillCell extends JComponent implements TableCellRenderer {
 
         private static final long serialVersionUID = 1L;
 
-        private EquipmentStatus status;
+        private final PillPainter painter;
+        private Object value;
         private boolean selected;
 
-        StatusCell() {
+        PillCell(PillPainter painter) {
+            this.painter = painter;
             setOpaque(false);
         }
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value,
             boolean isSelected, boolean hasFocus, int row, int column) {
-            status = value instanceof EquipmentStatus s ? s : null;
+            this.value = value;
             selected = isSelected;
             return this;
         }
@@ -121,10 +159,17 @@ final class TableCells {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);
             paintRowBackground(g2, this, selected);
-            if (status != null) {
-                Badges.paint(g2, TableSkins.CELL_PAD, (getHeight() - 20) / 2, status);
+            if (value != null) {
+                painter.paint(g2, TableSkins.CELL_PAD,
+                    (getHeight() - Badges.PILL_HEIGHT) / 2, value);
             }
             g2.dispose();
         }
+    }
+
+    /** Draws one pill into a cell at the given origin. */
+    @FunctionalInterface
+    private interface PillPainter {
+        void paint(Graphics2D g, int x, int y, Object value);
     }
 }

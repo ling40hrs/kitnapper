@@ -22,7 +22,7 @@ import kitnapper.model.EquipmentStatus;
  */
 public final class Badges {
 
-    private static final int PILL_HEIGHT = 20;
+    static final int PILL_HEIGHT = 20;
     private static final int PAD = 8;
     private static final int DOT = 6;
     private static final int GAP = 6;
@@ -40,29 +40,52 @@ public final class Badges {
 
     /** Paints the badge with its top-left corner at ({@code x}, {@code y}). */
     public static void paint(Graphics2D g, int x, int y, EquipmentStatus status) {
+        paintPill(g, x, y, dotFor(status), glyphFor(status), wordOf(status));
+    }
+
+    /**
+     * Paints one pill — dot, optional glyph, word — for any status family;
+     * {@link StatusBadges} reuses the geometry for loans and penalties.
+     * Returns the painted width.
+     */
+    static int paintPill(Graphics2D g, int x, int y, Color dot, String glyph, String word) {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
             RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        FontMetrics word = g2.getFontMetrics(wordFont());
-        int width = widthOf(word, g2.getFontMetrics(glyphFont()), status);
+        FontMetrics wordMetrics = g2.getFontMetrics(wordFont());
+        FontMetrics glyphMetrics = g2.getFontMetrics(glyphFont());
+        int width = pillWidth(wordMetrics, glyphMetrics, glyph, word);
         g2.setColor(Theme.accentTint);
         g2.fill(new RoundRectangle2D.Double(x, y, width, PILL_HEIGHT, RADIUS, RADIUS));
         int cx = x + PAD;
-        g2.setColor(dotFor(status));
+        g2.setColor(dot);
         g2.fillOval(cx, y + (PILL_HEIGHT - DOT) / 2, DOT, DOT);
         cx += DOT + GAP;
-        if (status == EquipmentStatus.UNDER_MAINTENANCE) {
+        if (glyph != null) {
             g2.setFont(glyphFont());
             g2.setColor(Theme.textSecondary);
-            FontMetrics glyph = g2.getFontMetrics();
-            g2.drawString(WRENCH, cx, y + (PILL_HEIGHT - glyph.getHeight()) / 2 + glyph.getAscent());
-            cx += glyph.stringWidth(WRENCH) + GLYPH_GAP;
+            FontMetrics glyphFont = g2.getFontMetrics();
+            g2.drawString(glyph, cx,
+                y + (PILL_HEIGHT - glyphFont.getHeight()) / 2 + glyphFont.getAscent());
+            cx += glyphFont.stringWidth(glyph) + GLYPH_GAP;
         }
         g2.setFont(wordFont());
         g2.setColor(Theme.textPrimary);
-        g2.drawString(wordOf(status), cx, y + (PILL_HEIGHT - word.getHeight()) / 2 + word.getAscent());
+        g2.drawString(word, cx,
+            y + (PILL_HEIGHT - wordMetrics.getHeight()) / 2 + wordMetrics.getAscent());
         g2.dispose();
+        return width;
+    }
+
+    /** Pill width for a dot, an optional glyph and a word; shared with {@link StatusBadges}. */
+    static int pillWidth(FontMetrics wordMetrics, FontMetrics glyphMetrics, String glyph,
+        String word) {
+        int width = PAD * 2 + DOT + GAP + wordMetrics.stringWidth(word);
+        if (glyph != null) {
+            width += glyphMetrics.stringWidth(glyph) + GLYPH_GAP;
+        }
+        return width;
     }
 
     /** The §3.3 dot token for a status. */
@@ -93,12 +116,9 @@ public final class Badges {
         return Fonts.icons(12);
     }
 
-    private static int widthOf(FontMetrics word, FontMetrics glyph, EquipmentStatus status) {
-        int width = PAD * 2 + DOT + GAP + word.stringWidth(wordOf(status));
-        if (status == EquipmentStatus.UNDER_MAINTENANCE) {
-            width += glyph.stringWidth(WRENCH) + GLYPH_GAP;
-        }
-        return width;
+    /** The one status that adds a glyph beside the dot. */
+    private static String glyphFor(EquipmentStatus status) {
+        return status == EquipmentStatus.UNDER_MAINTENANCE ? WRENCH : null;
     }
 
     /** The reusable component form; paints itself and sizes to the pill. */
@@ -117,9 +137,8 @@ public final class Badges {
 
         @Override
         public Dimension getPreferredSize() {
-            FontMetrics word = getFontMetrics(wordFont());
-            FontMetrics glyph = getFontMetrics(glyphFont());
-            return new Dimension(widthOf(word, glyph, status), PILL_HEIGHT);
+            return new Dimension(pillWidth(getFontMetrics(wordFont()),
+                getFontMetrics(glyphFont()), glyphFor(status), wordOf(status)), PILL_HEIGHT);
         }
 
         @Override

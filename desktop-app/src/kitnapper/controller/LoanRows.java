@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import kitnapper.model.Equipment;
+import kitnapper.model.EquipmentCategory;
 import kitnapper.model.LoanRecord;
 import kitnapper.model.Penalty;
 import kitnapper.service.AppContext;
@@ -41,7 +42,8 @@ final class LoanRows {
 
     LoanRow toLoanRow(LoanRecord loan) {
         LocalDate today = context.today();
-        return new LoanRow(loan.getLoanId(), itemName(loan.getEquipmentId()),
+        Equipment item = itemOrNull(loan.getEquipmentId());
+        return new LoanRow(loan.getLoanId(), nameOf(item), categoryOf(item),
                 borrowerName(loan.getBorrowerId()), loan.getBorrowDate(),
                 loan.getDueDate(), loan.getReturnDate().orElse(null),
                 loan.effectiveStatus(today), loan.daysOverdue(today),
@@ -113,11 +115,23 @@ final class LoanRows {
     }
 
     private String itemName(String equipmentId) {
-        Equipment item = context.dataStore().equipment().stream()
+        return nameOf(itemOrNull(equipmentId));
+    }
+
+    private Equipment itemOrNull(String equipmentId) {
+        return context.dataStore().equipment().stream()
                 .filter(candidate -> candidate.getId().equals(equipmentId))
                 .findFirst()
                 .orElse(null);
+    }
+
+    private static String nameOf(Equipment item) {
         return item == null ? "Unknown item" : item.getName();
+    }
+
+    /** The preview tile's category; OTHER when the item is missing (§8.2). */
+    private static EquipmentCategory categoryOf(Equipment item) {
+        return item == null ? EquipmentCategory.OTHER : item.getCategory();
     }
 
     private String borrowerName(String borrowerId) {

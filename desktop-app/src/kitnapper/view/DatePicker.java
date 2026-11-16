@@ -21,16 +21,27 @@ final class DatePicker extends JComboBox<LocalDate> {
     private static final long serialVersionUID = 1L;
 
     private static final int DEFAULT_OFFSET = 3;
+    private static final String DEFAULT_NAME = "Due date";
 
+    /** Checkout form: {@code T … T+14}, defaulting to {@code T+3}. */
     DatePicker(List<LocalDate> dates) {
+        this(dates, DEFAULT_OFFSET, DEFAULT_NAME);
+    }
+
+    /**
+     * Picks from a controller-supplied range with an explicit default index
+     * and accessible name: the return dialog offers {@code borrowDate … today}
+     * and defaults to today (§8.8).
+     */
+    DatePicker(List<LocalDate> dates, int defaultIndex, String accessibleName) {
         super(new Vector<>(dates));
         setEditable(false);
-        setSelectedIndex(Math.min(DEFAULT_OFFSET, getItemCount() - 1));
+        setSelectedIndex(Math.min(defaultIndex, getItemCount() - 1));
         UiFactory.styleCombo(this);
         setRenderer(new DateCell());
         setPreferredSize(new Dimension(0, 32));
         setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
-        getAccessibleContext().setAccessibleName("Due date");
+        getAccessibleContext().setAccessibleName(accessibleName);
     }
 
     /** The selected due date; callers only read it on confirm. */
