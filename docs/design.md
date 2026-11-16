@@ -197,7 +197,10 @@ The login screen uses the same title bar but hides omnibar, sidebar, and status 
 - **Omnibar (48 px):** breadcrumb `Home › Screen` (active crumb `ACCENT_TEXT`; `Home`
   returns to the role's default screen), contextual commands (max 3, then overflow),
   right-aligned search (240 px, expands to 320 px on focus) and, on screens that have
-  both, the table/cards layout toggle as a segmented control.
+  both, the table/cards layout toggle as a segmented control. **Search visibility
+  (D47):** only screens that actually filter by text — Catalog and Inventory — show the
+  search field; every other route hides it and `Ctrl+F` does nothing there. The typed
+  query is kept, so returning to Catalog restores the filter.
 - **Sidebar (240 px):** grouped nav — Home group (Catalog, My Loans) for borrowers;
   Manager group (Dashboard, Catalog, All Loans, Overdue, Penalties, Inventory) for
   managers; footer holds Settings / Data, the signed-in user chip (name + role), and
@@ -205,7 +208,10 @@ The login screen uses the same title bar but hides omnibar, sidebar, and status 
   Selected item: 3 px amber left bar + `ACCENT_TINT` fill; hover `BG_ELEVATED`.
 - **Status bar (32 px):** left = item/loan counts, then selection summary; right =
   aggregate in monospace (total replacement value on catalog/inventory, accrued-fee total
-  on loan screens, total owed on Overdue).
+  on loan screens, total owed on Overdue). Counts are pluralised (`1 penalty · 0 unpaid`,
+  never `1 penalties`). **Per-route text (D47):** each route keeps its own line; routing
+  restores it, and a hidden screen reloading after a data change cannot overwrite the
+  visible screen's status.
 - **Content:** page header (screen title 20 px + one-line subtitle 12 px secondary),
   8 px spacing grid, max width unconstrained.
 - **Dialogs:** modal, centered, default 480 px wide, `BG_ELEVATED`, 8 px radius, over a
@@ -250,11 +256,16 @@ same day (D28).
 - **Segmented control:** 32 px, radius 4 container `BG_CONTROL`, selected segment
   `BG_ELEVATED` + 1 px `BORDER_STRONG`, 2 px gap between segments.
 - **Filter chips / combo:** pill, `BG_CONTROL` fill, chevron glyph; chips collapse into
-  the omnibar "Filters" flyout on narrow windows.
+  the omnibar "Filters" flyout on narrow windows. **Focus (D45):** a focused combo keeps
+  its `BG_CONTROL` fill and `TEXT_PRIMARY` text and gains the same 2 px `ACCENT` bottom
+  border as a text field. The LAF's list-selection colours (Metal's blue fill + white
+  text) are never used for the closed value, including the due-date picker's cell.
 - **Status badge:** per §3.3 (amber-tinted pill + dot + word).
 - **Tables:** 40 px rows, 36 px header (TEXT_SECONDARY, 12 px, sort chevron on the active
   column), 1 px `BORDER_SUBTLE` row separators, no vertical gridlines, hover `HOVER_ROW`,
-  selection `ACCENT_TINT`, resizable columns, right-aligned money, monospace IDs.
+  selection `ACCENT_TINT`, resizable columns, right-aligned money, monospace IDs. A
+  status column is sized from the widest badge any status needs (dot + optional wrench +
+  word + cell padding), so "Decommissioned" and "Under maintenance" never clip (D46).
 - **Cards (catalog "cards" view):** 8 px radius, `BG_SURFACE`, 1 px `BORDER_SUBTLE`,
   16:9 media block (uploaded photo or fallback tile), name 14 px semibold, category 12 px
   secondary, status badge, monospace value. Hover raises the border to `BORDER_STRONG`
@@ -269,9 +280,15 @@ same day (D28).
   the action bar — sits in a borderless thin-scrollbar guard that scrolls only when
   the rows still do not fit. At 1280×800 and wider nothing scrolls.
 - **Dialogs:** 480 px default, radius 8, title 20 px, body 14 px, footer right-aligned
-  with the primary rightmost; `Enter` confirms, `Esc` cancels; scrim per §5.
+  with the primary rightmost; `Enter` confirms, `Esc` cancels; scrim per §5. Body copy
+  and inline notes wrap to the card's content width (480 − 48 px) before the card pins
+  its size, so a long sentence is never cut by the card edge (D48); the return dialog's
+  fee note uses the form's label column.
 - **Toasts:** bottom-right, 320 px, `BG_ELEVATED` + `BORDER_SUBTLE`, radius 8, icon +
-  text, auto-dismiss after 4 s, max 3 stacked. **Placement (D43):** 16 px from the
+  text, auto-dismiss after 4 s, max 3 stacked. **Two lines (D44):** a message that does
+  not fit wraps once before it ellipsises, so a checkout keeps its equipment name and
+  due date and a return keeps its frozen fee; the toast grows by one 18 px line box
+  (48 → 66 px) and the stack re-lays out from the measured heights. **Placement (D43):** 16 px from the
   screen edge and 96 px above the bottom (clears the 32 px status bar). When the
   visible screen shows a preview column the toast's right edge stops at the preview's
   left edge instead (320 px inset), because the inventory preview's three pinned
@@ -343,6 +360,10 @@ back to the instant path, so nothing depends on an X server supporting transluce
   table scrolls fairly. When the viewport is wide enough the columns stretch to fill
   it. Measured at 1024×640: catalog needs 670 px of a 414 px viewport, inventory 720,
   penalties 782 (still scrolling at 1280, which gives it 678).
+- **Status columns (D46):** catalog and inventory size the status column from
+  `Badges.widestPillWidth()` + 2 × cell padding + 4 px, not a fixed 125/140 px, so the
+  longest status word fits at every width and the D41 width policy scrolls rather than
+  clipping it.
 - **Elevation:** border + one surface step; no drop shadows anywhere (scrim + border for
   dialogs, border for toasts).
 
@@ -606,4 +627,5 @@ added (files.community, shelf.nu); implementation plan written (`M0–M6`, D1–
 | **D-Toasts** | Amended in M6 (2026-11-16): 96 px bottom inset measured 1 px short of the 280 px preview's action bar at 1024×640, and the inventory bar (120 px, three actions) is crossed by any bottom-anchored toast. `Toasts` keeps 16/96 and shifts left of a showing preview column (320 px right inset); Settings, with no preview, keeps the plain bottom-right corner. Recorded as D43 in `implementation-plan.md` (design §6). |
 | **D-Motion** | Shipped in M6 (2026-11-16): dialog open fade + 98→100 % grow and close fade at 83 ms, the 120 ms screen fade, and the existing 167 ms toast slide + fade, all through one `Motion` facade with decelerate easing and a `Timer` tick of 16 ms; the screen wash is a click-through `FadeOverlay` on `MODAL_LAYER`. The theme crossfade is **not** shipped — the switch stays instant. `-Dkitnapper.motion=off` is a probe switch, not a user setting. Dialog fades fall back to the instant path when the platform lacks per-pixel translucency (§7). Recorded as D39 in `implementation-plan.md`. |
 | **D-Icons** | Fixed in M6 (2026-11-16) during the WP4 icon audit: `Fonts.icons()` used to hand back the *text* family when no Windows icon font was installed, so on Linux the §10 fallback column was drawn with the bundled physical Inter font, which has no glyph for 8 of the 12 landscape glyphs — title-bar brand, close, wrench, search, moon, minimize, restore and every category tile rendered as missing-glyph boxes. `Fonts` now splits the two roles: `icons()` is the Windows icon font *or* `symbol()`, and `symbol()` is the logical `Dialog` font, which composites the system fonts and falls back per glyph. `GradientTile` draws the category glyphs with `symbol()`, never with an icon font (§10). |
+| **D-Walkthrough** | M6 WP5 interactive pass (2026-11-17) amended §5/§6/§9: toasts wrap once before ellipsising (48 → 66 px, D44); combos and the due-date picker keep their tokens on focus with a 2 px accent underline, never the LAF blue (D45); status columns are sized from the widest badge (D46); the omnibar search shows only on Catalog/Inventory and the status bar is per-route (D47); dialog copy and the return fee note wrap to their content width (D48); a row selection updates the status line immediately (D49). The 1024×640 F-preview guard carries over unchanged. |
 | **D-Audit** | M6 WP4 audits (2026-11-16): icons verified pair by pair (`GlyphChecks`, 12 shipped pairs + 6 category glyphs), the suite run at `KITNAPPER_UI_SCALE` 1.25 and 1.5 (20/20 each), query timings measured to close D32 (`max 0.46 ms` against the 150 ms gate, so no query gating), the skeleton §13 list closed with four new assertions plus a real 10 s watchdog run, and a both-theme sweep over catalog, inventory, penalties and Settings asserting every role-marked label follows the active token set. |

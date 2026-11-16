@@ -781,4 +781,67 @@ documented tasks. Never tag/branch/amend/revert without a new “yes”.
   recorded, append the results here, flip `HANDOFF-M6.md` and the README status to
   closed, refresh the local `AGENTS.md`, and then start WP6 (the deck).
 
+### WP5 — interactive SRS §6.2 walkthrough (2026-11-17)
+
+- Starting HEAD: `ac1d2f5` (clean, local == remote) plus the uncommitted `Motion`
+  dialog-lifecycle fix found by the first pass (`Motion.openDialog` must fall back to
+  the instant path when `setOpacity` is unsupported; it now checks translucent-support
+  by trying the call, and `MotionDialogChecks` asserts the close callback always runs).
+- **Steps 1–12 executed in order on a live 1920×1080 X display**, driver-verified with
+  screenshots (`Robot` click/type/screenshot; no WM, so the window was positioned by
+  the app's own edge bands): wrong password → inline error; borrower search → checkout
+  dialog → due-date picker offers `T … T+14` only (T+3 chosen); restart → the checkout
+  persists; manager dashboard; return of an overdue loan → live fee → frozen ₱200.00
+  penalty; waive with a blank reason refused; inventory add → photo import → edit →
+  decommission; reset demo data. Size sweep at 1024×640 (thin bars, D41 horizontal
+  scroll, D42 metadata guard, pinned action bar), 1366×768 (no scrollbars) and
+  1920×1080. Keyboard sweep: Ctrl+F focus, tab order follows visual order with visible
+  rings, arrows in tables and the segmented control, Space toggles the dark theme, Esc
+  closes the reset dialog, Enter confirms. Both themes swept. Toasts verified stacking
+  (max 2 visible of 3 sends, cap respected). Data restored to the §6.1 baseline
+  (3 users / 10 equipment / 3 loans / 0 penalties, schema 1).
+- **Fifteen findings, fixed at the root in one work package** (design/plan D44–D49):
+  - F1 dialog fade threw on a peer without opacity, stranding the dialog — `Motion`
+    tries `setOpacity` and falls back to the instant path (`MotionDialogChecks`).
+  - F2/F3 checkout and return toasts ellipsised away the due date / frozen fee —
+    two-line toast, 48 → 66 px, stack laid out from measured heights (D44).
+  - F4 "1 penalties" — `Formats.count` pluralises every status line (D47).
+  - F5 waive reason clipped at 248 px — wrapped to 3 lines with an ellipsis, full text
+    in the tooltip (D48).
+  - F6 preview metadata vs the action bar — carried by the existing D42 guard; checked
+    at four sizes by `GeometryChecks`.
+  - F7 return dialog said "No fee is frozen" while showing ₱200.00 — the note follows
+    the live amount and wraps to the form's 360 px column (D48).
+  - F8 "N items · 0/1 selected" — the notation is deliberate (one selection, javadoc),
+    but the line was stale after a click; selection now republishes it (D49).
+  - F9 white JDK file chooser inside the dark shell — `FileChooserSkin` recolours the
+    chooser at open time with the active tokens (D45 adjacent).
+  - F10 reset/decommission dialog copy cut at the card edge — `DialogSkin.setBodyText`
+    wraps to 480 − 48 px (D48).
+  - F11 "Decommissione" clipped in the status column — width from the widest badge
+    (`Badges.widestPillWidth()`, D46).
+  - F12 Metal blue combo fill + no click-to-focus on the segmented control —
+    `ComboSkin`, token-coloured `DatePicker` cell, `SegmentedControl` focus on press
+    (D45).
+  - F13 search box inert on Settings — `ScreenCatalog.Meta.searchable` hides it off
+    Catalog/Inventory; Ctrl+F is a no-op there (D47).
+  - F15 a hidden screen overwrote the visible status bar — per-route status memory plus
+    `ScreenMounts.statusFor(key)` (D47).
+- Probes: new `ToastChecks` (8), `FocusCueChecks` (5), `DialogTextChecks` (4); extended
+  `GeometryChecks` (status column), `FrameProbe` (search visibility, per-route status,
+  14 checks), `CatalogUiChecks` (selection status), `MotionDialogChecks` (2). Stale
+  expectations updated for the pluralised lines. `UiProbeSupport.paintComponent` added
+  for component-level focus-cue captures. **`sh test/run-all.sh` → ALL PROBES GREEN
+  (20/20)**; `./build.sh` → `BUILD OK`, 255 classes, zero warnings.
+- Inventory: 160 source files / 15,469 lines (18 model, 26 service, 10 persistence,
+  14 controller, 91 view, `Main`), 50 probe files / 5,594 lines, 20 registered
+  probes. Tallest source `LoanPreviewPane` 199.
+- Docs in the same change: design §5 (search visibility, per-route status, plural
+  counts), §6 (combo focus, status-column rule, dialog wrapping, two-line toasts), §9
+  (status columns), §14.2 `D-Walkthrough`; implementation plan D44–D49 + revision
+  2.1.2.
+- Commits: `fix(m6): fix the defects the walkthrough found` and
+  `docs(m6): record the walkthrough and close M6`.
+- **M6 is closed.** Next: WP6, the presentation deck.
+
 ### WP6 — pending

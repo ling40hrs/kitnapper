@@ -8,12 +8,12 @@
   <img src="https://img.shields.io/badge/Java-17-informational?style=flat-square" alt="Java 17" />
   <img src="https://img.shields.io/badge/build-Ant%20%2F%20NetBeans-informational?style=flat-square" alt="Build" />
   <img src="https://img.shields.io/badge/dependencies-none-informational?style=flat-square" alt="Dependencies" />
-  <img src="https://img.shields.io/badge/status-in%20development-yellow?style=flat-square" alt="Status" />
+  <img src="https://img.shields.io/badge/status-complete-brightgreen?style=flat-square" alt="Status" />
 </p>
 
 A desktop application for managing equipment loans at a small institution. KitNapper replaces the paper sign-out sheet: staff publish available gear, students check items out, and the app tracks due dates, overdue loans, and late fees.
 
-The domain core, the hand-written JSON persistence layer, the Windows 11 application shell with mock login, the catalog with instant checkout, the loan/penalty manager views, the inventory screens with photo uploads and demo reset, and the M6 polish pass (thin scrollbars, Fluent motion fades, minimum-size fixes, icon/DPI/skeleton audits) are implemented, building, and covered by an in-repository probe suite. M6's interactive walkthrough remains before close-out.
+The domain core, the hand-written JSON persistence layer, the Windows 11 application shell with mock login, the catalog with instant checkout, the loan/penalty manager views, the inventory screens with photo uploads, and demo reset are implemented, building, and covered by an in-repository probe suite. M6 is closed: thin scrollbars, Fluent motion fades, minimum-size fixes, icon/DPI/skeleton audits, and the interactive SRS §6.2 walkthrough that found and fixed fifteen UI defects. The presentation deck is the remaining deliverable.
 
 ## Contents
 
@@ -42,7 +42,7 @@ Finals/                       (the repository root)
 ├── HANDOFF-M4-PLAN.md        M4 record: plan and execution log
 ├── HANDOFF-M5.md             M5 scope note (historical at close-out)
 ├── HANDOFF-M5-PLAN.md        M5 record: plan and execution log
-├── HANDOFF-M6-PLAN.md        M6 record: plan and execution log (WP0–WP4)
+├── HANDOFF-M6-PLAN.md        M6 record: plan and execution log (WP0–WP5)
 ├── HANDOFF-SESSION-2026-11-14.md
 ├── .editorconfig             shared formatting
 ├── .gitattributes            LF everywhere; binary assets not normalized
@@ -136,7 +136,7 @@ Build output is written to `build/` and `dist/`, both of which are ignored by Gi
 | [`HANDOFF-M4-PLAN.md`](HANDOFF-M4-PLAN.md) | M4 record: plan, work packages, probe plan, execution log, width pass |
 | [`HANDOFF-M5.md`](HANDOFF-M5.md) | M5 scope note: inventory, photos, reset (historical at M5 close-out; the contract was `HANDOFF-M5-PLAN.md`) |
 | [`HANDOFF-M5-PLAN.md`](HANDOFF-M5-PLAN.md) | M5 record: plan, work packages, probe plan, execution log, deviations |
-| [`HANDOFF-M6-PLAN.md`](HANDOFF-M6-PLAN.md) | **M6 record:** plan, work packages (WP0–WP4 shipped), probe plan, execution log |
+| [`HANDOFF-M6-PLAN.md`](HANDOFF-M6-PLAN.md) | **M6 record:** plan, work packages (WP0–WP5 shipped), probe plan, execution log |
 | [`HANDOFF-M3-PLAN.md`](HANDOFF-M3-PLAN.md) | M3 record: plan, work packages, probe plan, execution log |
 | [`HANDOFF-M3.md`](HANDOFF-M3.md), [`HANDOFF-M2.md`](HANDOFF-M2.md), [`HANDOFF-M1.md`](HANDOFF-M1.md), [`HANDOFF-SESSION-2026-11-14.md`](HANDOFF-SESSION-2026-11-14.md) | Historical records of finished milestones (machine-specific paths and probe commands are stale) |
 
@@ -154,14 +154,14 @@ The PRD and SRS are the sources of truth for behavior. If implementation and doc
 
 ## Status
 
-Documentation complete; M0 (domain core), M1 (JSON persistence), M2 (Win11 shell + mock login), **M3 (catalog + instant checkout)**, **M4 (returns, fees, manager views)**, **M5 (inventory, photos, reset, settings)** and **M6 (polish)** are implemented and probed on JDK 17. M6's interactive SRS §6.2 walkthrough is the one remaining step before close-out.
+Documentation complete; M0 (domain core), M1 (JSON persistence), M2 (Win11 shell + mock login), **M3 (catalog + instant checkout)**, **M4 (returns, fees, manager views)**, **M5 (inventory, photos, reset, settings)** and **M6 (polish, closed 2026-11-17)** are implemented and probed on JDK 17. The SRS §6.2 walkthrough is recorded in `HANDOFF-M6-PLAN.md` §16; the presentation deck is next.
 
 M3 ships the real Catalog screen: search plus category/status filters, a details table with a 280 px preview pane, a cards view with shared selection, an empty state, and a 480 px checkout dialog whose due date is a `T … T+14` picker. Checkout persists, locks the item, and keeps validation errors inline. Managers get the same catalog read-only — no checkout action, an explicit caption instead.
 
 M5 ships the manager's inventory: an items table with the omnibar text filter and a photo preview, an add/edit dialog whose extra field follows the item's concrete kind, and per-item photo import that validates, downscales to 1024 px, re-encodes JPEG q0.85, and stores `kitnapper-images/<equipmentId>.jpg` atomically. Photos render through a shared tile with the app's first loading skeletons (150 ms delay, 300 ms minimum, 167 ms fade, 10 s watchdog), falling back to the category tile when a file is missing or corrupt. Maintenance and decommission are refused while the item is still out, and Settings carries the theme switch, the "Animate loading placeholders" switch, the save-file and photo-folder locations, and a confirmed demo reset that empties the photo folder and restores the seed relative to today.
 
-M6 is polish, not features: thin overlay-style scrollbars on every scroll surface, the dialog and screen fades behind a `-Dkitnapper.motion=off` probe switch (the theme switch stays instant), one width policy that makes all four tables scroll at their preferred widths instead of clipping badges, compact preview density plus a metadata scroll guard so the 1024×640 minimum keeps every row and the pinned action, preview-aware toasts, and the icon/DPI/skeleton audits. The audits closed D32 by measurement — the slowest of eight catalog/loan/dashboard queries is 0.46 ms against the 150 ms gating threshold, so no query gets a skeleton — and fixed a real rendering defect: fallback glyphs were being drawn with the physical Inter font, which lacks them, so on Linux the title-bar brand, window controls and every category tile rendered as missing-glyph boxes. `Fonts.symbol()` now resolves them through the logical `Dialog` font.
+M6 is polish, not features: thin overlay-style scrollbars on every scroll surface, the dialog and screen fades behind a `-Dkitnapper.motion=off` probe switch (the theme switch stays instant), one width policy that makes all four tables scroll at their preferred widths instead of clipping badges, compact preview density plus a metadata scroll guard so the 1024×640 minimum keeps every row and the pinned action, preview-aware toasts, and the icon/DPI/skeleton audits. The audits closed D32 by measurement — the slowest of eight catalog/loan/dashboard queries is 0.46 ms against the 150 ms gating threshold, so no query gets a skeleton — and fixed a real rendering defect: fallback glyphs were being drawn with the physical Inter font, which lacks them, so on Linux the title-bar brand, window controls and every category tile rendered as missing-glyph boxes. `Fonts.symbol()` now resolves them through the logical `Dialog` font. The closing interactive pass added the last polish: two-line toasts, token-styled combo and date-picker focus, status columns sized from the widest badge, wrapped dialog copy and fee notes, a themed file chooser, search hidden on screens that do not filter, per-route status memory, and an immediate selection status (D44–D49).
 
 Verification lives **inside** the repository: `desktop-app/test/run-all.sh` builds the app and runs twenty probes (`DataProbe`, `CatalogProbe`, `LoanProbe`, `InventoryProbe`, `SkinProbe`, `FontProbe`, `EdgeProbe`, `SizeProbe`, `FrameProbe`, `CloseProbe`, `CatalogUiProbe`, `PhotoUiProbe`, `InventoryEditorProbe`, `InventoryUiProbe`, `SettingsUiProbe`, `M5FlowProbe`, `LoansLayoutProbe`, `LoansUiProbe`, `GeometryProbe`, `MotionProbe`), using `xvfb-run -a` for the paint probes so they work with or without a display. `KITNAPPER_UI_SCALE=1.25` (or `1.5`) runs the same suite at a DPI proxy. It is the gate for every remaining work package, together with the SRS §6.2 walkthrough.
 
-Next: M6 WP5 — the interactive SRS §6.2 pass on a real display (1920×1080, 1366×768, 1024×640 and the Windows 100/125/150 % scaling matrix), then close-out docs and the presentation deck. See `docs/decisions.md` for the decision record, `docs/implementation-plan.md` for the build order, and `HANDOFF-M6-PLAN.md` for the M6 record.
+Next: WP6 — the presentation deck. The interactive SRS §6.2 pass was run on 1920×1080, 1366×768 and 1024×640 in both themes and by keyboard; its fifteen findings were fixed at the root (D44–D49) and the 20-probe suite is green. See `docs/decisions.md` for the decision record, `docs/implementation-plan.md` for the build order, and `HANDOFF-M6-PLAN.md` for the M6 record.

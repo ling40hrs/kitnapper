@@ -1,25 +1,25 @@
-# HANDOFF — M6 (polish) — WP0–WP4 delivered, WP5 verification recorded
+# HANDOFF — M6 (polish) — closed 2026-11-17
 
-> **Status (2026-11-16):** M6 work packages **WP0–WP4 are delivered, verified and
-> pushed**; WP5's automated half (clean build, Ant, 20/20 probes at three UI
-> scales, static audits, docs) is recorded here. **M6 is not closed:** the
-> interactive SRS §6.2 walkthrough in §5 below is the maintainer's and has not
-> been performed. The executable contract is `HANDOFF-M6-PLAN.md`, which holds
-> the plan, the work packages, and the full execution log (§16).
+> **Status (2026-11-17):** M6 is **closed**. WP0–WP4 shipped; WP5's automated half
+> (clean build, Ant, 20/20 probes at three UI scales, static audits) and the
+> interactive SRS §6.2 walkthrough are both recorded. The walkthrough found
+> fifteen defects, all fixed at the root in one work package (D44–D49) with new
+> probes. `HANDOFF-M6-PLAN.md` holds the plan, the work packages, and the full
+> execution log (§16); WP6 (the presentation deck) is the only milestone left.
 
 ## 1. Where things stand
 
-- `main` @ `840e3f3` before the WP5 documentation commit; tree clean, local = remote.
 - Build: `cd desktop-app && ./build.sh clean && ./build.sh` → `BUILD OK`,
-  **253 classes**, zero `-Xlint:all` warnings.
+  **255 classes**, zero `-Xlint:all` warnings.
 - Probes: `cd desktop-app && ./test/run-all.sh` → `ALL PROBES GREEN`, **20/20**.
-  Key tallies: `GeometryProbe PASS=122`, `LoansUiProbe PASS=105`, `LoanProbe
-  PASS=40`, `PhotoUiProbe PASS=31`, `CatalogProbe PASS=31`, `MotionProbe PASS=12`,
-  `SkinProbe PASS=10`, `FontProbe PASS=5`.
+  Key tallies: `GeometryProbe PASS=122` (plus 8 status-column checks across four
+  sizes), `CatalogUiProbe PASS=33`, `LoansUiProbe PASS=105`, `LoanProbe PASS=40`,
+  `PhotoUiProbe PASS=31`, `CatalogProbe PASS=31`, `FrameProbe PASS=14`,
+  `MotionProbe PASS=14`, `SkinProbe PASS=10`, `FontProbe PASS=5`.
 - DPI matrix: `KITNAPPER_UI_SCALE=1.25 ./test/run-all.sh` and `=1.5` → both
   `ALL PROBES GREEN`, 20/20, no layout break.
-- Inventory: **158 source files / 15,059 lines** (18 model, 26 service, 10
-  persistence, 14 controller, 89 view, `Main`) plus **46 probe files / 5,271
+- Inventory: **160 source files / 15,469 lines** (18 model, 26 service, 10
+  persistence, 14 controller, 91 view, `Main`) plus **50 probe files / 5,594
   lines** and 20 registered probes.
 - Tallest source: `view/LoanPreviewPane.java` **199**. Tallest probe:
   `view/M5FlowProbe.java` / `view/LoansUiChecks.java` 176,
@@ -34,7 +34,7 @@
 | WP2 | `Motion` + `FadeOverlay`: 83 ms dialog fade with 98→100 % grow, 120 ms screen wash on `MODAL_LAYER`, toasts on the shared constants, `-Dkitnapper.motion=off` probe switch, `MotionProbe` (D39) |
 | WP3 | `TableWidthPolicy` for all four tables, `PreviewLayout` compact density + metadata scroll guard, preview-aware toasts, `GeometryProbe` (D41–D43) |
 | WP4 | `GlyphChecks`, `QueryTimingChecks`, `SkeletonAuditChecks`, `ThemeSweepChecks`, `KITNAPPER_UI_SCALE` in the harness, the icon font fix, D32/D40 closed |
-| WP5 | This note, README, SRS 3.3.0, plan §16 — automated verification recorded; **interactive pass pending** |
+| WP5 | Interactive SRS §6.2 pass on a live display; fifteen findings fixed (F1–F7, F9–F13, F15) with `ToastChecks`, `FocusCueChecks`, `DialogTextChecks`, `ComboSkin`, `FileChooserSkin`, per-route status, status-column sizing (D44–D49) |
 
 ## 3. Deviations accepted (recorded in `docs/design.md`)
 
@@ -72,18 +72,21 @@ hex outside `Theme`, no `service`/`controller` imports under `view`, no
 `System.exit` outside `Main`, `GradientTile` the only `GradientPaint`,
 `schemaVersion` still 1.
 
-## 5. Remaining: the interactive SRS §6.2 pass (maintainer)
+## 5. The interactive SRS §6.2 pass — recorded 2026-11-17
 
-Run the app on a real display and record machine, date, resolutions and any
-deviation. The checklist verbatim is `HANDOFF-M6-PLAN.md` §9; the parts a probe
-cannot prove are: no clipping at 1366×768 and 1024×640 on screen, Windows
-100/125/150 % scaling, both themes' contrast and focus rectangle, keyboard order,
-**no tofu on Windows icon fonts**, motion feel (dialog fade/scale, screen fade,
-instant theme switch), toast placement, and restart + reset behavior.
+Executed on a live 1920×1080 X display (Ubuntu, JDK 17), driver-clicked and
+screenshot-captured, no window manager. Steps 1–12 in order: sign-in error,
+borrower search + checkout with a `T+3` due date from the `T … T+14` picker,
+restart persistence, manager dashboard, overdue return with a live ₱200.00 fee,
+blank-reason waive refusal, inventory add/photo/edit/decommission, reset. Size
+sweep 1920×1080 / 1366×768 / 1024×640; both themes; keyboard (Ctrl+F, tab order,
+arrows, Space, Esc, Enter). Fifteen findings, all fixed at the root (D44–D49);
+the exit criteria are recorded in `HANDOFF-M6-PLAN.md` §16, and the demo data is
+back at the §6.1 baseline.
 
-M6 closes only when that record exists; probes are not a substitute. Then: WP6
-(presentation deck), `HANDOFF-M6.md` status → closed, and the local `AGENTS.md`
-refresh.
+**F6 note:** the preview metadata sits in the D42 scroll guard at 1024×640 and
+does not clip the pinned action; `GeometryChecks` asserts every showing label
+inside the preview and no overlap with the action bar at four sizes.
 
 ## 6. Gotchas
 
