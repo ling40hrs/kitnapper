@@ -79,6 +79,11 @@ final class LoanQueries {
     }
 
     double accruedFee(String loanId, FeeStrategy feeStrategy) {
-        return findLoan(loanId).accruedFee(today(), feeStrategy);
+        return accruedFee(loanId, today(), feeStrategy);
+    }
+
+    /** The fee as of an explicit date; frozen at the return date once returned. */
+    double accruedFee(String loanId, LocalDate asOf, FeeStrategy feeStrategy) {
+        return findLoan(loanId).accruedFee(asOf, feeStrategy);
     }
 }

@@ -144,4 +144,9 @@ public final class LoanServiceImpl implements LoanService {
     public double accruedFee(String loanId) {
         return queries.accruedFee(loanId, feeStrategy);
     }
+
+    @Override
+    public double accruedFee(String loanId, LocalDate asOf) {
+        return queries.accruedFee(loanId, asOf, feeStrategy);
+    }
 }

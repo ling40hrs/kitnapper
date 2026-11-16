@@ -32,4 +32,7 @@ public interface LoanService {
 
     /** Live accrued fee for a loan, computed via the FeeStrategy (D21). */
     double accruedFee(String loanId);
+
+    /** Live/frozen fee as of an explicit date (return dialog preview, M4-D7). */
+    double accruedFee(String loanId, LocalDate asOf);
 }

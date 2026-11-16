@@ -12,8 +12,8 @@ import kitnapper.model.User;
 /**
  * Single holder of the app's service instances (implementation plan §2.2):
  * the {@link DataStore}, the shared {@link LateFeeStrategy}, the auth
- * service, the catalog and loan services, the session user, and the
- * session-only theme state (D3). Views learn about changes through
+ * service, the catalog, loan and penalty services, the session user, and
+ * the session-only theme state (D3). Views learn about changes through
  * {@link #addChangeListener} (NFR-02, D2). No view imports here — the
  * controller applies the visual theme.
  */
@@ -24,6 +24,7 @@ public final class AppContext {
     private final AuthService auth;
     private final CatalogService catalog;
     private final LoanService loans;
+    private final PenaltyService penalties;
     private final Supplier<LocalDate> today;
     private User currentUser;
     private boolean darkTheme = true;
@@ -41,6 +42,8 @@ public final class AppContext {
         this.catalog = new CatalogServiceImpl(store);
         this.loans = new LoanServiceImpl(store, lateFeeStrategy,
                 this::currentUser, this::today, this::fireChanged);
+        this.penalties = new PenaltyServiceImpl(store, today,
+                this::currentUser, this::fireChanged);
     }
 
     public DataStore dataStore() {
@@ -62,6 +65,11 @@ public final class AppContext {
 
     public LoanService loans() {
         return loans;
+    }
+
+    /** Penalty reads and settlement (M4-D1). */
+    public PenaltyService penalties() {
+        return penalties;
     }
 
     /** The injected application clock; never null. */
