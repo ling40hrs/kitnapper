@@ -59,7 +59,7 @@ public final class AppController {
                 frame.setStatus(left, right);
             }
         };
-        mounts = new ScreenMounts(context, frame, status);
+        mounts = new ScreenMounts(context, frame, status, this::applyTheme);
         mounts.mount(user.getRole());
         // Show first: the screens report their status from onShown, and the
         // status sink ignores frames without a peer (stale sessions), so a
@@ -89,9 +89,13 @@ public final class AppController {
         start();
     }
 
-    /** Session-only theme switch (D3): apply tokens, record state, repaint. */
+    /** Session-only theme switch (D3): the title bar flips the current state. */
     private void toggleTheme() {
-        boolean dark = !Theme.isDark();
+        applyTheme(!Theme.isDark());
+    }
+
+    /** The one theme path: tokens, session state, and every mounted view. */
+    private void applyTheme(boolean dark) {
         Theme.apply(dark);
         context.setDarkTheme(dark);
         if (mainFrame != null) {

@@ -10,7 +10,7 @@ import java.util.Map;
  * scrolling the catalog must not re-decode, and the cache must never grow
  * with the dataset. {@link #clear} runs after a demo reset.
  */
-final class PhotoCache {
+public final class PhotoCache {
 
     private static final int MAX_ENTRIES = 32;
 
@@ -31,7 +31,7 @@ final class PhotoCache {
     }
 
     /** Drops every entry; the photo files may have been replaced or wiped. */
-    static synchronized void clear() {
+    public static synchronized void clear() {
         ENTRIES.clear();
     }
 

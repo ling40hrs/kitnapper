@@ -1,13 +1,13 @@
 # KitNapper M5 — Implementation Backbone
 
-> **Status (2026-11-16, WP4 done):** the editor is live — `EquipmentDialog` with
-> kind-aware fields (D19), the photo well importing on file choice in a worker, staged
-> photos promoted on save and discarded on cancel, and Add/Edit wired into the inventory
-> screen; `InventoryEditorProbe` (27 checks) registered, `ALL PROBES GREEN` at 16/16.
-> Settings and the demo reset are WP5. Starting HEAD `4ff491e` (local = `origin/main`
-> before WP0). This file is the working document for M5 and replaces `HANDOFF-M5.md` as
-> the executable contract; the scope note stays authoritative for *why* (design §12–§13,
-> D27).
+> **Status (2026-11-16, WP5 done):** Settings / Data is live — theme switch, the
+> "Animate loading placeholders" switch, the save-file and photo-folder paths, and the
+> confirmed demo reset that wipes photos, reseeds, re-binds the session, drops the photo
+> cache, and reloads every screen. `SettingsUiProbe` (19 checks) registered,
+> `ALL PROBES GREEN` at 17/17. Verification, docs, and close-out are WP6. Starting HEAD
+> `4ff491e` (local = `origin/main` before WP0). This file is the working document for M5
+> and replaces `HANDOFF-M5.md` as the executable contract; the scope note stays
+> authoritative for *why* (design §12–§13, D27).
 >
 > Authoritative inputs: `docs/implementation-plan.md` §4 (M5 row) and §5 (D7, D8, D11,
 > D15, D19, D22, D27), `docs/design.md` §7, §12, §13, `docs/SRS.md` §3.4–§3.5 and §6.2
@@ -387,7 +387,9 @@ assert them instead of sleeping: `DELAY_MS = 150`, `MIN_VISIBLE_MS = 300`,
 | `view/PhotoWell.java` | 123 | 16:9 well, chooser, remove, busy skeleton, status line |
 | `view/InventoryEditor.java` | 37 | opens the dialog, toasts, reloads only when saved |
 | `view/InventoryStateRunner.java` | 57 | confirm + toast + reload for flag/clear/decommission |
-| `view/SettingsScreen.java` | 165 | theme, paths, animate switch, reset |
+| `view/SettingsScreen.java` | 115 | the page: switches, paths, confirmed reset |
+| `view/SettingsSections.java` | 135 | the four section layouts (split at WP5) |
+| `view/ToggleSwitch.java` | 101 | 40×20 switch, click/Space, focus ring (design §6) |
 
 ### 6.4 Modified (11 files, ~+180 net, ~-90 moved out)
 
@@ -480,7 +482,7 @@ Author this file; re-prove baseline; static audits; commit. No application code.
 - **Done when:** add-with-photo and edit work end to end through the controller; the kind
   survives a category change; a rejected file shows an inline error and leaves no file.
 
-### WP5 — Settings + demo reset
+### WP5 — Settings + demo reset (DONE 2026-11-16)
 
 - `SettingsScreen`, `ToggleSwitch`, `SettingsController`, `ScreenMounts.reloadAll()`,
   `AppController.applyTheme`, `AppContext.rebindCurrentUser()`, route `settings`.
@@ -972,3 +974,51 @@ controller returns the documented messages for a blank name, blank serial, non-n
 value, negative value, and bad interval.
 
 **Next:** WP5 — settings and the demo reset.
+
+### WP5 — Settings screen and demo reset (2026-11-16)
+
+**Starting HEAD:** `fd90f4b` (WP4), tree clean.
+
+**What changed:** new `SettingsScreen`, `SettingsSections`, `ToggleSwitch` (view) and
+`SettingsController`; `AppController` split `toggleTheme` into `toggleTheme` +
+`applyTheme(boolean)` and hands that path to `ScreenMounts`; `ScreenMounts` gained
+`reloadAll()` and mounts the `settings` route; `PhotoCache` became public so the reset can
+drop decoded images; `SettingsUiProbe` registered.
+
+**Commands run and results:**
+
+| Command | Result |
+| :--- | :--- |
+| `./build.sh` | `BUILD OK -> build/classes (242 classes)`, zero warnings |
+| `./test/run-all.sh` | `ALL PROBES GREEN` — 17/17 |
+| `java ... kitnapper.view.SettingsUiProbe` (xvfb) | `PASS=19 FAIL=0` |
+| `sh ../../netbeans/extide/ant/bin/ant clean jar` | `BUILD SUCCESSFUL` |
+| `wc -l` sweep | no file > 200 (max `SettingsSections` 135, `ScreenMounts` 154) |
+| hex / view-import / suppression grep | all clean |
+
+**Deviations from the written plan, and why:**
+
+1. **`SettingsScreen` measured 215**; the four section layouts moved to
+   `SettingsSections` (135) and the screen landed at 115.
+2. **`ToggleSwitch` extends `JPanel`, not `JComponent`** — a bare `JComponent`'s
+   `getAccessibleContext()` is null, so the switch would NPE on its accessible name. It
+   still paints itself; `JPanel` only supplies the context.
+3. **`PhotoCache` is now public with a public `clear()`** so `SettingsController` can drop
+   decoded images after a reseed; the rest of its API stays package-private.
+4. **Theme state is read from `Theme.isDark()`**, not the `AppContext` flag: the tokens are
+   the source of truth and `applyTheme` keeps both in step.
+5. **`ScreenMounts` takes the `applyTheme` consumer**, so the Settings switch and the
+   title-bar button are one path instead of two theme implementations.
+6. **The reset orchestration lives in the controller**, in this order:
+   `inventory.resetDemoData()` (wipes photos + reseeds) → `rebindCurrentUser()` (D33) →
+   `PhotoCache.clear()` → `reloadAll()`. Probe-checked in that order.
+7. **Settings stays manager-only** via the sidebar footer button (M2 shell); the borrower
+   nav is unchanged (D24), and the route keeps its M2 placeholder for borrowers.
+
+**Behaviour proven:** the four sections render; the dark switch reflects and flips both
+the tokens and the session state; the animate switch flips `Theme.animateSkeletons`; the
+save-file and photo-folder paths show the injected folder; reset succeeds, restores ten
+items and three loans, empties the photo folder, re-binds the signed-in manager, and runs
+the refresh hook exactly once; and a borrower's reset is refused with the manager message.
+
+**Next:** WP6 — verification, docs, and close-out.

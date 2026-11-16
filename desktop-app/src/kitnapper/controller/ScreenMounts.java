@@ -3,6 +3,7 @@ package kitnapper.controller;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import kitnapper.model.UserRole;
 import kitnapper.service.AppContext;
@@ -14,6 +15,7 @@ import kitnapper.view.MainFrame;
 import kitnapper.view.MyLoansScreen;
 import kitnapper.view.OverdueScreen;
 import kitnapper.view.PenaltiesScreen;
+import kitnapper.view.SettingsScreen;
 
 /**
  * Screen construction and mounting for one signed-in session (plan §6.5).
@@ -27,6 +29,7 @@ final class ScreenMounts {
     private final AppContext context;
     private final MainFrame frame;
     private final BiConsumer<String, String> status;
+    private final Consumer<Boolean> applyTheme;
     private final ItemPhotos photos;
     private final List<Runnable> refreshers = new ArrayList<>();
     private CatalogController catalog;
@@ -42,10 +45,12 @@ final class ScreenMounts {
     private DashboardScreen dashboardScreen;
     private InventoryScreen inventoryScreen;
 
-    ScreenMounts(AppContext context, MainFrame frame, BiConsumer<String, String> status) {
+    ScreenMounts(AppContext context, MainFrame frame, BiConsumer<String, String> status,
+                 Consumer<Boolean> applyTheme) {
         this.context = context;
         this.frame = frame;
         this.status = status;
+        this.applyTheme = applyTheme;
         this.photos = new ItemPhotos(context);
     }
 
@@ -79,6 +84,8 @@ final class ScreenMounts {
         inventory = new InventoryController(context);
         inventoryScreen = new InventoryScreen(
             new InventoryActions(inventory, photos, status), frame.searchField());
+        SettingsController settings = new SettingsController(context, applyTheme, this::reloadAll);
+        SettingsScreen settingsScreen = new SettingsScreen(settings);
         frame.mount("dashboard", dashboardScreen, dashboardScreen.commands(),
             dashboardScreen::onShown);
         frame.mount("allloans", allLoansScreen, allLoansScreen.commands(),
@@ -88,6 +95,7 @@ final class ScreenMounts {
         frame.mount("penalties", penaltiesScreen, penaltiesScreen.commands(),
             penaltiesScreen::onShown);
         frame.mount("inventory", inventoryScreen, null, inventoryScreen::onShown);
+        frame.mount("settings", settingsScreen, null, settingsScreen::onShown);
         dashboard.setOnChanged(dashboardScreen::reload);
         loans.setOnChanged(this::reloadLoanScreens);
         penalties.setOnChanged(penaltiesScreen::reload);
@@ -97,6 +105,7 @@ final class ScreenMounts {
         refreshers.add(overdueScreen::refreshTheme);
         refreshers.add(penaltiesScreen::refreshTheme);
         refreshers.add(inventoryScreen::refreshTheme);
+        refreshers.add(settingsScreen::refreshTheme);
     }
 
     /** My Loans (§8.3). */
@@ -106,6 +115,24 @@ final class ScreenMounts {
         frame.mount("myloans", myLoansScreen, myLoansScreen.commands(),
             myLoansScreen::onShown);
         refreshers.add(myLoansScreen::refreshTheme);
+    }
+
+    /** Re-reads every mounted screen; runs after a demo reset (WP5). */
+    void reloadAll() {
+        catalogScreen.reload();
+        if (myLoansScreen != null) {
+            myLoansScreen.reload();
+        }
+        if (dashboardScreen != null) {
+            dashboardScreen.reload();
+        }
+        reloadLoanScreens();
+        if (penaltiesScreen != null) {
+            penaltiesScreen.reload();
+        }
+        if (inventoryScreen != null) {
+            inventoryScreen.reload();
+        }
     }
 
     /** One app-level change can move rows between All Loans and Overdue. */
