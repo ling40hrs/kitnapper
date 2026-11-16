@@ -1,12 +1,11 @@
-# HANDOFF — M4 done, next: M5 (inventory, photos, reset)
+# HANDOFF — M5 (inventory, photos, reset) — closed
 
-> **Status (2026-11-16, M4 close-out):** M4 is **delivered and closed** — WP0–WP6,
-> the width pass and two close-out fixes pushed at `cf5a838`; **12/12 probes** green
-> in `run-all.sh` with `LoansUiProbe PASS=105 FAIL=0` registered. M5 is **not
-> started**. This file is the working scope note for M5. The detailed M5 plan (data
-> contracts, work packages, probe plan, docs list, definition of done) should be
-> written as `HANDOFF-M5-PLAN.md` before implementation begins, following the
-> pattern of `HANDOFF-M4-PLAN.md`.
+> **Status (2026-11-16, M5 close-out):** M5 is **delivered and closed** — WP0–WP5 plus
+> the close-out, pushed through `7f373d8`; **18/18 probes** green in `run-all.sh` with
+> `InventoryProbe` (81), `PhotoUiProbe` (20), `InventoryEditorProbe` (27),
+> `InventoryUiProbe` (27), `SettingsUiProbe` (19) and `M5FlowProbe` (16) registered.
+> The executable contract was `HANDOFF-M5-PLAN.md`, which holds the plan, the work
+> packages, and the full execution log including every deviation. M6 (polish) is next.
 
 Read `docs/preferences.md` §2–§3 and `docs/implementation-plan.md` §4 before
 starting.

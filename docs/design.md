@@ -222,8 +222,8 @@ The login screen uses the same title bar but hides omnibar, sidebar, and status 
 | All Loans | Manager | Sortable table + loan preview; return action |
 | Overdue | Manager | Overdue table, longest-overdue first, days-late column, live accrued fees, return action |
 | Penalties | Manager | Per-loan penalty list + paid/waive actions + preview |
-| Inventory | Manager | Items table + preview (photo, metadata, Edit/Flag/Decommission); "Add item" command with photo picker |
-| Settings / Data | Manager | Theme, save-file location, photo-folder location, reset demo data |
+| Inventory | Manager | Items table (omnibar text filter) + preview (photo, metadata, Edit/Flag/Decommission); "Add item" in the page-header action slot |
+| Settings / Data | Manager | Theme, "Animate loading placeholders", save-file location, photo-folder location, reset demo data |
 
 **M4 loan screens (delivered 2026-11-16).** All Loans and Overdue share one 280 px
 loan preview whose pinned action is **Log return** — the same action on both screens
@@ -385,6 +385,11 @@ skeleton placeholders (§13); `UIManager` defaults are set once in `Theme.apply(
   and source size (≤ 20 MB) → decode via `ImageIO` → downscale to 1024 px longest edge
   (`Graphics2D`, bilinear) → re-encode JPEG quality 0.85, alpha flattened onto
   `BG_SURFACE` → written atomically (tmp file + move, same pattern as the JSON save).
+- **Staging (delivered in M5):** an import runs when the file is chosen and writes
+  `staging-<n>.jpg` first; saving the item promotes it to `<equipmentId>.jpg`, while
+  cancelling or replacing deletes it. The load-time sweep removes stray `staging-*` files
+  as well as photos whose stem is not a live item id, so a cancelled dialog can never
+  leave a file that looks like an item photo.
 - **Model:** optional nullable `photoFile` on `Equipment`; JSON field `photoFile`.
   `schemaVersion` stays 1 — the field is additive, so existing save files load unchanged
   (decision D8).
@@ -395,6 +400,12 @@ skeleton placeholders (§13); `UIManager` defaults are set once in `Theme.apply(
   wipes `kitnapper-images/` entirely — the seed dataset ships with no photos (D11). A
   load-time orphan sweep deletes images whose id is not in the dataset.
 - **Privacy:** photos never leave the machine (networking is out of scope).
+
+**Delivered in M5 (2026-11-16).** The pipeline above ships in `service/ImageStoreImpl`
+with the encode primitives in `PhotoCodec` and the limits in `ImageRules`. Display runs
+through `view/PhotoTile` (160 px card, 640 px preview, off-EDT decode behind
+`SkeletonGate`, LRU `PhotoCache`, category-tile fallback), and the import busy state lives
+in `view/PhotoWell`: the media skeleton plus disabled buttons for the whole import.
 
 ## 13. Skeleton Loading States
 
@@ -462,6 +473,10 @@ exist while the component is not showing or while reduced motion is on.
 - The host region exposes the state instead: accessible name **"Loading photo" / "Loading
   items"**, role `PROGRESS_BAR` (indeterminate), and exactly one name-change event when
   loading starts and one when it ends — no per-tick announcements.
+  *Delivered note (M5):* the name and the two name-change events ship; the
+  `PROGRESS_BAR` role does **not**, because `AccessibleContext.setAccessibleRole` is not
+  public API for a `JPanel` without subclassing Swing internals. Recorded as an accepted
+  limitation; the M6 audit may revisit it with a custom `AccessibleContext`.
 - Loading never blocks navigation: sidebar, title bar, theme toggle, and window controls
   stay live. A busy cursor is used only for a user-initiated blocking action (photo
   import), never for background decode.
@@ -484,9 +499,10 @@ exist while the component is not showing or while reduced motion is on.
 | `SkeletonGate.java` | `kitnapper.view` | timing and plumbing — runs work off the EDT, applies 150 / 300 / 167, swaps the host component, owns the watchdog and the accessible loading state |
 
 `PhotoTile`, `PreviewPane`, and the table hosts call `SkeletonGate`; there are no
-per-screen skeleton subclasses. Milestones: **M5** first use (card/preview decode, photo
-import, reduced-motion switch — deferred from M3 by D27), **M6** audit (reduced-motion,
-watchdog, no permanent skeletons, gradient spot-check).
+per-screen skeleton subclasses. Milestones: **M5 delivered 2026-11-16** — first use for card/preview decode and photo
+import, plus the reduced-motion switch (deferred from M3 by D27); query gating stays
+specified for M6 (D32), with the audit (reduced-motion, watchdog, no permanent skeletons,
+gradient spot-check) also in M6.
 
 ## 14. Decisions Log
 

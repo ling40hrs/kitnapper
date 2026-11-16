@@ -60,6 +60,7 @@ run kitnapper.view.PhotoUiProbe display
 run kitnapper.view.InventoryEditorProbe display
 run kitnapper.view.InventoryUiProbe display
 run kitnapper.view.SettingsUiProbe display
+run kitnapper.view.M5FlowProbe display
 run kitnapper.view.LoansLayoutProbe display
 run kitnapper.view.LoansUiProbe display
 

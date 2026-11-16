@@ -1,13 +1,10 @@
 # KitNapper M5 — Implementation Backbone
 
-> **Status (2026-11-16, WP5 done):** Settings / Data is live — theme switch, the
-> "Animate loading placeholders" switch, the save-file and photo-folder paths, and the
-> confirmed demo reset that wipes photos, reseeds, re-binds the session, drops the photo
-> cache, and reloads every screen. `SettingsUiProbe` (19 checks) registered,
-> `ALL PROBES GREEN` at 17/17. Verification, docs, and close-out are WP6. Starting HEAD
-> `4ff491e` (local = `origin/main` before WP0). This file is the working document for M5
-> and replaces `HANDOFF-M5.md` as the executable contract; the scope note stays
-> authoritative for *why* (design §12–§13, D27).
+> **Status (2026-11-16, M5 CLOSED):** all six work packages are delivered and pushed;
+> `ALL PROBES GREEN` at **18/18** with 190 new M5 checks across six probes, zero
+> `-Xlint:all` warnings, `ant clean jar` green, and every static audit clean. The
+> decisions taken during M5 are recorded as D32–D37 in `docs/implementation-plan.md`;
+> every deviation is in §17. Next milestone: M6 (polish).
 >
 > Authoritative inputs: `docs/implementation-plan.md` §4 (M5 row) and §5 (D7, D8, D11,
 > D15, D19, D22, D27), `docs/design.md` §7, §12, §13, `docs/SRS.md` §3.4–§3.5 and §6.2
@@ -713,16 +710,28 @@ Never stage `AGENTS.md`, `build/`, `dist/`, `kitnapper-data.json`, or `kitnapper
 
 ## 14. Definition of Done
 
-- [ ] All ten §1 exit criteria demonstrated, with probe numbers for the automated ones.
-- [ ] `./build.sh clean && ./build.sh` → `BUILD OK`, zero warnings, plus
-      `sh ../../netbeans/extide/ant/bin/ant clean jar` green.
-- [ ] `./test/run-all.sh` → `ALL PROBES GREEN` with 15 registered probes.
-- [ ] Static audits: no file > 200 lines, no hex outside `Theme`, no `service`/`controller`
-      imports under `view`, no `@SuppressWarnings`, no `System.exit` outside `Main`.
-- [ ] `schemaVersion` still 1; an M4 save file loads unchanged (probe-checked).
-- [ ] SRS §6.2 steps 11–12 pass by hand at 1280×800 and once at 1366×768.
-- [ ] Docs updated in the same commits; `HANDOFF-M5-PLAN.md` §17 fully logged.
-- [ ] Every WP pushed, with remote SHA and verified badge reported.
+- [x] All ten §1 exit criteria demonstrated. Automated: photo on card/preview and after a
+      restart, decommission, kind preservation, fallback tile, filename safety, skeleton
+      timing, and Settings (`InventoryProbe` 81, `PhotoUiProbe` 20, `InventoryEditorProbe`
+      27, `InventoryUiProbe` 27, `SettingsUiProbe` 19, `M5FlowProbe` 16 — 190 checks).
+      Reset and the §6.1 baseline: `InventoryProbe`'s `ResetChecks` + `M5FlowProbe`.
+- [x] `./build.sh clean && ./build.sh` → `BUILD OK -> build/classes (242 classes)`, zero
+      warnings; `ant clean jar` → `BUILD SUCCESSFUL`.
+- [x] `./test/run-all.sh` → `ALL PROBES GREEN` with **18** registered probes (plan said 15;
+      the editor and flow probes were added).
+- [x] Static audits: no file > 200 lines (max `PreviewPane` 198), no hex outside `Theme`,
+      no `service`/`controller` imports under `view`, no `@SuppressWarnings`, no
+      `System.exit` outside `Main`.
+- [x] `schemaVersion` still 1; `photoFile` stays nullable/additive — `InventoryProbe`
+      round-trips a save written by the M5 code and reloads it with no schema change.
+- [ ] SRS §6.2 steps 11–12 pass by hand at 1280×800 **and** once at 1366×768 — the chain
+      is proven end to end by `M5FlowProbe` (add with photo → preview paint →
+      decommission → restart → reset), but the **interactive** visual pass at 1366×768
+      was not performed in this headless environment and is carried into M6's
+      verification pass.
+- [x] Docs updated in the close-out commit (`README.md`, `implementation-plan.md`,
+      `SRS.md`, `design.md`, `HANDOFF-M5.md`); §17 fully logged.
+- [x] Every WP pushed with the remote SHA and verified badge reported.
 
 ## 15. Out of scope (do not do in M5)
 
@@ -1022,3 +1031,56 @@ items and three loans, empties the photo folder, re-binds the signed-in manager,
 the refresh hook exactly once; and a borrower's reset is refused with the manager message.
 
 **Next:** WP6 — verification, docs, and close-out.
+
+### WP6 — Verification, docs, close-out (2026-11-16)
+
+**Starting HEAD:** `7f373d8` (WP5), tree clean.
+
+**What changed:** new `test/kitnapper/view/M5FlowProbe` (the SRS §6.2 steps 11–12 chain
+through the real controllers and screens); docs updated in the same commit — `README.md`
+(status, tree, docs table, probe list, next milestone), `docs/implementation-plan.md`
+(§2.2 inventory incl. the six new service files, §4 M5 row → delivered, §5 D32–D37,
+revision 2.0.0), `docs/SRS.md` (FR-10 acceptance for D19/D36, §6.2 steps 11–12 aligned,
+revision 3.2.0), `docs/design.md` (§5 Inventory/Settings rows, §12 staging + delivered
+note, §13.5 accessible-role limitation, §13.7 milestone flip), and `HANDOFF-M5.md`
+(header → closed).
+
+**Commands run and results:**
+
+| Command | Result |
+| :--- | :--- |
+| `./build.sh clean && ./build.sh` | `BUILD OK -> build/classes (242 classes)`, zero warnings |
+| `./test/run-all.sh` | `ALL PROBES GREEN` — **18/18** |
+| `sh ../../netbeans/extide/ant/bin/ant clean jar` | `BUILD SUCCESSFUL` |
+| Per-probe tallies | `InventoryProbe` 81, `PhotoUiProbe` 20, `InventoryEditorProbe` 27, `InventoryUiProbe` 27, `SettingsUiProbe` 19, `M5FlowProbe` 16 → **190 M5 checks** |
+| `wc -l` sweep | no file > 200; tallest overall `PreviewPane` 198 |
+| hex / view-import / suppression / `System.exit` grep | all clean |
+| Inventory size | 154 source files / 14,450 lines; 38 probe files / 4,287 lines |
+
+**Deviations from the written plan, and why:**
+
+1. **18 registered probes, not 15.** WP3/WP4/WP5 each earned a probe, and the close-out
+   added `M5FlowProbe` because the SRS steps deserve one end-to-end assertion rather than
+   six isolated ones.
+2. **The 1366×768 interactive visual pass was not performed** — this environment has no
+   interactive display. The §6.2 chain is proven programmatically by `M5FlowProbe`
+   (add with photo → catalog preview paints it → decommission → restart → reset), and the
+   remaining visual check is carried into M6, where the DPI and geometry pass lives
+   anyway. Noted rather than claimed.
+3. **`PreviewPane` is still 198 lines.** Only its media slot moved in WP2; it is under the
+   cap but has no room, so M6 must not grow it.
+4. **Docs carry the M5 deviations explicitly** rather than silently: photo staging
+   (design §12), the missing `PROGRESS_BAR` accessible role (§13.5), text-only inventory
+   filtering and the Add/Edit placement (D37), the loan-aware guards (D36), and the
+   photos-only skeleton scope (D32).
+
+**Exit criteria → evidence:** photo added/shown/kept (`M5FlowProbe`, `InventoryEditorProbe`),
+decommission terminal and read-only (`InventoryProbe`, `InventoryUiProbe`), kind preserved
+on a category edit (`InventoryProbe`, `InventoryEditorProbe`), fallback tile
+(`PhotoUiProbe`), filename safety (`InventoryProbe`), skeleton timing and reduced motion
+(`PhotoUiProbe`), reset baseline + wiped photos + kept session (`InventoryProbe`,
+`SettingsUiProbe`, `M5FlowProbe`), Settings surface (`SettingsUiProbe`).
+
+**Milestone status:** **M5 closed.** Next: M6 — polish (thin scrollbars, Fluent motion,
+DPI/contrast, the carried `PenaltiesTable` 1280 px clip and toast/preview overlap, the
+design §13 skeleton audit, and the 1366×768 walkthrough).

@@ -93,7 +93,7 @@ Priority scale: **H** = must-have, **M** = should-have, **L** = nice-to-have. Al
 | FR-11 | Penalty settlement: managers view all penalties per loan and mark each `PAID` or `WAIVED` (with reason). Borrowers see outstanding penalties in "My Loans". | H |
 | FR-12 | Persistence: every state mutation is written to `kitnapper-data.json`; startup loads the file if present, otherwise seeds the demo dataset. Managers can reset to seed data. | H |
 
-**Acceptance (FR-10):** adding an item with a photo shows the photo on the card/preview immediately; restarting keeps it; a corrupted or missing photo file shows the category tile instead; reset demo data removes uploaded photos (NFR-08).
+**Acceptance (FR-10):** adding an item with a photo shows the photo on the card/preview immediately; restarting keeps it; a corrupted or missing photo file shows the category tile instead; reset demo data removes uploaded photos (NFR-08). Editing an item's category never changes its concrete kind (D19). Clearing the maintenance flag or decommissioning is refused while the item is still out on loan (D36), and a decommissioned item is read-only.
 
 **Acceptance (FR-12):** create a loan, close and reopen the app — the loan is still present. Trigger reset — the dataset returns to the PRD §9 baseline.
 
@@ -146,8 +146,8 @@ Run in order; each step lists the requirement it proves.
 8. **Log in as manager** → the Dashboard opens with L-003 first in **Overdue now** at **₱200.00 accrued** (FR-08); All Loans lists every loan, newest first (FR-09).
 9. **Log the return of L-003** from All Loans or Overdue with the return date defaulting to `T` (the picker offers the borrow date … `T`) → the loan becomes `RETURNED`; exactly one ₱200.00 `LATE_FEE` penalty is created; item returns to `AVAILABLE` (FR-06, FR-07).
 10. **Open the penalty on Penalties and choose Waive with a reason** (a blank reason is rejected inline and the dialog stays open) → the badge shows `WAIVED` immediately and the reason appears in the preview (FR-11, NFR-02).
-11. **Add a new inventory item with a photo, then decommission it** → the photo shows on the card/preview; the retired item remains listed but cannot be checked out (FR-10, NFR-08).
-12. **Trigger "Reset demo data"** → state returns to the §6.1 baseline (FR-12).
+11. **Add a new inventory item with a photo, then decommission it** — Inventory → **Add item**, fill the fields, **Choose photo…**, save → the photo shows in the inventory preview and on the catalog card/preview; closing and relaunching keeps it. **Edit item** and change the category → the item's kind and its own field stay the same. **Decommission** (confirmed) → the row stays listed, the preview reads "Decommissioned items are read-only.", and the catalog shows it as `DECOMMISSIONED` with no checkout (FR-10, NFR-08, D19).
+12. **Trigger "Reset demo data"** — Settings / Data → **Reset demo data** (confirmed) → state returns to the §6.1 baseline, `kitnapper-images/` is emptied, and the manager stays signed in (FR-12, D11, D33).
 
 Seed dataset details: PRD §9; rationale and file placement: `seed-data.md`.
 
@@ -181,4 +181,5 @@ Seed dataset details: PRD §9; rationale and file placement: `seed-data.md`.
 | 3.1.2 | 2026-11-16 | §6.2 steps 4–6 aligned with the delivered catalog: checkout flips the row to `LOANED` immediately, the availability lock disables the action instead of hiding the row, and the 14-day limit is enforced by a `T … T+14` picker plus a service rejection proven by `CatalogProbe`; no requirement changed |
 | 3.1.3 | 2026-11-16 | FR-06 acceptance added: the return dialog offers borrow date … today, defaults to today, previews the fee to freeze, and is reachable from All Loans and Overdue; no requirement changed |
 | 3.1.4 | 2026-11-16 | FR-11 acceptance added: the penalties list columns, the settle dialog as the confirmation, the mandatory waive reason with its inline error, and the one-way settlement rule; no requirement changed |
+| 3.2.0 | 2026-11-16 | §6.2 steps 11–12 aligned with the delivered M5 screens (Inventory add/edit/decommission, Settings reset, session kept, photo folder wiped); FR-10 acceptance gains the D19 kind rule and the D36 loan-aware guards; no requirement changed |
 | 3.1.5 | 2026-11-16 | §6.2 steps 8–10 aligned with the delivered M4 screens: the manager lands on the Dashboard (not a separate overdue view), All Loans lists newest first, the return is logged from All Loans or Overdue with the return-date picker defaulting to `T`, and the waive step names the Penalties screen, the mandatory reason and the inline rejection; no requirement changed |
