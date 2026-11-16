@@ -753,6 +753,32 @@ documented tasks. Never tag/branch/amend/revert without a new “yes”.
   D32/D40 closed + revision 2.1.1.
 - Commit `test(m6): audit icons, DPI and skeleton gating` (after `3f955db` for the fix).
 
-### WP5 — pending
+### WP5 — verification recorded; interactive pass outstanding (2026-11-16)
+
+- Starting HEAD: `840e3f3` (clean, local == remote).
+- Automated half complete: `./build.sh clean && ./build.sh` → `BUILD OK`, 253
+  classes, zero `-Xlint:all` warnings; `sh ../../netbeans/extide/ant/bin/ant clean
+  jar` → `BUILD SUCCESSFUL`; `./test/run-all.sh` → `ALL PROBES GREEN` (20/20) and
+  green again at `KITNAPPER_UI_SCALE=1.25` and `1.5` (the DoD line that asks for a
+  1.25/1.5 re-run).
+- Static audits at close-out: no file > 200 lines (tallest `LoanPreviewPane` 199),
+  no `@SuppressWarnings`, no hex outside `Theme`, no `service`/`controller` imports
+  under `view`, no `System.exit` outside `Main`, `GradientTile` the only
+  `GradientPaint` (design §3.4), `schemaVersion` still **1** and no save-file shape
+  change.
+- Inventory at WP5: 158 source files / 15,059 lines (18 model, 26 service, 10
+  persistence, 14 controller, 89 view, `Main`) and 46 probe files / 5,271 lines,
+  20 registered probes.
+- Docs in this change: `README.md` (intro, tree, probe list, status, next),
+  `HANDOFF-M6.md` (new note: what shipped, deviations, commands, the outstanding
+  checklist), `docs/SRS.md` revision **3.3.0** (verification evidence only — no
+  requirement changed), and this log.
+- Commit `docs(m6): verify and close M6`.
+- **Outstanding — the milestone cannot close without it:** the interactive SRS §6.2
+  walkthrough from §9 (1920×1080 / 1366×768 / 1024×640, Windows 100/125/150 %,
+  both themes, keyboard, icons, motion, toasts, restart + reset). It needs a real
+  display and the maintainer; probes are explicitly not a substitute. When it is
+  recorded, append the results here, flip `HANDOFF-M6.md` and the README status to
+  closed, refresh the local `AGENTS.md`, and then start WP6 (the deck).
 
 ### WP6 — pending
