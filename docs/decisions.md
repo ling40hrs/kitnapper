@@ -10,7 +10,7 @@
 | Problem | Replace physical sign-out logbooks for schools/studios |
 | Team | **YAPPERS** (group project): Casiano, Cudia, Villacorza |
 | Course | CS203 – Object-Oriented Programming |
-| Current phase | Implementation — M4 delivered (returns, fees, manager views); M5 (inventory, photos, reset) next |
+| Current phase | Complete — M0–M6 delivered and closed; WP6 (the presentation deck) shipped |
 
 ## 2. Product Decisions (from PRD interview)
 
@@ -137,7 +137,7 @@ The attribution rules above now run on the Windows machine, not just the origina
 ## 7. Deliverables
 
 - **Required:** working desktop app + the documentation in `Finals/docs/` (on the current checkout that folder is the repository root's `docs/` — the `Finals/` prefix exists only on the NetBeans machine).
-- **Slides:** produce at the very end, only once everything else is finished, using the PDF skill.
+- **Slides:** produced last, as agreed (WP6), with the `pdf` skill's toolchain. The deck is `assets/kitnapper-presentation.pdf`; its generator is committed under `deck/` and its captures under `assets/deck/`, so the PDF can be rebuilt on any machine with `deck/build.sh`.
 - UML diagrams: not required.
 
 ## 8. Scope Guardrails
@@ -148,6 +148,27 @@ The attribution rules above now run on the Windows machine, not just the origina
 
 ## 9. Implementation Status
 
+- **WP6 complete: presentation deck** (2026-11-17). `assets/kitnapper-presentation.pdf`,
+  ten slides, 16:9 at 960 × 540 pt, dark theme in the app's own palette
+  (`#1b1b1b`, accent `#F0A32E`) and the bundled Inter, so the deck reads as part of
+  the product. Outline as planned in `HANDOFF-M6-PLAN.md` §7: title and team,
+  problem, borrower demo, manager demo, architecture, OOP evidence, persistence,
+  verification numbers, limitations, lessons. The generator is committed under
+  `deck/` — `base.css` (page frame, palette, type scale), `style.css` (components),
+  ten `slide-NN-*.html` files and `build.sh`, which glues them together and renders
+  with weasyprint. Every deck source stays under the 200-line cap, the same rule the
+  app follows. The five captures the deck embeds were regenerated from this HEAD
+  through the real `AppController` on Xvfb `:99` at 1280 × 800 and committed under
+  `assets/deck/`; that is a deliberate use of WP5 §9's "not committed unless the
+  team wants them", because a committed generator that reads screenshots from `/tmp`
+  cannot be rebuilt on another machine. The deck palette lives in `deck/base.css`
+  and mirrors `view/Theme.java`; the "no hex outside `Theme`" rule still applies to
+  the Java sources, where it is enforced. Verified: `pdfinfo` reports 10 pages at
+  960 × 540 pt, `pdffonts` shows only embedded Inter subsets (no font substitution),
+  `pdftotext` extracts every slide cleanly, all ten pages were rendered with
+  `pdftoppm` and reviewed, `deck/*` line counts are all ≤ 200, and the app itself is
+  unchanged: `./build.sh` → `BUILD OK` (255 classes) and `./test/run-all.sh` →
+  **20/20 green** at `e4a8525`.
 - **M3 complete: catalog + instant checkout** (2026-11-16). The catalog is a
   real screen: page header, search + category/status filters, a details table
   with a 280 px preview pane by default, a cards toggle that shares one

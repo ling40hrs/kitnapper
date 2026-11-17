@@ -13,7 +13,7 @@
 
 A desktop application for managing equipment loans at a small institution. KitNapper replaces the paper sign-out sheet: staff publish available gear, students check items out, and the app tracks due dates, overdue loans, and late fees.
 
-The domain core, the hand-written JSON persistence layer, the Windows 11 application shell with mock login, the catalog with instant checkout, the loan/penalty manager views, the inventory screens with photo uploads, and demo reset are implemented, building, and covered by an in-repository probe suite. M6 is closed: thin scrollbars, Fluent motion fades, minimum-size fixes, icon/DPI/skeleton audits, and the interactive SRS §6.2 walkthrough that found and fixed fifteen UI defects. The presentation deck is the remaining deliverable.
+The domain core, the hand-written JSON persistence layer, the Windows 11 application shell with mock login, the catalog with instant checkout, the loan/penalty manager views, the inventory screens with photo uploads, and demo reset are implemented, building, and covered by an in-repository probe suite. M6 is closed: thin scrollbars, Fluent motion fades, minimum-size fixes, icon/DPI/skeleton audits, and the interactive SRS §6.2 walkthrough that found and fixed fifteen UI defects. The presentation deck is finished: ten slides at [`assets/kitnapper-presentation.pdf`](assets/kitnapper-presentation.pdf), rebuilt from the sources in [`deck/`](deck/build.sh) and the live captures in `assets/deck/`. Every deliverable is now in the repository.
 
 ## Contents
 
@@ -48,7 +48,11 @@ Finals/                       (the repository root)
 ├── .gitattributes            LF everywhere; binary assets not normalized
 ├── .gitignore
 ├── assets/
-│   └── banner.jpg            README banner image
+│   ├── banner.jpg            README banner image
+│   ├── kitnapper-presentation.pdf  the slide deck (WP6)
+│   └── deck/                 the captures the deck embeds
+├── deck/                     deck generator: base.css + style.css + 10 slide
+│   │                         files + build.sh (weasyprint → assets/…pdf)
 ├── docs/
 │   ├── PRD.md                product requirements and domain model
 │   ├── SRS.md                verifiable requirements and demo walkthrough
@@ -129,14 +133,15 @@ Build output is written to `build/` and `dist/`, both of which are ignored by Gi
 | [`docs/SRS.md`](docs/SRS.md) | Numbered requirements, invariants, acceptance criteria, demo script |
 | [`docs/design.md`](docs/design.md) | Windows 11 / Fluent visual spec (v2.0): tokens, custom chrome, components, photo uploads, skeleton loading states (§13) |
 | [`docs/decisions.md`](docs/decisions.md) | Record of confirmed decisions and known gaps |
-| [`docs/implementation-plan.md`](docs/implementation-plan.md) | Build order, class/file inventory, JSON persistence spec, decisions D1–D43 |
+| [`docs/implementation-plan.md`](docs/implementation-plan.md) | Build order, class/file inventory, JSON persistence spec, decisions D1–D49 |
 | [`docs/seed-data.md`](docs/seed-data.md) | Where seed data lives and when to split it out |
 | [`docs/preferences.md`](docs/preferences.md) | Tracked, machine-independent working preferences: planning, one-phase execution, document-commit-push, verification |
 | [`HANDOFF-M4.md`](HANDOFF-M4.md) | M4 scope note: current state, reuse map, gotchas, probe commands (historical at M4 close-out; the contract was `HANDOFF-M4-PLAN.md`) |
 | [`HANDOFF-M4-PLAN.md`](HANDOFF-M4-PLAN.md) | M4 record: plan, work packages, probe plan, execution log, width pass |
 | [`HANDOFF-M5.md`](HANDOFF-M5.md) | M5 scope note: inventory, photos, reset (historical at M5 close-out; the contract was `HANDOFF-M5-PLAN.md`) |
 | [`HANDOFF-M5-PLAN.md`](HANDOFF-M5-PLAN.md) | M5 record: plan, work packages, probe plan, execution log, deviations |
-| [`HANDOFF-M6-PLAN.md`](HANDOFF-M6-PLAN.md) | **M6 record:** plan, work packages (WP0–WP5 shipped), probe plan, execution log |
+| [`HANDOFF-M6-PLAN.md`](HANDOFF-M6-PLAN.md) | **M6 record:** plan, work packages (WP0–WP6 shipped), probe plan, execution log |
+| [`assets/kitnapper-presentation.pdf`](assets/kitnapper-presentation.pdf) | The presentation deck (10 slides, 16:9); rebuilt by `deck/build.sh` |
 | [`HANDOFF-M3-PLAN.md`](HANDOFF-M3-PLAN.md) | M3 record: plan, work packages, probe plan, execution log |
 | [`HANDOFF-M3.md`](HANDOFF-M3.md), [`HANDOFF-M2.md`](HANDOFF-M2.md), [`HANDOFF-M1.md`](HANDOFF-M1.md), [`HANDOFF-SESSION-2026-11-14.md`](HANDOFF-SESSION-2026-11-14.md) | Historical records of finished milestones (machine-specific paths and probe commands are stale) |
 

@@ -16,6 +16,8 @@ kitnapper-data.json
 kitnapper-data.json.tmp
 kitnapper-images/
 
+# Deck build scratch (removed by deck/build.sh on success)
+deck/build.tmp.html
 # OS / editor noise
 .DS_Store
 Thumbs.db

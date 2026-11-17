@@ -1,0 +1,27 @@
+<section class="slide">
+  <div class="kicker">Verification</div>
+  <div class="rule"></div>
+  <h2>What we can prove, and how we proved it.</h2>
+
+  <div class="stats">
+    <div class="stat"><b>20 / 20</b><span>probes green &mdash; headless and display</span></div>
+    <div class="stat"><b>255</b><span>classes compiled, zero lint warnings</span></div>
+    <div class="stat"><b>12 / 12</b><span>SRS &sect;6.2 walkthrough steps pass</span></div>
+    <div class="stat"><b>15</b><span>defects the walkthrough found, all fixed (D44&ndash;D49)</span></div>
+    <div class="stat"><b>199</b><span>lines in the tallest file, against a 200 cap</span></div>
+    <div class="stat"><b>3</b><span>UI scales exercised: 1.0, 1.25, 1.5</span></div>
+    <div class="stat"><b>0.46 ms</b><span>slowest measured query, against a 150 ms budget</span></div>
+    <div class="stat"><b>160</b><span>source files, 15,469 lines, 5,594 lines of probes</span></div>
+    <div class="stat"><b>0</b><span>third-party libraries &mdash; the JDK is the stack</span></div>
+    <div class="stat"><b>10</b><span>equipment in the demo seed, 3 loans, 3 accounts</span></div>
+    <div class="stat"><b>5 / 2</b><span>screens for a manager, for a borrower</span></div>
+    <div class="stat"><b>0</b><span>suppressed warnings or unchecked casts</span></div>
+  </div>
+
+  <p class="lead closer" style="font-size: 11.5pt">
+    Display probes run at 1024&times;640, 1280&times;800, 1366&times;768 and 1920&times;1080;
+    the suite re-runs at 1.25 and 1.5 UI scale as a DPI proxy. The interactive pass is still the
+    authority &mdash; the probes never replaced it.
+  </p>
+  <div class="footer"><span>./build.sh &middot; ./test/run-all.sh &middot; KITNAPPER_UI_SCALE=1.25</span><b>08</b></div>
+</section>

@@ -1,0 +1,41 @@
+<section class="slide">
+  <div class="kicker">Persistence</div>
+  <div class="rule"></div>
+  <h2>Saved to disk, with no library to lean on.</h2>
+
+  <div class="row">
+    <div style="width: 392pt">
+      <ul class="steps">
+        <li><span class="num">01</span> A hand-written scanner, parser and writer &mdash; ten classes, JDK only.</li>
+        <li><span class="num">02</span> <code>schemaVersion</code> is <b>1</b>; the file shape is a documented decision, not an accident.</li>
+        <li><span class="num">03</span> Every save writes <code>kitnapper-data.json.tmp</code> first and moves it into place with
+            <code>ATOMIC_MOVE</code>, so a crash leaves the last good file.</li>
+        <li><span class="num">04</span> A corrupt or unreadable save does not strand the user: it falls back to the demo seed (D18).</li>
+        <li><span class="num">05</span> Photos are files in <code>kitnapper-images/</code>, referenced by name &mdash; the JSON stays
+            small and readable.</li>
+      </ul>
+      <p class="big-idea closer" style="font-size: 15pt">Restart the app and the loan, the freeze and the waive reason are all still there.</p>
+    </div>
+    <div style="width: 434pt">
+      <div class="caption" style="margin: 4pt 0 7pt">Excerpt &middot; kitnapper-data.json</div>
+      <pre>{
+  <span class="k">"schemaVersion"</span>: 1,
+  <span class="k">"savedAt"</span>: <span class="s">"2026-11-17"</span>,
+  <span class="k">"users"</span>: [
+    {
+      <span class="k">"userId"</span>: <span class="s">"u-student1"</span>,
+      <span class="k">"fullName"</span>: <span class="s">"Student One"</span>,
+      <span class="k">"email"</span>: <span class="s">"student1@institution.edu"</span>,
+      <span class="k">"role"</span>: <span class="s">"BORROWER"</span>
+    }
+  ],
+  <span class="k">"equipment"</span>: [
+    {
+      <span class="k">"id"</span>: <span class="s">"e-001"</span>,
+      <span class="k">"name"</span>: <span class="s">"Sony A7 IV"</span>,
+      <span class="k">"status"</span>: <span class="s">"LOANED"</span>,
+      <span class="k">"kind"</span>: <span class="s">"DIGITAL"</span></pre>
+    </div>
+  </div>
+  <div class="footer"><span>service.persistence &middot; 10 classes &middot; zero dependencies</span><b>07</b></div>
+</section>

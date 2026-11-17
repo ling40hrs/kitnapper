@@ -844,4 +844,37 @@ documented tasks. Never tag/branch/amend/revert without a new “yes”.
   `docs(m6): record the walkthrough and close M6`.
 - **M6 is closed.** Next: WP6, the presentation deck.
 
-### WP6 — pending
+### WP6 — presentation deck (2026-11-17)
+
+- Starting HEAD: `e4a8525` (clean, local == remote; M6 closed).
+- Decisions taken with the maintainer before building (all through the question
+  tool): PDF at 16:9, **960 × 540 pt** (PowerPoint widescreen; the earlier
+  1280 × 720 pt idea was dropped — same ratio, a third of the file), **10 slides**
+  (OOP evidence merged into one slide, demo split borrower/manager), screenshots
+  **regenerated live and committed**, generator **committed and split per slide**,
+  dark theme matching the app, output `assets/kitnapper-presentation.pdf`.
+- Generator: `deck/base.css` (52 lines), `deck/style.css` (170), ten
+  `slide-NN-*.html` files (20–41 lines each), `deck/build.sh` (glue + weasyprint).
+  Every file is under the 200-line ceiling. `build.sh` concatenates the slides into
+  `deck/build.tmp.html` (removed by a trap) and renders it, because weasyprint takes
+  one document.
+- Captures: a machine-local `DeckShots` tool (`.opencode/tools`, never committed)
+  signs in through the real `AppController`, drives the real screens and paints each
+  window offscreen at its own size, so no desktop or window-manager chrome appears.
+  Five images, 1280 × 800, committed under `assets/deck/`: login, catalog,
+  dashboard, return dialog. Two layout facts learned the hard way: `MainFrame` keeps
+  every mounted screen as a card, so component lookups must require `isShowing()`;
+  and dialogs draw their own chrome, so the `JDialog` title is empty and they must be
+  matched by type.
+- Render result: `deck/build.sh` → `assets/kitnapper-presentation.pdf`, 10 pages,
+  960 × 540 pt, 120 KB, only Inter subsets embedded. All ten pages were rendered with
+  `pdftoppm` and reviewed before acceptance; three rounds of layout fixes (a
+  `.num`-class bug that absolutely positioned inline bold text inside list items,
+  a two-column card grid that had collapsed to full width, and bottom-heavy
+  whitespace fixed with a bottom-anchored closing line per slide).
+- Docs in the same change: `README.md` (status, tree, documentation table),
+  `docs/decisions.md` (§1 phase, §7 deliverables, §9 WP6 entry). `AGENTS.md` was
+  refreshed locally and never staged.
+- Verification: app untouched — `./build.sh` → `BUILD OK` (255 classes),
+  `./test/run-all.sh` → **ALL PROBES GREEN (20/20)** at `e4a8525`.
+- **WP6 is complete; every milestone and work package is delivered.**

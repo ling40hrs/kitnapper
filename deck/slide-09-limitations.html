@@ -1,0 +1,26 @@
+<section class="slide">
+  <div class="kicker">Limitations</div>
+  <div class="rule"></div>
+  <h2>What KitNapper deliberately does not do.</h2>
+
+  <table>
+    <tr><th style="width: 300pt">Left out</th><th>Because</th></tr>
+    <tr><td>Damage tracking and damage fees</td>
+        <td class="dim">Not in the brief. A return logs a date &mdash; a condition grade would be a guess without photos at both ends.</td></tr>
+    <tr><td>Cancelling a loan, extending a due date</td>
+        <td class="dim">The desk's real answer is return-and-reborrow; one fewer state means one fewer way to be wrong.</td></tr>
+    <tr><td>Multi-user, network or cloud sync</td>
+        <td class="dim">One desk, one save file. Concurrency would need a server and a conflict rule we cannot test here.</td></tr>
+    <tr><td>Production authentication</td>
+        <td class="dim">Mock login over the persisted user list; the demo accounts are seeded, not hard-coded.</td></tr>
+    <tr><td>Installer, code signing, auto-update</td>
+        <td class="dim">Out of scope. It runs from NetBeans or <code>build.sh</code>, which is how it will be demonstrated.</td></tr>
+    <tr><td>Indexed search and reports</td>
+        <td class="dim">Filtering is linear over ten items and measures 0.46 ms; an index would be ceremony.</td></tr>
+  </table>
+
+  <p class="lead closer" style="font-size: 11.5pt">
+    Everything on this page is a recorded decision, not an unfinished edge.
+  </p>
+  <div class="footer"><span>docs/decisions.md &middot; scope lock, D11 and D19</span><b>09</b></div>
+</section>

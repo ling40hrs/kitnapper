@@ -1,0 +1,53 @@
+/* KitNapper deck — page frame, palette and type scale.
+   16:9 (960 × 540 pt), dark theme, bundled Inter; tokens mirror view/Theme.java. */
+
+@font-face { font-family: "Inter"; src: url("../desktop-app/resources/fonts/Inter-Regular.ttf"); font-weight: 400; }
+@font-face { font-family: "Inter"; src: url("../desktop-app/resources/fonts/Inter-SemiBold.ttf"); font-weight: 600; }
+@font-face { font-family: "Inter"; src: url("../desktop-app/resources/fonts/Inter-Bold.ttf"); font-weight: 700; }
+
+@page { size: 960pt 540pt; margin: 0; background: #1b1b1b; }
+
+html, body { margin: 0; padding: 0; background: #1b1b1b; }
+
+body { font-family: "Inter", sans-serif; color: #f5f5f5; font-size: 12.5pt; line-height: 1.45; }
+
+.slide {
+    position: relative;
+    width: 960pt;
+    height: 540pt;
+    padding: 46pt 54pt 44pt;
+    box-sizing: border-box;
+    overflow: hidden;
+    page-break-after: always;
+}
+.slide:last-child { page-break-after: auto; }
+
+.kicker {
+    font-size: 8.5pt;
+    font-weight: 600;
+    letter-spacing: 2.6pt;
+    text-transform: uppercase;
+    color: #f0a32e;
+}
+
+.rule { width: 58pt; height: 3pt; background: #f0a32e; margin: 12pt 0 0; }
+
+h1 { font-size: 54pt; font-weight: 700; letter-spacing: -1.8pt; line-height: 1; margin: 14pt 0 0; }
+
+h2 { font-size: 25pt; font-weight: 700; letter-spacing: -0.5pt; line-height: 1.15; margin: 13pt 0 0; }
+
+.lead { font-size: 12.5pt; color: #b4b4b4; margin: 8pt 0 0; max-width: 620pt; }
+
+.footer {
+    position: absolute;
+    left: 54pt;
+    right: 54pt;
+    bottom: 18pt;
+    display: flex;
+    justify-content: space-between;
+    font-size: 8pt;
+    letter-spacing: 1.6pt;
+    text-transform: uppercase;
+    color: #6f6f6f;
+}
+.footer b { color: #8d8d8d; font-weight: 600; }
