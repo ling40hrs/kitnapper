@@ -850,10 +850,11 @@ documented tasks. Never tag/branch/amend/revert without a new “yes”.
 - Decisions taken with the maintainer before building (all through the question
   tool): PDF at 16:9, **960 × 540 pt** (PowerPoint widescreen; the earlier
   1280 × 720 pt idea was dropped — same ratio, a third of the file), **10 slides**
-  (OOP evidence merged into one slide, demo split borrower/manager), screenshots
+  (OOP evidence merged into one slide, demo split borrower/manager; an eleventh
+  screen slide was added afterwards at the maintainer's request), screenshots
   **regenerated live and committed**, generator **committed and split per slide**,
   dark theme matching the app, output `assets/kitnapper-presentation.pdf`.
-- Generator: `deck/base.css` (52 lines), `deck/style.css` (170), ten
+- Generator: `deck/base.css` (52 lines), `deck/style.css` (173), eleven
   `slide-NN-*.html` files (20–41 lines each), `deck/build.sh` (glue + weasyprint).
   Every file is under the 200-line ceiling. `build.sh` concatenates the slides into
   `deck/build.tmp.html` (removed by a trap) and renders it, because weasyprint takes
@@ -861,13 +862,13 @@ documented tasks. Never tag/branch/amend/revert without a new “yes”.
 - Captures: a machine-local `DeckShots` tool (`.opencode/tools`, never committed)
   signs in through the real `AppController`, drives the real screens and paints each
   window offscreen at its own size, so no desktop or window-manager chrome appears.
-  Five images, 1280 × 800, committed under `assets/deck/`: login, catalog,
-  dashboard, return dialog. Two layout facts learned the hard way: `MainFrame` keeps
+  Eight images committed under `assets/deck/`: login, catalog, dashboard, return
+  dialog (1280 × 800) plus checkout dialog, penalties and inventory. Two layout facts learned the hard way: `MainFrame` keeps
   every mounted screen as a card, so component lookups must require `isShowing()`;
   and dialogs draw their own chrome, so the `JDialog` title is empty and they must be
   matched by type.
-- Render result: `deck/build.sh` → `assets/kitnapper-presentation.pdf`, 10 pages,
-  960 × 540 pt, 120 KB, only Inter subsets embedded. All ten pages were rendered with
+- Render result: `deck/build.sh` → `assets/kitnapper-presentation.pdf`, 11 pages,
+  960 × 540 pt, 200 KB, only Inter subsets embedded. All pages were rendered with
   `pdftoppm` and reviewed before acceptance; three rounds of layout fixes (a
   `.num`-class bug that absolutely positioned inline bold text inside list items,
   a two-column card grid that had collapsed to full width, and bottom-heavy
@@ -877,4 +878,8 @@ documented tasks. Never tag/branch/amend/revert without a new “yes”.
   refreshed locally and never staged.
 - Verification: app untouched — `./build.sh` → `BUILD OK` (255 classes),
   `./test/run-all.sh` → **ALL PROBES GREEN (20/20)** at `e4a8525`.
+- Follow-up (same day, maintainer request): slide 05 "the rest of the surface" added
+  with the checkout dialog, penalties and inventory captures, so the deck now runs
+  11 slides; slides 05–10 shifted to 06–11 and their footer numbers renumbered. The
+  three captures were already in the scratch folder, so no re-shoot was needed.
 - **WP6 is complete; every milestone and work package is delivered.**

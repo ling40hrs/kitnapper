@@ -149,15 +149,16 @@ The attribution rules above now run on the Windows machine, not just the origina
 ## 9. Implementation Status
 
 - **WP6 complete: presentation deck** (2026-11-17). `assets/kitnapper-presentation.pdf`,
-  ten slides, 16:9 at 960 × 540 pt, dark theme in the app's own palette
+  eleven slides, 16:9 at 960 × 540 pt, dark theme in the app's own palette
   (`#1b1b1b`, accent `#F0A32E`) and the bundled Inter, so the deck reads as part of
   the product. Outline as planned in `HANDOFF-M6-PLAN.md` §7: title and team,
-  problem, borrower demo, manager demo, architecture, OOP evidence, persistence,
-  verification numbers, limitations, lessons. The generator is committed under
+  problem, borrower demo, manager demo, the remaining screens (checkout dialog,
+  penalties, inventory), architecture, OOP evidence, persistence, verification
+  numbers, limitations, lessons. The generator is committed under
   `deck/` — `base.css` (page frame, palette, type scale), `style.css` (components),
   ten `slide-NN-*.html` files and `build.sh`, which glues them together and renders
   with weasyprint. Every deck source stays under the 200-line cap, the same rule the
-  app follows. The five captures the deck embeds were regenerated from this HEAD
+  app follows. The eight captures the deck embeds were regenerated from this HEAD
   through the real `AppController` on Xvfb `:99` at 1280 × 800 and committed under
   `assets/deck/`; that is a deliberate use of WP5 §9's "not committed unless the
   team wants them", because a committed generator that reads screenshots from `/tmp`

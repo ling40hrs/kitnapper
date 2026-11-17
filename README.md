@@ -13,7 +13,7 @@
 
 A desktop application for managing equipment loans at a small institution. KitNapper replaces the paper sign-out sheet: staff publish available gear, students check items out, and the app tracks due dates, overdue loans, and late fees.
 
-The domain core, the hand-written JSON persistence layer, the Windows 11 application shell with mock login, the catalog with instant checkout, the loan/penalty manager views, the inventory screens with photo uploads, and demo reset are implemented, building, and covered by an in-repository probe suite. M6 is closed: thin scrollbars, Fluent motion fades, minimum-size fixes, icon/DPI/skeleton audits, and the interactive SRS §6.2 walkthrough that found and fixed fifteen UI defects. The presentation deck is finished: ten slides at [`assets/kitnapper-presentation.pdf`](assets/kitnapper-presentation.pdf), rebuilt from the sources in [`deck/`](deck/build.sh) and the live captures in `assets/deck/`. Every deliverable is now in the repository.
+The domain core, the hand-written JSON persistence layer, the Windows 11 application shell with mock login, the catalog with instant checkout, the loan/penalty manager views, the inventory screens with photo uploads, and demo reset are implemented, building, and covered by an in-repository probe suite. M6 is closed: thin scrollbars, Fluent motion fades, minimum-size fixes, icon/DPI/skeleton audits, and the interactive SRS §6.2 walkthrough that found and fixed fifteen UI defects. The presentation deck is finished: eleven slides at [`assets/kitnapper-presentation.pdf`](assets/kitnapper-presentation.pdf), rebuilt from the sources in [`deck/`](deck/build.sh) and the live captures in `assets/deck/`. Every deliverable is now in the repository.
 
 ## Contents
 
@@ -141,7 +141,7 @@ Build output is written to `build/` and `dist/`, both of which are ignored by Gi
 | [`HANDOFF-M5.md`](HANDOFF-M5.md) | M5 scope note: inventory, photos, reset (historical at M5 close-out; the contract was `HANDOFF-M5-PLAN.md`) |
 | [`HANDOFF-M5-PLAN.md`](HANDOFF-M5-PLAN.md) | M5 record: plan, work packages, probe plan, execution log, deviations |
 | [`HANDOFF-M6-PLAN.md`](HANDOFF-M6-PLAN.md) | **M6 record:** plan, work packages (WP0–WP6 shipped), probe plan, execution log |
-| [`assets/kitnapper-presentation.pdf`](assets/kitnapper-presentation.pdf) | The presentation deck (10 slides, 16:9); rebuilt by `deck/build.sh` |
+| [`assets/kitnapper-presentation.pdf`](assets/kitnapper-presentation.pdf) | The presentation deck (11 slides, 16:9); rebuilt by `deck/build.sh` |
 | [`HANDOFF-M3-PLAN.md`](HANDOFF-M3-PLAN.md) | M3 record: plan, work packages, probe plan, execution log |
 | [`HANDOFF-M3.md`](HANDOFF-M3.md), [`HANDOFF-M2.md`](HANDOFF-M2.md), [`HANDOFF-M1.md`](HANDOFF-M1.md), [`HANDOFF-SESSION-2026-11-14.md`](HANDOFF-SESSION-2026-11-14.md) | Historical records of finished milestones (machine-specific paths and probe commands are stale) |
 

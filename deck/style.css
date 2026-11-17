@@ -49,6 +49,9 @@ code { font-family: "Inter", sans-serif; }
 
 .row { display: flex; gap: 16pt; margin-top: 16pt; }
 
+.note { font-size: 9.5pt; color: #9a9a9a; margin: 6pt 0 0; line-height: 1.45; }
+.note code { color: #d9d2c4; }
+
 /* ---- metrics ------------------------------------------------------- */
 
 .stats { display: flex; flex-wrap: wrap; gap: 9pt; margin-top: 16pt; }
