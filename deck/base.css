@@ -103,39 +103,13 @@ body {
     color: #ede2d2;
 }
 
-.lead {
-    position: absolute;
-    left: 52pt;
-    right: 300pt;
-    top: 170pt;
-    margin: 0;
-    font-weight: 300;
-    font-size: 13pt;
-    line-height: 1.4;
-    color: #f6ecdb;
-}
-
-.closer {
-    position: absolute;
-    left: 52pt;
-    right: 52pt;
-    bottom: 34pt;
-    font-family: "Mont";
-    font-weight: 700;
-    font-size: 15pt;
-    line-height: 1.2;
-    letter-spacing: -0.3pt;
-    color: #3b2410;
-}
-.closer em { font-style: normal; color: #7a3f00; }
-
 .foot {
     position: absolute;
     left: 52pt;
     right: 52pt;
     bottom: 14pt;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     font-family: "Mont";
     font-weight: 700;
     font-size: 6.8pt;

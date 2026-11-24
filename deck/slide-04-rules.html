@@ -6,7 +6,6 @@
 
   <div class="tab"></div>
   <h2 class="sec">Where each rule lives</h2>
-  <p class="lead">Every rule is implemented once, in the package that owns it.</p>
 
   <div class="panel rules">
     <table>
@@ -14,14 +13,14 @@
       <tr>
         <td>Who signs in, and what they see</td>
         <td><code>User</code>, <code>Borrower</code>, <code>Manager</code></td>
-        <td class="dim"><code>getRole()</code> is implemented per subclass. The shell asks the user
-          object for its role; the session never decides.</td>
+        <td class="dim"><code>getRole()</code> is overridden in Borrower and Manager. The shell asks
+          the user object for its role.</td>
       </tr>
       <tr>
         <td>What a late return costs</td>
         <td><code>FeeStrategy</code></td>
-        <td class="dim">One implementation at &#8369;50 per day. A second rule is a second class;
-          this one does not change.</td>
+        <td class="dim">One class at &#8369;50 per day. A different fee rule would be another
+          class.</td>
       </tr>
       <tr>
         <td>Whether a checkout is allowed</td>
@@ -38,5 +37,5 @@
     </table>
   </div>
 
-  <div class="foot"><span>desktop-app/src/kitnapper &middot; model, service, controller, view</span><b>4</b></div>
+  <div class="foot"><b>4</b></div>
 </section>

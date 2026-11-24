@@ -148,6 +148,19 @@ The attribution rules above now run on the Windows machine, not just the origina
 
 ## 9. Implementation Status
 
+- **Deck copy pass** (2026-11-24, D57). The five-slide deck still had page furniture
+  written for the build record rather than the talk: a footer breadcrumb on every
+  content page (`desktop-app/src/kitnapper · model, service, controller, view`, and
+  the D-numbers on slide 5), the cover's `Java 17 · Swing · JDK only · 24 November
+  2026` line, and an aphoristic lead under two headings. Footers are now the page
+  number alone, right-aligned; the cover ends on the signatures; the leads are gone
+  with the `.lead` rule, and the two table cells that ended in a verdict ("the
+  session never decides", "A second rule is a second class; this one does not
+  change") now state the fact instead. Content moved up to fill the space the leads
+  freed (steps and accounts at 208 pt, rules panel at 206 pt with 11 pt row
+  padding), and `.stack` plus the unused `.closer` were deleted. `deck/build.sh` is
+  unchanged; the PDF is still 5 pages at 960 × 540 pt.
+
 - **WP9 — deck rebuilt around the talk** (2026-11-24, D56). The eleven-slide deck
   described the build instead of the project: architecture stack, JSON excerpt,
   verification tiles, lesson cards. In a six-minute slot that is both too long to

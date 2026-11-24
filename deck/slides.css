@@ -57,25 +57,11 @@
     position: absolute;
     left: 0;
     right: 0;
-    top: 430pt;
+    top: 452pt;
     text-align: center;
     font-weight: 300;
     font-size: 14pt;
     color: #f6ecdb;
-}
-
-.stack {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 462pt;
-    text-align: center;
-    font-family: "Mont";
-    font-weight: 700;
-    font-size: 8.4pt;
-    letter-spacing: 1.5pt;
-    text-transform: uppercase;
-    color: rgba(246, 236, 219, 0.6);
 }
 
 /* ---- 02 desk ------------------------------------------------------- */
@@ -86,12 +72,13 @@
 
 /* ---- 03 demo ------------------------------------------------------- */
 
-.steps.demo { top: 214pt; width: 400pt; }
-.panel.accounts { left: auto; right: 52pt; top: 214pt; width: 404pt; }
+.steps.demo { top: 208pt; width: 400pt; }
+.panel.accounts { left: auto; right: 52pt; top: 208pt; width: 404pt; }
 
 /* ---- 04 rules ------------------------------------------------------ */
 
-.panel.rules { top: 198pt; }
+.panel.rules { top: 206pt; padding: 20pt 19pt 16pt; }
+.panel.rules td { padding: 11pt 10pt 11pt 0; }
 
 /* ---- 05 honest ----------------------------------------------------- */
 
