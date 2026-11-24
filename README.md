@@ -29,6 +29,9 @@ The domain core, the hand-written JSON persistence layer, the Windows 11 applica
 - JDK 17 (developed against OpenJDK 17.0.20)
 - NetBeans IDE with Ant project support
 
+Both are needed only to **build**. The packaged Windows app-image below runs on
+a machine with no JDK, no NetBeans and no PATH setup.
+
 ## Repository structure
 
 ```
@@ -67,6 +70,7 @@ Finals/                       (the repository root)
     ├── build.bat             the same compile step for Windows (JDK only)
     ├── run.bat               Windows launcher: build, then kitnapper.Main
     ├── reset-demo.bat        Windows demo prep: delete save + photos, re-seed
+    ├── package.bat           Windows: portable app-image (exe + private runtime)
     ├── build.xml
     ├── manifest.mf
     ├── nbproject/
@@ -143,6 +147,34 @@ reset-demo.bat       :: delete the save + photos so the next launch re-seeds
 Run `reset-demo.bat` with the app closed, on the day of a demo: the seed dataset
 is computed relative to the date it is written, so a stale `kitnapper-data.json`
 shows more overdue loans (and higher live fees) than the SRS §6.1 baseline.
+
+### Windows portable app (no JDK on the demo machine)
+
+`package.bat` turns the build into a self-contained folder — a private Java
+runtime, the app jar, and a `KitNapper.exe` launcher (D55). `jpackage` ships
+with the JDK, so this adds no dependency; it only packages for the host OS, so
+run it on Windows with a full JDK 17 or newer:
+
+```bat
+cd desktop-app
+package.bat          :: -> build\dist\KitNapper\KitNapper.exe (~77 MB, ~26 MB zipped)
+```
+
+Copy that whole `KitNapper` folder to the demo machine and double-click
+`KitNapper.exe`; there is no console window and no installer. The jar inside it
+carries the classes plus `resources\` (Inter and the bundled seed photos), and
+the runtime is trimmed to `java.desktop`.
+
+**Start it from the exe.** `kitnapper-data.json` and `kitnapper-images\` are
+created in the *working directory*, exactly as for `run.bat`; Explorer sets that
+to the folder holding the exe on a double-click, so the save file lands beside
+`KitNapper.exe`. A shortcut keeps its own "Start in" folder, so leave that at
+the app folder. Never extract under `Program Files`: a standard user cannot
+write there, and the app needs to save.
+
+The `KitNapper` folder is not signed, so a copy that arrives as a *download* may
+trigger SmartScreen ("More info" → "Run anyway"). From a USB stick it usually
+does not. Treat `build\dist\` as build output: it is git-ignored.
 
 Build output is written to `build/` and `dist/`, both of which are ignored by Git. The runtime save file (`kitnapper-data.json`) and photo folder (`kitnapper-images/`) are created in the working directory and are ignored too.
 

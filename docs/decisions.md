@@ -148,6 +148,18 @@ The attribution rules above now run on the Windows machine, not just the origina
 
 ## 9. Implementation Status
 
+- **WP8 — Windows demo delivery** (2026-11-24, D55). The app used to reach a demo
+  machine only through NetBeans or a JDK on `PATH`. `build.bat`, `run.bat` and
+  `reset-demo.bat` mirror `build.sh` for a JDK-only Windows box, and `package.bat`
+  produces a self-contained `build\dist\KitNapper` via the JDK's own `jpackage`:
+  `KitNapper.exe` (no console), `app\kitnapper.jar` (classes plus `resources\`, so
+  `/fonts` and `/photos` resolve on the classpath) and a `runtime\` trimmed to
+  `java.desktop` — ~77 MB, ~26 MB zipped, no third-party tool. An installer was
+  rejected: `Program Files` is not writable for a standard user and the save file
+  belongs in the application folder. `*.bat`/`*.cmd` are pinned to CRLF in
+  `.gitattributes`. No source change; 21/21 probes green, and the image was verified
+  on Windows (login renders, data and photos written beside the exe).
+
 - **WP7 — bundled seed photos** (2026-11-24, D50). The demo dataset used to start
   with ten category tiles; it now starts with ten real photos. `resources/photos/e-00N.jpg`
   holds freely licensed Wikimedia Commons images, already encoded by the app's own
