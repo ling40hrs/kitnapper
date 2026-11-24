@@ -5,6 +5,8 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.geom.RoundRectangle2D;
 
 import javax.swing.JPasswordField;
@@ -36,12 +38,30 @@ final class FieldSkin {
         return f;
     }
 
+    /**
+     * The skin is derived from focus at paint time — the 2 px accent underline
+     * and the muted placeholder — but the text UI repaints only the caret's own
+     * strip on a focus change. Without an explicit repaint an unfocused field
+     * keeps the previous frame's underline and a newly focused field keeps its
+     * placeholder under the caret (D52).
+     */
     private static void style(JTextField f) {
         f.setOpaque(false);
         f.setBorder(new EmptyBorder(1, 10, 4, 10));
         f.setForeground(Theme.textPrimary);
         f.setCaretColor(Theme.textPrimary);
         f.setPreferredSize(new Dimension(f.getPreferredSize().width, 32));
+        f.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent event) {
+                f.repaint();
+            }
+
+            @Override
+            public void focusLost(FocusEvent event) {
+                f.repaint();
+            }
+        });
     }
 
     /** Rounded fill + outline + focus underline, drawn beneath the text. */

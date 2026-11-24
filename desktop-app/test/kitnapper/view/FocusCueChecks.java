@@ -33,6 +33,7 @@ final class FocusCueChecks {
         JComboBox<?> filter = UiProbeSupport.find(screen.filters(), JComboBox.class);
         UiProbeSupport.check("combo-skin", filter != null
             && filter.getUI() instanceof ComboSkin);
+        FocusRepaintChecks.run();
         comboValueTokens();
         dateCellTokens();
         if (filter != null) {
