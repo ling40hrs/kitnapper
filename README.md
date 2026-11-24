@@ -189,6 +189,7 @@ Build output is written to `build/` and `dist/`, both of which are ignored by Gi
 | [`docs/implementation-plan.md`](docs/implementation-plan.md) | Build order, class/file inventory, JSON persistence spec, decisions D1–D49 |
 | [`docs/seed-data.md`](docs/seed-data.md) | Where seed data lives and when to split it out |
 | [`docs/preferences.md`](docs/preferences.md) | Tracked, machine-independent working preferences: planning, one-phase execution, document-commit-push, verification |
+| [`docs/pdf-decks.md`](docs/pdf-decks.md) | Portable playbook for the deck pipeline: HTML/CSS → WeasyPrint, font instancing and subsetting, the layout bugs it hit, and the verification loop |
 | [`HANDOFF-M4.md`](HANDOFF-M4.md) | M4 scope note: current state, reuse map, gotchas, probe commands (historical at M4 close-out; the contract was `HANDOFF-M4-PLAN.md`) |
 | [`HANDOFF-M4-PLAN.md`](HANDOFF-M4-PLAN.md) | M4 record: plan, work packages, probe plan, execution log, width pass |
 | [`HANDOFF-M5.md`](HANDOFF-M5.md) | M5 scope note: inventory, photos, reset (historical at M5 close-out; the contract was `HANDOFF-M5-PLAN.md`) |
