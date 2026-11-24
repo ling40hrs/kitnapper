@@ -24,8 +24,8 @@ import kitnapper.service.ImageStore;
 final class InventoryPhotoChecks {
 
     private static final int MATTE = 0x102030;
-    /** Display decode targets the store must honour (design §12). */
-    private static final int CARD_EDGE = 160;
+    /** Display decode targets the store must honour (design §12, D54). */
+    private static final int CARD_EDGE = 400;
     private static final int PREVIEW_EDGE = 640;
 
     private InventoryPhotoChecks() {

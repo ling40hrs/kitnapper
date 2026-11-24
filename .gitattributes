@@ -3,6 +3,10 @@
 # rewrite files and produce whole-file diffs.
 * text=auto eol=lf
 
+# Windows launchers check out with CRLF so cmd.exe parses them reliably.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
 # Binary assets: never normalize, never diff as text.
 *.ttf binary
 *.otf binary

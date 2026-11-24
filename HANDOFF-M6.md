@@ -5,7 +5,9 @@
 > interactive SRS §6.2 walkthrough are both recorded. The walkthrough found
 > fifteen defects, all fixed at the root in one work package (D44–D49) with new
 > probes. `HANDOFF-M6-PLAN.md` holds the plan, the work packages, and the full
-> execution log (§16); WP6 (the presentation deck) is the only milestone left.
+> execution log (§16); WP6 (the presentation deck) shipped 2026-11-17 and was
+> restyled in WP7 (2026-11-24, also in §16). Every milestone and work package is
+> delivered.
 
 ## 1. Where things stand
 

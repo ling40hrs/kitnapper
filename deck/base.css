@@ -1,53 +1,146 @@
-/* KitNapper deck — page frame, palette and type scale.
-   16:9 (960 × 540 pt), dark theme, bundled Inter; tokens mirror view/Theme.java. */
+/* KitNapper deck — page frame, palette, chrome and type scale.
+   Warm template: chocolate-to-amber gradient, cream cards, Montserrat display.
+   Fonts are bundled (OFL) so the deck renders the same on every machine. */
 
-@font-face { font-family: "Inter"; src: url("../desktop-app/resources/fonts/Inter-Regular.ttf"); font-weight: 400; }
-@font-face { font-family: "Inter"; src: url("../desktop-app/resources/fonts/Inter-SemiBold.ttf"); font-weight: 600; }
-@font-face { font-family: "Inter"; src: url("../desktop-app/resources/fonts/Inter-Bold.ttf"); font-weight: 700; }
+@font-face { font-family: "Mont"; src: url("fonts/Montserrat-Regular.ttf"); font-weight: 400; }
+@font-face { font-family: "Mont"; src: url("fonts/Montserrat-Bold.ttf"); font-weight: 700; }
+@font-face { font-family: "Sauce"; src: url("fonts/OpenSauceOne-Light.ttf"); font-weight: 300; }
+@font-face { font-family: "Sauce"; src: url("fonts/OpenSauceOne-Regular.ttf"); font-weight: 400; }
+@font-face { font-family: "Sauce"; src: url("fonts/OpenSauceOne-Bold.ttf"); font-weight: 700; }
 
-@page { size: 960pt 540pt; margin: 0; background: #1b1b1b; }
+@page { size: 960pt 540pt; margin: 0; }
 
-html, body { margin: 0; padding: 0; background: #1b1b1b; }
+html, body { margin: 0; padding: 0; background: #2e2216; }
 
-body { font-family: "Inter", sans-serif; color: #f5f5f5; font-size: 12.5pt; line-height: 1.45; }
+body {
+    font-family: "Sauce", "Mont", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.45;
+    color: #3a2a1a;
+}
+
+/* ---- page ---------------------------------------------------------- */
 
 .slide {
     position: relative;
     width: 960pt;
     height: 540pt;
-    padding: 46pt 54pt 44pt;
-    box-sizing: border-box;
     overflow: hidden;
     page-break-after: always;
+    background: linear-gradient(163deg, #2e2216 0%, #4a3419 26%,
+                #7c561d 52%, #c08a1f 76%, #eba124 100%);
 }
+
 .slide:last-child { page-break-after: auto; }
 
-.kicker {
-    font-size: 8.5pt;
-    font-weight: 600;
-    letter-spacing: 2.6pt;
-    text-transform: uppercase;
-    color: #f0a32e;
+/* ---- background furniture ------------------------------------------ */
+
+.glow {
+    position: absolute;
+    right: -140pt;
+    top: -170pt;
+    width: 520pt;
+    height: 520pt;
+    border-radius: 50%;
+    background: radial-gradient(circle at 32% 68%,
+                rgba(255, 226, 175, 0.30) 0%,
+                rgba(255, 205, 130, 0.12) 42%,
+                rgba(255, 190, 100, 0) 68%);
 }
 
-.rule { width: 58pt; height: 3pt; background: #f0a32e; margin: 12pt 0 0; }
-
-h1 { font-size: 54pt; font-weight: 700; letter-spacing: -1.8pt; line-height: 1; margin: 14pt 0 0; }
-
-h2 { font-size: 25pt; font-weight: 700; letter-spacing: -0.5pt; line-height: 1.15; margin: 13pt 0 0; }
-
-.lead { font-size: 12.5pt; color: #b4b4b4; margin: 8pt 0 0; max-width: 620pt; }
-
-.footer {
+.glow-ring {
     position: absolute;
-    left: 54pt;
-    right: 54pt;
-    bottom: 18pt;
+    right: -150pt;
+    top: -175pt;
+    width: 505pt;
+    height: 505pt;
+    border-radius: 50%;
+    border: 1.4pt solid rgba(255, 231, 190, 0.32);
+}
+
+.shard { position: absolute; }
+.shard-tr { right: -62pt; top: -68pt; width: 140pt; height: 140pt; transform: rotate(12deg); }
+.shard-bl { left: -84pt; bottom: -92pt; width: 210pt; height: 210pt; transform: rotate(8deg); opacity: 0.55; }
+.shard-br { right: -78pt; bottom: -96pt; width: 205pt; height: 205pt; transform: rotate(-10deg); opacity: 0.55; }
+
+/* ---- chrome -------------------------------------------------------- */
+
+.ciit { position: absolute; left: 52pt; top: 34pt; width: 96pt; }
+
+.meta {
+    position: absolute;
+    right: 52pt;
+    top: 40pt;
+    text-align: right;
+    font-size: 12pt;
+    font-weight: 300;
+    color: #f6ecdb;
+}
+.meta b {
+    display: block;
+    font-family: "Mont";
+    font-weight: 700;
+    font-size: 13pt;
+    letter-spacing: 0.4pt;
+    margin-top: 1pt;
+    color: #ffffff;
+}
+
+.tab { position: absolute; left: 0; top: 108pt; width: 13pt; height: 74pt; background: #f5a723; }
+
+.sec {
+    position: absolute;
+    left: 52pt;
+    top: 112pt;
+    margin: 0;
+    white-space: nowrap;
+    font-family: "Mont";
+    font-weight: 700;
+    font-size: 44pt;
+    line-height: 1;
+    letter-spacing: -1.4pt;
+    text-transform: uppercase;
+    color: #ede2d2;
+}
+
+.lead {
+    position: absolute;
+    left: 52pt;
+    right: 300pt;
+    top: 170pt;
+    margin: 0;
+    font-weight: 300;
+    font-size: 13pt;
+    line-height: 1.4;
+    color: #f6ecdb;
+}
+
+.closer {
+    position: absolute;
+    left: 52pt;
+    right: 52pt;
+    bottom: 34pt;
+    font-family: "Mont";
+    font-weight: 700;
+    font-size: 15pt;
+    line-height: 1.2;
+    letter-spacing: -0.3pt;
+    color: #3b2410;
+}
+.closer em { font-style: normal; color: #7a3f00; }
+
+.foot {
+    position: absolute;
+    left: 52pt;
+    right: 52pt;
+    bottom: 14pt;
     display: flex;
     justify-content: space-between;
-    font-size: 8pt;
-    letter-spacing: 1.6pt;
+    font-family: "Mont";
+    font-weight: 700;
+    font-size: 6.8pt;
+    letter-spacing: 1.1pt;
     text-transform: uppercase;
-    color: #6f6f6f;
+    color: rgba(59, 36, 16, 0.66);
 }
-.footer b { color: #8d8d8d; font-weight: 600; }
+.foot b { color: #7a3f00; }

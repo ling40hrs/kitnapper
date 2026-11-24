@@ -25,8 +25,14 @@ final class PhotoTile extends JPanel implements SkeletonGate.Slot {
 
     private static final long serialVersionUID = 1L;
 
-    /** Card thumbnail decode target (design §12). */
-    static final int CARD_EDGE_PX = 160;
+    /**
+     * Card thumbnail decode target (design §12, D54): the card media block is
+     * 200 logical px wide at the default window and wider when the grid
+     * stretches, and the tile must carry device pixels at {@code uiScale}
+     * 1.0–1.5 (200 × 1.5 = 300). Decoding below the painted size upscales the
+     * thumbnail on screen, which is what made the cards look blurry.
+     */
+    static final int CARD_EDGE_PX = 400;
 
     /** Preview-pane and dialog-well decode target (design §12). */
     static final int PREVIEW_EDGE_PX = 640;
@@ -60,7 +66,8 @@ final class PhotoTile extends JPanel implements SkeletonGate.Slot {
         this.category = category == null ? EquipmentCategory.OTHER : category;
         setOpaque(false);
         setLayout(new BorderLayout());
-        setPreferredSize(new Dimension(width, Math.max(1, Math.round(width * 9f / 16f))));
+        setPreferredSize(new Dimension(width, MediaRatioLayout.heightFor(width)));
+        setAlignmentX(LEFT_ALIGNMENT);
         getAccessibleContext().setAccessibleName(label == null ? null : "Photo of " + label);
         load(photoFile);
     }
@@ -107,10 +114,13 @@ final class PhotoTile extends JPanel implements SkeletonGate.Slot {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
             RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-            RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            RenderingHints.VALUE_INTERPOLATION_BICUBIC);
         int boxWidth = getWidth();
         int boxHeight = getHeight();
-        g2.setClip(new RoundRectangle2D.Double(0, 0, boxWidth, boxHeight, RADIUS, RADIUS));
+        // Intersect with the incoming clip; setClip would discard the damage
+        // clip Swing passes down and let a partly scrolled tile paint outside
+        // the viewport (the scroll smear over the header).
+        g2.clip(new RoundRectangle2D.Double(0, 0, boxWidth, boxHeight, RADIUS, RADIUS));
         double scale = Math.max(boxWidth / (double) image.getWidth(),
             boxHeight / (double) image.getHeight());
         int drawWidth = (int) Math.round(image.getWidth() * scale);

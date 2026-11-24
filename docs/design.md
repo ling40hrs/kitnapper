@@ -456,7 +456,7 @@ skeleton placeholders (§13); `UIManager` defaults are set once in `Theme.apply(
   `<equipmentId>.jpg` — one photo per item; re-uploading replaces it.
 - **Import:** `JFileChooser` → validate extension (`png`, `jpg`, `jpeg`, `gif`, `bmp`)
   and source size (≤ 20 MB) → decode via `ImageIO` → downscale to 1024 px longest edge
-  (`Graphics2D`, bilinear) → re-encode JPEG quality 0.85, alpha flattened onto
+  (`Graphics2D`, stepped bicubic — D54) → re-encode JPEG quality 0.85, alpha flattened onto
   `BG_SURFACE` → written atomically (tmp file + move, same pattern as the JSON save).
 - **Staging (delivered in M5):** an import runs when the file is chosen and writes
   `staging-<n>.jpg` first; saving the item promotes it to `<equipmentId>.jpg`, while
@@ -466,9 +466,16 @@ skeleton placeholders (§13); `UIManager` defaults are set once in `Theme.apply(
 - **Model:** optional nullable `photoFile` on `Equipment`; JSON field `photoFile`.
   `schemaVersion` stays 1 — the field is additive, so existing save files load unchanged
   (decision D8).
-- **Display:** catalog cards use a 160 px thumbnail, the preview pane 640 px; both decode
-  off the EDT and cache. A missing or corrupt file falls back to the category tile
-  (§3.5) with no error surface.
+- **Display:** catalog cards decode a 400 px thumbnail, the preview pane 640 px; both
+  decode off the EDT and cache. The card's 16:9 media block is 200 logical px at the
+  default window and wider when the grid stretches, and the tile must carry device
+  pixels at `uiScale` 1.5 (200 × 1.5 = 300), so a 160 px thumbnail was upscaled on
+  screen and read as blurry (D54). A missing or corrupt file falls back to the
+  category tile (§3.5) with no error surface.
+- **Painting (D53):** a tile intersects the clip Swing hands it (`g2.clip`, never
+  `setClip`). Replacing the clip discards a scroll repaint's damage region, so a tile
+  that straddles the viewport's top edge would paint its full 16:9 block above the
+  scroll pane, over the page header.
 - **Bundled seed photos (D50):** ten JPEGs ship in `resources/photos/`, already
   encoded by this pipeline (1024 px longest edge, quality 0.85), so installing one is
   a file copy — never a decode. Each seed item's `photoFile` is `<id>.jpg`;
@@ -487,7 +494,7 @@ skeleton placeholders (§13); `UIManager` defaults are set once in `Theme.apply(
 
 **Delivered in M5 (2026-11-16).** The pipeline above ships in `service/ImageStoreImpl`
 with the encode primitives in `PhotoCodec` and the limits in `ImageRules`. Display runs
-through `view/PhotoTile` (160 px card, 640 px preview, off-EDT decode behind
+through `view/PhotoTile` (400 px card, 640 px preview, off-EDT decode behind
 `SkeletonGate`, LRU `PhotoCache`, category-tile fallback), and the import busy state lives
 in `view/PhotoWell`: the media skeleton plus disabled buttons for the whole import.
 
@@ -511,7 +518,7 @@ import and the reduced-motion switch later in M5, audited in M6.
 | :--- | :--- | :--- |
 | Launch / `DataStore.load()` | **No** | The save file is a few KB and loads before the first frame paints; the window appears fully populated. Deliberate non-application — not a candidate for "loading theater". |
 | Catalog / dashboard / loan queries | **Gated** | In-memory list scans, applied synchronously on the EDT (`NFR-02` immediacy). A query is only handed to a worker, and its skeleton shown, when it *measures* ≥ 150 ms first. Never speculative. **Measured in M6 (D40 closed):** at seed scale the slowest of catalog-all/text/filter and loans-mine/all/overdue, dashboard activity and dashboard overdue is **0.46 ms** (medians 0.01–0.12 ms, 100 runs after a 20-run warmup). Three orders of magnitude under the gate, so no query gets a skeleton and none should. |
-| Photo decode (160 px card thumb, 640 px preview, inventory row) | **Yes** | Media block over the 16:9 area while `ImageIO` runs off the EDT; resolves to the photo or the §12 fallback tile. |
+| Photo decode (400 px card thumb, 640 px preview, inventory row) | **Yes** | Media block over the 16:9 area while `ImageIO` runs off the EDT; resolves to the photo or the §12 fallback tile. |
 | Photo import (choose → downscale → re-encode) | **Yes** | Media block for the whole import; the confirming button enters a disabled busy state. |
 | Reset demo data | **No** | Confirmed dialog → synchronous reset → screen refresh + toast. |
 | Anything else | **Gated** | Requires a measured ≥ 150 ms operation; never decorative. |
@@ -655,5 +662,7 @@ added (files.community, shelf.nu); implementation plan written (`M0–M6`, D1–
 | **D-Icons** | Fixed in M6 (2026-11-16) during the WP4 icon audit: `Fonts.icons()` used to hand back the *text* family when no Windows icon font was installed, so on Linux the §10 fallback column was drawn with the bundled physical Inter font, which has no glyph for 8 of the 12 landscape glyphs — title-bar brand, close, wrench, search, moon, minimize, restore and every category tile rendered as missing-glyph boxes. `Fonts` now splits the two roles: `icons()` is the Windows icon font *or* `symbol()`, and `symbol()` is the logical `Dialog` font, which composites the system fonts and falls back per glyph. `GradientTile` draws the category glyphs with `symbol()`, never with an icon font (§10). |
 | **D-Walkthrough** | M6 WP5 interactive pass (2026-11-17) amended §5/§6/§9: toasts wrap once before ellipsising (48 → 66 px, D44); combos and the due-date picker keep their tokens on focus with a 2 px accent underline, never the LAF blue (D45); status columns are sized from the widest badge (D46); the omnibar search shows only on Catalog/Inventory and the status bar is per-route (D47); dialog copy and the return fee note wrap to their content width (D48); a row selection updates the status line immediately (D49). The 1024×640 F-preview guard carries over unchanged. |
 | **D-Media** | Fixed 2026-11-24 after M6: the §12 16:9 media block was clipped — the placeholder and every photo were cropped at the right and bottom of the preview pane. The cause was layout, not painting: the slot was a centered (0.5 `alignmentX`), uncapped `BorderLayout` panel inside the `BoxLayout` info column, so `BoxLayout` widened it to 361 px in a 247 px pane and stretched the tile to the column's full height; a fixed `preferredSize` also went off-ratio once the metadata guard grew a scrollbar and narrowed the column. `MediaRatioLayout` now derives the tile height from the measured slot width, slots and tiles are left-aligned and capped, and `PreviewScroll` tracks the viewport's width but not its height (amending D42). `GeometryChecks` asserts `media-inside` and `media-ratio` at four window sizes. Recorded as D51 in `implementation-plan.md` (§6, §12). |
+| **D-TileClip** | Fixed 2026-11-24 after M6: scrolling the catalog's cards view painted the photos (and the fallback gradient) above the scroll pane, over the page header. `PhotoTile` and `GradientTile` called `g2.setClip(...)`, which *replaces* the damage clip a scroll repaint hands down; a tile straddling the viewport's top edge then painted its whole 16:9 block from its own origin, outside the area Swing asked it to repaint. Both now intersect with `g2.clip(...)`, so every tile stays inside the region being repainted (§12 painting note). `PhotoTileChecks` asserts the inherited clip for a photo and for the fallback tile. Recorded as D53 in `implementation-plan.md`. |
 | **D-FieldFocus** | Fixed 2026-11-24 after M6: the §6 field skin went stale. `FieldSkin` paints its 2 px `ACCENT` bottom border and its muted placeholder from `hasFocus()`, but nothing repainted the field when focus moved — the text UI only repaints the caret's own strip — so an unfocused field kept the previous frame's accent underline and a newly focused field kept its placeholder under the caret. The skin now installs a focus listener that repaints the whole field (D52). The combo's chevron was a separate painting bug: Metal draws its arrow in `getControlInfo()` = `#333333` on the `#323232` `BG_CONTROL` fill — one shade apart — so only the LAF button border showed, as an empty square. `ComboSkin` now supplies its own chevron in `TEXT_SECONDARY` and drops that border. `FocusRepaintChecks` asserts both. Recorded as D52 in `implementation-plan.md` (§6). |
 | **D-Audit** | M6 WP4 audits (2026-11-16): icons verified pair by pair (`GlyphChecks`, 12 shipped pairs + 6 category glyphs), the suite run at `KITNAPPER_UI_SCALE` 1.25 and 1.5 (20/20 each), query timings measured to close D32 (`max 0.46 ms` against the 150 ms gate, so no query gating), the skeleton §13 list closed with four new assertions plus a real 10 s watchdog run, and a both-theme sweep over catalog, inventory, penalties and Settings asserting every role-marked label follows the active token set. |
+| **D-PhotoQuality** | Fixed 2026-11-24 after M6: catalog card photos looked blurry. Two causes, both in the decode path rather than the theme. (1) The card tile decoded at **160 px** while its 16:9 media block paints at 200 logical px at the default window (and wider when the 3-column grid stretches) — at `uiScale` 1.25, the reported case, a 160 px source was bilinear-upscaled to ~234 device px. The target is now **400 px**, which carries device pixels for the 200 px card at 1.5 scaling and leaves headroom for a wider window (`PhotoTile.CARD_EDGE_PX`). (2) `PhotoCodec.downscale` shrank 1024 → 160 in a *single* bilinear pass, averaging a whole source neighbourhood into each output pixel; it now halves while the step still stays above the target and finishes with one bicubic pass, so card thumbnails and the 640 px preview keep their edges. `PhotoTile.paintComponent` also paints the residual cover-scale with bicubic interpolation. `PhotoTileChecks` asserts the 300-device-pixel floor on the card target and that the preview target stays larger. Recorded as D54 in `implementation-plan.md` (§12, §13). |

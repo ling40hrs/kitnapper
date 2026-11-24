@@ -19,7 +19,7 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 
 /**
- * The blank-image primitives {@link ImageStoreImpl} composes: bilinear
+ * The blank-image primitives {@link ImageStoreImpl} composes: stepped bicubic
  * downscale, alpha flattening onto an opaque matte (D34), JPEG q0.85
  * encoding, and the atomic tmp-file move the save file also uses
  * (design §12). Split out so the store stays under the 200-line cap.
@@ -29,20 +29,40 @@ final class PhotoCodec {
     private PhotoCodec() {
     }
 
-    /** Scales down only when the longest edge exceeds {@code maxEdge}. */
+    /**
+     * Scales down only when the longest edge exceeds {@code maxEdge}.
+     *
+     * <p>Halves while the next step still stays above the target, then finishes
+     * in one bicubic pass. A single 1024 → 160 step samples past most of the
+     * source — bilinear averages a whole source neighbourhood into each output
+     * pixel — so the thumbnail reads as smeared (D54). Stepping keeps the
+     * detail, and bicubic keeps the remaining edges crisp.</p>
+     */
     static BufferedImage downscale(BufferedImage source, int maxEdge) {
         int longest = Math.max(source.getWidth(), source.getHeight());
         if (maxEdge <= 0 || longest <= maxEdge) {
             return source;
         }
-        double factor = (double) maxEdge / longest;
-        int width = Math.max(1, (int) Math.round(source.getWidth() * factor));
-        int height = Math.max(1, (int) Math.round(source.getHeight() * factor));
+        BufferedImage current = source;
+        int currentLongest = longest;
+        while (currentLongest / 2 >= maxEdge) {
+            current = scale(current, Math.max(1, current.getWidth() / 2),
+                    Math.max(1, current.getHeight() / 2));
+            currentLongest = Math.max(current.getWidth(), current.getHeight());
+        }
+        double factor = (double) maxEdge / currentLongest;
+        int width = Math.max(1, (int) Math.round(current.getWidth() * factor));
+        int height = Math.max(1, (int) Math.round(current.getHeight() * factor));
+        return scale(current, width, height);
+    }
+
+    /** One bicubic-resampled copy at an exact size. */
+    private static BufferedImage scale(BufferedImage source, int width, int height) {
         BufferedImage scaled = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = scaled.createGraphics();
         try {
             g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                    RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                    RenderingHints.VALUE_INTERPOLATION_BICUBIC);
             g2.setRenderingHint(RenderingHints.KEY_RENDERING,
                     RenderingHints.VALUE_RENDER_QUALITY);
             g2.drawImage(source, 0, 0, width, height, null);

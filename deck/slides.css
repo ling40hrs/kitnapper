@@ -1,0 +1,151 @@
+/* KitNapper deck — per-slide layout. Loaded after components.css. */
+
+
+/* ---- 01 title ------------------------------------------------------ */
+
+.mark-top { position: absolute; left: 436pt; top: 96pt; width: 88pt; }
+
+.hero {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 210pt;
+    margin: 0;
+    font-family: "Mont";
+    font-weight: 700;
+    font-size: 88pt;
+    line-height: 0.96;
+    letter-spacing: -3.6pt;
+    text-align: center;
+    text-transform: uppercase;
+    color: #ffffff;
+}
+
+.tagline {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 336pt;
+    text-align: center;
+    font-weight: 300;
+    font-size: 15pt;
+    color: rgba(255, 244, 226, 0.82);
+}
+
+.hairline {
+    position: absolute;
+    left: 52pt;
+    right: 52pt;
+    top: 420pt;
+    height: 1.6pt;
+    background: rgba(240, 224, 200, 0.45);
+}
+
+.names {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 436pt;
+    text-align: center;
+    font-weight: 300;
+    font-size: 14pt;
+    color: #f6ecdb;
+}
+
+/* ---- 02 problem ---------------------------------------------------- */
+
+.cards.problem { top: 208pt; }
+.cards.problem .card { height: 210pt; }
+
+/* ---- 03/04 demo ---------------------------------------------------- */
+
+.steps { top: 200pt; }
+.mat.catalog { right: 52pt; top: 168pt; width: 470pt; }
+.mat.dash { left: 52pt; top: 186pt; width: 460pt; }
+.mat.ret { left: 430pt; top: 232pt; width: 232pt; z-index: 2; }
+
+/* ---- 05 shelf ------------------------------------------------------ */
+
+.shelf { top: 192pt; padding-top: 16pt; }
+.shot { text-align: center; }
+.shot img { height: 140pt; width: auto; max-width: 100%; }
+.closer.mid { bottom: auto; top: 398pt; }
+
+/* ---- 06 architecture ----------------------------------------------- */
+
+.layer { padding: 10pt 13pt; }
+.layers { top: 206pt; }
+
+.arch-notes { position: absolute; right: 52pt; top: 206pt; width: 350pt; }
+
+.note-card {
+    background: #ece1d1;
+    border-radius: 9pt;
+    padding: 11pt 13pt;
+    margin-bottom: 10pt;
+}
+.note-card h3 {
+    margin: 0 0 4pt;
+    font-family: "Mont";
+    font-weight: 700;
+    font-size: 9.5pt;
+    line-height: 1.16;
+    text-transform: uppercase;
+    letter-spacing: -0.1pt;
+    color: #8c4e05;
+}
+.note-card p { margin: 0; font-size: 8.8pt; line-height: 1.38; color: #4a3826; }
+
+/* ---- 07 OOP -------------------------------------------------------- */
+/* WeasyPrint never wraps a flex container, so the 2x2 grids are inline-block
+   with font-size:0 on the parent to swallow the inter-element whitespace. */
+
+.cards.pillars { top: 208pt; display: block; font-size: 0; }
+.cards.pillars .card {
+    display: inline-block;
+    vertical-align: top;
+    width: 414pt;
+    height: 122pt;
+    margin: 0 12pt 14pt 0;
+    padding-bottom: 14pt;
+}
+.pillar h3 { font-size: 11.5pt; }
+
+/* ---- 08 persistence ------------------------------------------------ */
+
+.facts { position: absolute; left: 52pt; top: 206pt; width: 396pt; }
+
+.fact { display: flex; gap: 10pt; margin-bottom: 9pt; }
+.fact .n {
+    flex: 0 0 15pt;
+    font-family: "Mont";
+    font-weight: 700;
+    font-size: 9pt;
+    line-height: 1.55;
+    color: #ffe7bd;
+}
+.fact p { margin: 0; font-size: 9.6pt; line-height: 1.4; color: #f4e9d8; }
+.fact p b { color: #ffffff; font-weight: 700; }
+
+.code { top: 202pt; }
+.code-cap { position: absolute; right: 52pt; top: 182pt; width: 396pt; }
+
+/* ---- 09 verification ----------------------------------------------- */
+
+.tiles { top: 208pt; }
+
+/* ---- 10 limitations ------------------------------------------------ */
+
+.panel { top: 196pt; }
+.panel td { padding: 9.5pt 10pt 9.5pt 0; font-size: 9.4pt; }
+
+/* ---- 11 lessons ---------------------------------------------------- */
+
+.quotes { top: 208pt; display: block; font-size: 0; }
+.quotes .quote {
+    display: inline-block;
+    vertical-align: top;
+    width: 414pt;
+    height: 112pt;
+    margin: 0 12pt 14pt 0;
+}

@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # Assembles the KitNapper deck and renders it with weasyprint.
 # Each slide lives in its own file so no source file grows past the 200-line
-# ceiling; this script glues them into one document with the shared stylesheet.
+# ceiling; this script glues them into one document with the shared stylesheets.
 #
 # Usage: deck/build.sh   (from anywhere; writes assets/kitnapper-presentation.pdf)
 
@@ -15,7 +15,7 @@ trap 'rm -f "$TMP"' EXIT
 {
     printf '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8" />\n'
     printf '<title>KitNapper — presentation</title>\n<style>\n'
-    cat base.css style.css
+    cat base.css components.css panels.css slides.css
     printf '</style>\n</head>\n<body>\n'
     for slide in slide-*.html; do
         cat "$slide"

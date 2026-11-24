@@ -1,0 +1,140 @@
+/* KitNapper deck — components: cream cards, steps, mats, contact sheet. */
+
+
+/* ---- cream cards --------------------------------------------------- */
+
+.cards {
+    position: absolute;
+    left: 52pt;
+    right: 52pt;
+    display: flex;
+    gap: 15pt;
+}
+
+.card {
+    position: relative;
+    flex: 1;
+    box-sizing: border-box;
+    background: #ece1d1;
+    border-radius: 9pt;
+    padding: 15pt 16pt 52pt;
+}
+
+.badge {
+    width: 26pt;
+    height: 26pt;
+    border-radius: 50%;
+    background: #f5a723;
+    font-family: "Mont";
+    font-weight: 700;
+    font-size: 12pt;
+    line-height: 26pt;
+    color: #ffffff;
+    text-align: center;
+    margin-bottom: 9pt;
+}
+
+.card h3 {
+    margin: 0 0 6pt;
+    font-family: "Mont";
+    font-weight: 700;
+    font-size: 12.5pt;
+    line-height: 1.15;
+    letter-spacing: -0.2pt;
+    text-transform: uppercase;
+    color: #8c4e05;
+}
+
+.card p {
+    margin: 0;
+    font-size: 10.2pt;
+    line-height: 1.42;
+    color: #4a3826;
+}
+
+.strip {
+    position: absolute;
+    left: 16pt;
+    right: 16pt;
+    bottom: 14pt;
+    background: #cfc9c1;
+    border-radius: 4pt;
+    padding: 6.5pt 8pt;
+    font-size: 8.6pt;
+    line-height: 1.36;
+    color: #3a2a1a;
+}
+
+/* ---- numbered steps (demo rails) ----------------------------------- */
+
+.steps { position: absolute; left: 52pt; width: 300pt; }
+
+.step { display: flex; gap: 9pt; margin-bottom: 9pt; }
+
+.step .n {
+    flex: 0 0 17pt;
+    width: 17pt;
+    height: 17pt;
+    border-radius: 50%;
+    background: rgba(255, 240, 215, 0.16);
+    border: 0.8pt solid rgba(255, 225, 180, 0.42);
+    font-family: "Mont";
+    font-weight: 700;
+    font-size: 8pt;
+    line-height: 16pt;
+    color: #ffe7bd;
+    text-align: center;
+}
+
+.step p { margin: 0; font-size: 10.2pt; line-height: 1.4; color: #f4e9d8; }
+.step p b { font-weight: 700; color: #ffffff; }
+
+/* ---- screenshots on cream mats ------------------------------------- */
+
+.mat {
+    position: absolute;
+    background: #ece1d1;
+    border-radius: 9pt;
+    padding: 9pt 9pt 0;
+    box-shadow: 0 12pt 30pt rgba(30, 18, 6, 0.34);
+}
+.mat img { display: block; width: 100%; border-radius: 4pt; }
+
+.mat .cap {
+    font-family: "Mont";
+    font-weight: 700;
+    font-size: 7.2pt;
+    line-height: 1.32;
+    letter-spacing: 1.2pt;
+    text-transform: uppercase;
+    color: #8c4e05;
+    padding: 6pt 1pt 8pt;
+}
+
+/* ---- contact-sheet shelf ------------------------------------------- */
+
+.shelf {
+    position: absolute;
+    left: 52pt;
+    right: 52pt;
+    box-sizing: border-box;
+    background: #ece1d1;
+    border-radius: 10pt;
+    padding: 13pt 15pt 7pt;
+    display: flex;
+    gap: 15pt;
+    align-items: flex-start;
+}
+
+.shot { flex: 1; }
+.shot img { display: block; width: 100%; border-radius: 4pt; }
+.shot .cap {
+    font-family: "Mont";
+    font-weight: 700;
+    font-size: 6.4pt;
+    line-height: 1.3;
+    letter-spacing: 1pt;
+    text-transform: uppercase;
+    color: #8c4e05;
+    padding: 6pt 1pt 0;
+}

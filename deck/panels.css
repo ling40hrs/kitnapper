@@ -1,0 +1,180 @@
+/* KitNapper deck — panels: layer stack, code, table, stat tiles, quotes. */
+
+
+/* ---- layer stack --------------------------------------------------- */
+
+.layers { position: absolute; left: 52pt; width: 470pt; }
+
+.layer {
+    display: flex;
+    align-items: center;
+    background: #ece1d1;
+    border-radius: 6pt;
+    padding: 8pt 13pt;
+}
+.layer b {
+    width: 96pt;
+    font-family: "Mont";
+    font-weight: 700;
+    font-size: 11pt;
+    color: #3a2a1a;
+}
+.layer i { font-style: normal; font-size: 9pt; color: #5b4630; }
+.layer .count {
+    margin-left: auto;
+    font-family: "Mont";
+    font-weight: 700;
+    font-size: 11pt;
+    color: #c07a05;
+}
+
+.larrow {
+    text-align: center;
+    font-size: 7.6pt;
+    letter-spacing: 0.5pt;
+    color: rgba(255, 240, 215, 0.82);
+    padding: 3pt 0 4pt;
+}
+
+/* ---- code panel ---------------------------------------------------- */
+
+.code {
+    position: absolute;
+    right: 52pt;
+    width: 396pt;
+    box-sizing: border-box;
+    background: #2e2115;
+    border-radius: 8pt;
+    padding: 12pt 15pt;
+    font-size: 8.2pt;
+    line-height: 1.62;
+    color: #efe2cc;
+    white-space: pre;
+}
+.code .k { color: #f5a723; }
+.code .s { color: #b9d6a3; }
+.code-cap {
+    font-family: "Mont";
+    font-weight: 700;
+    font-size: 7.2pt;
+    letter-spacing: 1.2pt;
+    text-transform: uppercase;
+    color: #ffe7bd;
+}
+
+/* ---- cream panel + table ------------------------------------------- */
+
+.panel {
+    position: absolute;
+    left: 52pt;
+    right: 52pt;
+    box-sizing: border-box;
+    background: #ece1d1;
+    border-radius: 9pt;
+    padding: 15pt 19pt 12pt;
+}
+
+table { width: 100%; border-collapse: collapse; }
+
+th {
+    text-align: left;
+    font-family: "Mont";
+    font-weight: 700;
+    font-size: 7.4pt;
+    letter-spacing: 1.2pt;
+    text-transform: uppercase;
+    color: #8c4e05;
+    padding: 0 10pt 5pt 0;
+    border-bottom: 1.2pt solid rgba(140, 78, 5, 0.35);
+}
+
+td {
+    font-size: 9.4pt;
+    line-height: 1.36;
+    color: #4a3826;
+    padding: 6.5pt 10pt 6.5pt 0;
+    border-bottom: 0.6pt solid rgba(140, 78, 5, 0.18);
+    vertical-align: top;
+}
+td.dim { color: #6b5238; }
+
+/* ---- stat tiles ---------------------------------------------------- */
+
+.tiles {
+    position: absolute;
+    left: 52pt;
+    right: 52pt;
+    display: block;
+    font-size: 0;
+}
+
+.tile {
+    display: inline-block;
+    vertical-align: top;
+    margin: 0 12pt 12pt 0;
+    width: 200pt;
+    height: 84pt;
+    box-sizing: border-box;
+    background: #ece1d1;
+    border-radius: 8pt;
+    padding: 10pt 12pt;
+}
+.tile b {
+    display: block;
+    font-family: "Mont";
+    font-weight: 700;
+    font-size: 25pt;
+    line-height: 1;
+    letter-spacing: -1pt;
+    color: #c87e06;
+}
+.tile span {
+    display: block;
+    margin-top: 5pt;
+    font-size: 8.2pt;
+    line-height: 1.3;
+    color: #4a3826;
+}
+
+/* ---- quote cards --------------------------------------------------- */
+
+.quotes { position: absolute; left: 52pt; right: 52pt; display: flex; gap: 14pt; }
+
+.quote {
+    flex: 1;
+    position: relative;
+    box-sizing: border-box;
+    background: #ece1d1;
+    border-radius: 9pt;
+    padding: 20pt 17pt 40pt;
+}
+.quote p {
+    margin: 0;
+    font-family: "Mont";
+    font-weight: 700;
+    font-size: 12.5pt;
+    line-height: 1.2;
+    letter-spacing: -0.2pt;
+    color: #3a2a1a;
+}
+.quote .num {
+    position: absolute;
+    right: 15pt;
+    top: 11pt;
+    font-family: "Mont";
+    font-weight: 700;
+    font-size: 26pt;
+    line-height: 1;
+    letter-spacing: -1pt;
+    color: rgba(200, 126, 6, 0.34);
+}
+
+.quote span {
+    position: absolute;
+    left: 17pt;
+    right: 17pt;
+    bottom: 15pt;
+    font-size: 8.8pt;
+    line-height: 1.4;
+    color: #5b4630;
+}

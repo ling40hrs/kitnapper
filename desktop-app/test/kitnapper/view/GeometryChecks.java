@@ -44,12 +44,36 @@ final class GeometryChecks {
             }
         }
         UiProbeSupport.check(tag + "-label-inside", inside);
+        media(tag, preview);
         JScrollPane scroll = UiProbeSupport.find(preview, JScrollPane.class);
         if (scroll != null) {
             int need = scroll.getViewport().getView().getPreferredSize().height;
             int have = scroll.getViewport().getExtentSize().height;
             UiProbeSupport.check(tag + "-scroll-guard", have <= 0 || need <= have
                 || scroll.getVerticalScrollBar().isShowing());
+        }
+    }
+
+    /**
+     * The §12 media block keeps its 16:9 shape inside the pane: the tile is
+     * never wider or taller than the slot it was built for, so neither the
+     * fallback glyph nor a cover-scaled photo is clipped at the edge. Guards
+     * the M6 clipping defect (a centered, uncapped slot in the BoxLayout
+     * column was stretched by the leftover height).
+     */
+    private static void media(String tag, JComponent preview) {
+        for (Component child : descendants(preview)) {
+            if (!(child instanceof GradientTile) && !(child instanceof PhotoTile)) {
+                continue;
+            }
+            JComponent tile = (JComponent) child;
+            java.awt.Dimension slot = tile.getParent().getSize();
+            boolean fits = tile.getWidth() <= slot.width && tile.getHeight() <= slot.height
+                && tile.getWidth() > 0 && tile.getHeight() > 0;
+            UiProbeSupport.check(tag + "-media-inside", fits);
+            UiProbeSupport.check(tag + "-media-ratio",
+                Math.abs(tile.getWidth() * 9f / 16f - tile.getHeight()) <= 1f);
+            return;
         }
     }
 

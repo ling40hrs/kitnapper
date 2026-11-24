@@ -1,29 +1,32 @@
 <section class="slide">
-  <div class="kicker">Demo &middot; the rest of the surface</div>
-  <div class="rule"></div>
-  <h2>Inventory, penalties, and the dialog that writes a loan.</h2>
+  <div class="glow"></div><div class="glow-ring"></div>
+  <img class="shard shard-tr" src="art/hex-amber.svg" alt="" />
+  <img class="shard shard-br" src="art/hex-ghost.svg" alt="" />
+  <img class="ciit" src="art/ciit.png" alt="CiIT" />
 
-  <div class="row" style="margin-top: 20pt">
-    <div style="width: 210pt">
-      <div class="shot"><img src="../assets/deck/03-checkout-dialog.png" alt="Checkout dialog" /></div>
-      <div class="caption">Checkout &middot; T &hellip; T+14</div>
-      <p class="note">Replacement value and serial are shown before anyone commits to a loan.</p>
+  <div class="tab"></div>
+  <h2 class="sec">The rest of the surface</h2>
+  <p class="lead">The dialogs the demo pass touches, and the inventory screen behind them.</p>
+
+  <div class="shelf">
+    <div class="shot">
+      <img src="../assets/deck/01-login.png" alt="Sign-in screen" />
+      <div class="cap">Sign-in &middot; mock auth</div>
     </div>
-    <div style="width: 305pt">
-      <div class="shot"><img src="../assets/deck/06-penalties.png" alt="Penalties screen" /></div>
-      <div class="caption">Penalties &middot; settle or waive</div>
-      <p class="note">One frozen late fee per return. Waiving needs a written reason, and
-         settlement is one-way.</p>
+    <div class="shot">
+      <img src="../assets/deck/03-checkout-dialog.png" alt="Checkout dialog" />
+      <div class="cap">Checkout &middot; T &hellip; T+14</div>
     </div>
-    <div style="width: 305pt">
-      <div class="shot"><img src="../assets/deck/07-inventory.png" alt="Inventory screen" /></div>
-      <div class="caption">Inventory &middot; add, edit, decommission</div>
-      <p class="note">Photos live in <code>kitnapper-images/</code>; an item that is out on loan
-         stays read-only until it comes back.</p>
+    <div class="shot">
+      <img src="../assets/deck/06-penalties.png" alt="Penalties screen" />
+      <div class="cap">Penalties &middot; settle or waive</div>
+    </div>
+    <div class="shot">
+      <img src="../assets/deck/07-inventory.png" alt="Inventory screen" />
+      <div class="cap">Inventory &middot; add, edit, decommission</div>
     </div>
   </div>
 
-  <p class="lead closer" style="font-size: 12pt">Every screen above is thin on purpose: it renders state and
-     forwards events, and the rules stay in the model and the services.</p>
-  <div class="footer"><span>Five manager screens, two borrower screens, one shell</span><b>05</b></div>
+  <p class="closer mid">Every screen is thin on purpose: it renders state and forwards events. The rules stay in the services.</p>
+  <div class="foot"><span>Five manager screens &middot; two borrower screens &middot; one shell</span><b>05</b></div>
 </section>

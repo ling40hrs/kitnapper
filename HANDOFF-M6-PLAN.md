@@ -883,3 +883,60 @@ documented tasks. Never tag/branch/amend/revert without a new “yes”.
   11 slides; slides 05–10 shifted to 06–11 and their footer numbers renumbered. The
   three captures were already in the scratch folder, so no re-shoot was needed.
 - **WP6 is complete; every milestone and work package is delivered.**
+
+### WP7 — deck restyle to the reference design (2026-11-24)
+
+- Starting HEAD: `9a0ba88` (deck and app as shipped by WP6).
+- Request: redesign `assets/kitnapper-presentation.pdf` so it reads like the
+  reference deck the maintainer supplied (`assets/BEEZY MOBILE DEV (1).pdf`, seven
+  pages). Approved with a three-slide prototype (title, problem, borrower demo)
+  before any repo file was touched.
+- Design language adopted from the reference: a 163° chocolate-to-amber gradient
+  (`#2e2216` → `#eba124`), cream cards `#ece1d1`, an amber edge tab beside each
+  section heading, 88 pt caps display type, a thin cream hairline, and hexagon
+  shards in the corners. Palette sampled from the reference pages; the deck no
+  longer mirrors `view/Theme.java`, so the "no hex outside `Theme`" rule stays
+  scoped to the Java sources (it was always enforced there).
+- Type: **Montserrat** 400/700 for display, headings and numerals, **Open Sauce
+  One** 300/400/700 for body. Both are OFL and are committed under `deck/fonts/`
+  with their licences, as **static** instances — weasyprint 70 handles variable
+  fonts and woff2 poorly. Montserrat was instanced from the upstream variable file
+  and subset, because the Google Fonts "latin" subset drops `₱` (U+20B1) and the
+  arrows; Open Sauce One has no `₱` either, so the body stack is
+  `"Sauce", "Mont"` and the peso sign falls through to Montserrat. `pdffonts`
+  confirms five embedded subsets and **no DejaVu fallback**.
+- Assets: the CiIT wordmark was cropped from the reference PDF at 300 dpi and
+  luminance-keyed to a transparent white PNG (`deck/art/ciit.png`, 26 KB), tested
+  over both amber and brown. `deck/art/mark.svg` is an original amber hexagon
+  holding a duffel-bag mark — not the reference's bee. `hex-amber` / `hex-ghost`
+  are corner shards.
+- Generator split to stay under the 200-line ceiling: `base.css` (146, page frame,
+  gradient, chrome, type scale), `components.css` (140, cards, steps, mats,
+  contact sheet), `panels.css` (180, layer stack, code, table, stat tiles, quotes),
+  `slides.css` (151, per-slide coordinates), eleven `slide-NN-*.html` (16–43), and
+  `build.sh`, which now concatenates four stylesheets. The old `style.css` is gone.
+- Copy was condensed, never the facts: 11 slides keep their outline (title,
+  problem, borrower demo, manager demo, the rest of the surface, architecture, OOP
+  evidence, persistence, verification, limitations, lessons), and every number
+  survives — 20/20, 255, 12/12, 15 defects, 199 lines, 3 UI scales, 0.46 ms, 160
+  files / 15,469 lines, 5,594 probe lines, 0 libraries, 10 seed items (7 free, 3
+  out), ₱50/day, ₱200.00, T … T+14.
+- Two stale statistics from WP6 were corrected: the seed is **10 items** (the old
+  slide said nine) and the walkthrough found **15** defects (it said nine).
+- WeasyPrint constraints hit and worked around, in order: `flex-wrap` never wraps
+  in an absolutely-positioned flex container, so the 2×2 and 3×4 grids are
+  `inline-block` with `font-size: 0` on the parent, and each cell's trailing
+  `margin-right` counts toward the line width (hence 414 pt cards and 200 pt
+  tiles); `margin-top: auto` does not pin a footer inside a flex column, so card
+  strips are absolutely positioned; `object-fit: cover` cropped dialog content, so
+  the contact sheet scales screenshots by a fixed height with `width: auto`
+  instead. No filter, blur or clip-path is used — the glow is a radial gradient and
+  the hexagons are SVG files.
+- Verification: `deck/build.sh` → 11 pages, 960 × 540 pt, 254 KB; every page
+  rendered with `pdftoppm` at 96 dpi and page 02 additionally at 150 dpi, all
+  reviewed through four fix rounds (card strip overlap, title/mark collision, the
+  three collapsed grids, slide 04's mat collision, slide 05's crop and dead band,
+  slide 10's table density); `pdffonts` → five embedded subsets, no substitution;
+  `pdftotext` → every figure intact; `wc -l` → no deck file over 200. App untouched:
+  `./build.sh` → `BUILD OK` (260 classes), `./test/run-all.sh` → **ALL PROBES
+  GREEN (21/21)**.

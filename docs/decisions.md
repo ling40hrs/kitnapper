@@ -184,6 +184,26 @@ The attribution rules above now run on the Windows machine, not just the origina
   `pdftoppm` and reviewed, `deck/*` line counts are all ≤ 200, and the app itself is
   unchanged: `./build.sh` → `BUILD OK` (255 classes) and `./test/run-all.sh` →
   **20/20 green** at `e4a8525`.
+- **WP7: deck restyled to the reference design** (2026-11-24). At the maintainer's
+  request the deck now follows the supplied reference (`assets/BEEZY MOBILE DEV
+  (1).pdf`) instead of the app's dark palette: chocolate-to-amber gradient, cream
+  cards, an amber edge tab, large caps headings and hexagonal corner shards. This
+  supersedes the WP6 palette note above — the deck is no longer tied to
+  `view/Theme.java`, and the "no hex outside `Theme`" rule is unchanged for the Java
+  sources, where it is enforced. Two OFL families are committed under `deck/fonts/`
+  as static (not variable) instances with their licences, because weasyprint 70
+  renders variable fonts and woff2 poorly: Montserrat 400/700 (instanced from the
+  upstream variable file and subset so `₱` and arrows survive) and Open Sauce One
+  300/400/700. The body stack is `"Sauce", "Mont"` so the peso sign falls through to
+  Montserrat; `pdffonts` shows five embedded subsets and no DejaVu. The CiIT wordmark
+  was keyed out of the reference PDF into `deck/art/ciit.png`; the KitNapper mark in
+  `deck/art/mark.svg` is original. The generator split into `base.css`,
+  `components.css`, `panels.css` and `slides.css` (140–180 lines each) plus the
+  eleven slide files (16–43) and `build.sh`; `style.css` is gone. Copy was condensed
+  to fit the reference's density, but every figure survives, and two stale numbers
+  were corrected: the seed is ten items (7 free, 3 out) and the §6.2 pass found
+  fifteen defects. Record in `HANDOFF-M6-PLAN.md` §16 (WP7).
+
 - **M3 complete: catalog + instant checkout** (2026-11-16). The catalog is a
   real screen: page header, search + category/status filters, a details table
   with a 280 px preview pane by default, a cards toggle that shares one

@@ -51,8 +51,9 @@ Finals/                       (the repository root)
 │   ├── banner.jpg            README banner image
 │   ├── kitnapper-presentation.pdf  the slide deck (WP6)
 │   └── deck/                 the captures the deck embeds
-├── deck/                     deck generator: base.css + style.css + 10 slide
-│   │                         files + build.sh (weasyprint → assets/…pdf)
+├── deck/                     deck generator: base/components/panels/slides.css
+│   │                         + 11 slide files, art/ and fonts/ (OFL) +
+│   │                         build.sh (weasyprint → assets/…pdf)
 ├── docs/
 │   ├── PRD.md                product requirements and domain model
 │   ├── SRS.md                verifiable requirements and demo walkthrough
@@ -63,6 +64,9 @@ Finals/                       (the repository root)
 │   └── seed-data.md          seed data scope note
 └── desktop-app/              NetBeans Ant project
     ├── build.sh              JDK-only clean/build/run helper (no Ant needed)
+    ├── build.bat             the same compile step for Windows (JDK only)
+    ├── run.bat               Windows launcher: build, then kitnapper.Main
+    ├── reset-demo.bat        Windows demo prep: delete save + photos, re-seed
     ├── build.xml
     ├── manifest.mf
     ├── nbproject/
@@ -123,6 +127,23 @@ javac -encoding UTF-8 -d build/classes @/tmp/kn-sources.txt
 java -cp build/classes kitnapper.Main
 ```
 
+### Windows (no Ant needed)
+
+`build.bat` and `run.bat` mirror `build.sh` for a JDK-only Windows machine; both
+start with `cd /d "%~dp0"`, so a double-click always uses the right working
+directory and the save file stays in `desktop-app\`.
+
+```bat
+cd desktop-app
+build.bat            :: compile every source file into build\classes
+run.bat              :: build, then launch the login screen
+reset-demo.bat       :: delete the save + photos so the next launch re-seeds
+```
+
+Run `reset-demo.bat` with the app closed, on the day of a demo: the seed dataset
+is computed relative to the date it is written, so a stale `kitnapper-data.json`
+shows more overdue loans (and higher live fees) than the SRS §6.1 baseline.
+
 Build output is written to `build/` and `dist/`, both of which are ignored by Git. The runtime save file (`kitnapper-data.json`) and photo folder (`kitnapper-images/`) are created in the working directory and are ignored too.
 
 ## Documentation
@@ -141,7 +162,7 @@ Build output is written to `build/` and `dist/`, both of which are ignored by Gi
 | [`HANDOFF-M5.md`](HANDOFF-M5.md) | M5 scope note: inventory, photos, reset (historical at M5 close-out; the contract was `HANDOFF-M5-PLAN.md`) |
 | [`HANDOFF-M5-PLAN.md`](HANDOFF-M5-PLAN.md) | M5 record: plan, work packages, probe plan, execution log, deviations |
 | [`HANDOFF-M6-PLAN.md`](HANDOFF-M6-PLAN.md) | **M6 record:** plan, work packages (WP0–WP6 shipped), probe plan, execution log |
-| [`assets/kitnapper-presentation.pdf`](assets/kitnapper-presentation.pdf) | The presentation deck (11 slides, 16:9); rebuilt by `deck/build.sh` |
+| [`assets/kitnapper-presentation.pdf`](assets/kitnapper-presentation.pdf) | The presentation deck (11 slides, 16:9, restyled in WP7); rebuilt by `deck/build.sh` |
 | [`HANDOFF-M3-PLAN.md`](HANDOFF-M3-PLAN.md) | M3 record: plan, work packages, probe plan, execution log |
 | [`HANDOFF-M3.md`](HANDOFF-M3.md), [`HANDOFF-M2.md`](HANDOFF-M2.md), [`HANDOFF-M1.md`](HANDOFF-M1.md), [`HANDOFF-SESSION-2026-11-14.md`](HANDOFF-SESSION-2026-11-14.md) | Historical records of finished milestones (machine-specific paths and probe commands are stale) |
 
@@ -159,7 +180,7 @@ The PRD and SRS are the sources of truth for behavior. If implementation and doc
 
 ## Status
 
-Documentation complete; M0 (domain core), M1 (JSON persistence), M2 (Win11 shell + mock login), **M3 (catalog + instant checkout)**, **M4 (returns, fees, manager views)**, **M5 (inventory, photos, reset, settings)** and **M6 (polish, closed 2026-11-17)** are implemented and probed on JDK 17. The SRS §6.2 walkthrough is recorded in `HANDOFF-M6-PLAN.md` §16; the presentation deck is next.
+Documentation complete; M0 (domain core), M1 (JSON persistence), M2 (Win11 shell + mock login), **M3 (catalog + instant checkout)**, **M4 (returns, fees, manager views)**, **M5 (inventory, photos, reset, settings)** and **M6 (polish, closed 2026-11-17)** are implemented and probed on JDK 17. The SRS §6.2 walkthrough and the deck restyle (WP7) are recorded in `HANDOFF-M6-PLAN.md` §16; every deliverable is in the repository.
 
 M3 ships the real Catalog screen: search plus category/status filters, a details table with a 280 px preview pane, a cards view with shared selection, an empty state, and a 480 px checkout dialog whose due date is a `T … T+14` picker. Checkout persists, locks the item, and keeps validation errors inline. Managers get the same catalog read-only — no checkout action, an explicit caption instead.
 
@@ -169,4 +190,4 @@ M6 is polish, not features: thin overlay-style scrollbars on every scroll surfac
 
 Verification lives **inside** the repository: `desktop-app/test/run-all.sh` builds the app and runs twenty probes (`DataProbe`, `CatalogProbe`, `LoanProbe`, `InventoryProbe`, `SkinProbe`, `FontProbe`, `EdgeProbe`, `SizeProbe`, `FrameProbe`, `CloseProbe`, `CatalogUiProbe`, `PhotoUiProbe`, `InventoryEditorProbe`, `InventoryUiProbe`, `SettingsUiProbe`, `M5FlowProbe`, `LoansLayoutProbe`, `LoansUiProbe`, `GeometryProbe`, `MotionProbe`), using `xvfb-run -a` for the paint probes so they work with or without a display. `KITNAPPER_UI_SCALE=1.25` (or `1.5`) runs the same suite at a DPI proxy. It is the gate for every remaining work package, together with the SRS §6.2 walkthrough.
 
-Next: WP6 — the presentation deck. The interactive SRS §6.2 pass was run on 1920×1080, 1366×768 and 1024×640 in both themes and by keyboard; its fifteen findings were fixed at the root (D44–D49) and the 20-probe suite is green. See `docs/decisions.md` for the decision record, `docs/implementation-plan.md` for the build order, and `HANDOFF-M6-PLAN.md` for the M6 record.
+Delivered: WP6 — the presentation deck, restyled in WP7 to the maintainer's reference design with bundled Montserrat and Open Sauce One. The interactive SRS §6.2 pass was run on 1920×1080, 1366×768 and 1024×640 in both themes and by keyboard; its fifteen findings were fixed at the root (D44–D49) and the 20-probe suite is green. See `docs/decisions.md` for the decision record, `docs/implementation-plan.md` for the build order, and `HANDOFF-M6-PLAN.md` for the M6 record.

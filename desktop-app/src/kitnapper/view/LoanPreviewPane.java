@@ -38,7 +38,7 @@ final class LoanPreviewPane extends JPanel {
     private final Consumer<LoanRow> onReturn;
     private final CardLayout states = new CardLayout();
     private final JPanel stack = new JPanel(states);
-    private final JPanel mediaSlot = new JPanel(new BorderLayout());
+    private final JPanel mediaSlot = PreviewLayout.mediaSlot(MEDIA_WIDTH);
     private final JPanel statusSlot = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
     private final JLabel title = new JLabel();
     private final JLabel borrowerValue = valueLabel(false);
@@ -90,7 +90,7 @@ final class LoanPreviewPane extends JPanel {
     void show(LoanRow row, boolean actionVisible, boolean actionEnabled, String hintText) {
         shown = row;
         mediaSlot.removeAll();
-        mediaSlot.add(new GradientTile(row.category(), MEDIA_WIDTH), BorderLayout.CENTER);
+        mediaSlot.add(new GradientTile(row.category(), MEDIA_WIDTH));
         title.setText(row.itemName());
         title.setToolTipText(row.itemName());
         statusSlot.removeAll();

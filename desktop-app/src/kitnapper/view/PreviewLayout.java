@@ -6,7 +6,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 
-import javax.swing.BorderFactory;
 import javax.swing.Box.Filler;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
@@ -46,6 +45,20 @@ final class PreviewLayout {
     /** The 12 px media/title gap, tightened to 8 px when compact. */
     static JComponent mediaGap() {
         return new Gap(MEDIA_GAP, MEDIA_GAP_COMPACT);
+    }
+
+    /**
+     * A 16:9 media slot that follows its real width (design §12). The info
+     * column narrows when the pane grows a vertical scrollbar, so the height is
+     * derived per layout rather than fixed; the slot is left-aligned and capped
+     * so the {@code BoxLayout} column cannot stretch it.
+     */
+    static JPanel mediaSlot(int width) {
+        JPanel slot = new JPanel(new MediaRatioLayout());
+        slot.setOpaque(false);
+        slot.setAlignmentX(0f);
+        slot.setMaximumSize(new Dimension(width, MediaRatioLayout.heightFor(width)));
+        return slot;
     }
 
     /** Any other spacing block: {@code compact} is its height when compact. */
@@ -90,14 +103,7 @@ final class PreviewLayout {
 
     /** The rows scroll inside the pane only when the preview is too short. */
     static JScrollPane scroll(JComponent info) {
-        JScrollPane pane = new JScrollPane(info,
-            JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-            JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        pane.setBorder(BorderFactory.createEmptyBorder());
-        pane.setOpaque(false);
-        pane.getViewport().setOpaque(false);
-        pane.getVerticalScrollBar().setUnitIncrement(16);
-        return pane;
+        return PreviewScroll.wrap(info);
     }
 
     /**

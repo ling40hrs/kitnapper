@@ -12,7 +12,7 @@ Every seed item carries one photo, `e-00N.jpg`, in
 `desktop-app/resources/photos/`. `service/SeedPhotos` copies a missing file into
 `kitnapper-images/` on first launch and again after a reset; it never overwrites an
 existing file. The committed JPEGs are already encoded the way the app stores photos —
-longest edge 1024 px, bilinear downscale, JPEG quality 0.85 — so installing one is a
+longest edge 1024 px, stepped bicubic downscale, JPEG quality 0.85 — so installing one is a
 byte copy and neither startup nor reset pays a decode cost. Add a replacement the same
 way: prepare it to those parameters, then drop it in this folder under the item's id.
 

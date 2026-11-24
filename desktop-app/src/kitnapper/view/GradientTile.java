@@ -33,7 +33,8 @@ final class GradientTile extends JPanel {
     GradientTile(EquipmentCategory category, int width) {
         this.category = category;
         setOpaque(false);
-        setPreferredSize(new Dimension(width, Math.max(1, Math.round(width * 9f / 16f))));
+        setPreferredSize(new Dimension(width, MediaRatioLayout.heightFor(width)));
+        setAlignmentX(LEFT_ALIGNMENT);
         getAccessibleContext().setAccessibleName("No photo · " + category);
     }
 
@@ -58,7 +59,9 @@ final class GradientTile extends JPanel {
         Color[] stops = Theme.tileGradient(category);
         RoundRectangle2D shape = new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(),
             RADIUS, RADIUS);
-        g2.setClip(shape);
+        // Intersect with the incoming clip (never replace it): a scrolled tile
+        // must not paint outside the viewport's damage region.
+        g2.clip(shape);
         g2.setPaint(new GradientPaint(0, 0, stops[0], 0, getHeight(), stops[1]));
         g2.fill(shape);
         g2.setFont(Fonts.symbol(GLYPH_SIZE));
