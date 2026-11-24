@@ -10,6 +10,7 @@ import kitnapper.model.LoanRecord;
 import kitnapper.model.Manager;
 import kitnapper.model.MechanicalTool;
 import kitnapper.service.AppData;
+import kitnapper.service.ImageRules;
 
 /**
  * The PRD 9 demo dataset, computed relative to the date seeding runs (D4).
@@ -17,8 +18,9 @@ import kitnapper.service.AppData;
  * (digital kinds for camera/lens/laptop/audio categories, mechanical for
  * tools), two ACTIVE loans and one loan due four days ago so the overdue
  * dashboard has exactly one row with PHP 200.00 accrued live. The three
- * borrowed items are marked LOANED; the seed has no penalties (frozen
- * only on return) and no photos (D11).
+ * borrowed items are marked LOANED; the seed has no penalties (frozen only
+ * on return) and every item references its bundled photo (D50), which
+ * {@code SeedPhotos} copies into {@code kitnapper-images/}.
  */
 public final class SeedData {
 
@@ -44,26 +46,36 @@ public final class SeedData {
     }
 
     private static void addEquipment(AppData data) {
-        data.equipment().add(digital("e-001", "Sony A7 IV",
+        add(data, digital("e-001", "Sony A7 IV",
                 EquipmentCategory.CAMERA, "SN-A7IV-001", 150000.0));
-        data.equipment().add(digital("e-002", "Canon EOS R6",
+        add(data, digital("e-002", "Canon EOS R6",
                 EquipmentCategory.CAMERA, "SN-EOSR6-001", 145000.0));
-        data.equipment().add(digital("e-003", "Sony FE 24-70mm f/2.8 GM",
+        add(data, digital("e-003", "Sony FE 24-70mm f/2.8 GM",
                 EquipmentCategory.LENS, "SN-FE2470-001", 120000.0));
-        data.equipment().add(digital("e-004", "Canon RF 24-70mm f/2.8 L",
+        add(data, digital("e-004", "Canon RF 24-70mm f/2.8 L",
                 EquipmentCategory.LENS, "SN-RF2470-001", 115000.0));
-        data.equipment().add(digital("e-005", "MacBook Pro M3 (14\")",
+        add(data, digital("e-005", "MacBook Pro M3 (14\")",
                 EquipmentCategory.LAPTOP, "SN-MBP14-001", 120000.0));
-        data.equipment().add(digital("e-006", "Lenovo ThinkPad P1 Gen 6",
+        add(data, digital("e-006", "Lenovo ThinkPad P1 Gen 6",
                 EquipmentCategory.LAPTOP, "SN-TPP1G6-001", 130000.0));
-        data.equipment().add(digital("e-007", "Rode Wireless PRO kit",
+        add(data, digital("e-007", "Rode Wireless PRO kit",
                 EquipmentCategory.AUDIO, "SN-RWPRO-001", 28000.0));
-        data.equipment().add(digital("e-008", "Zoom H6 recorder",
+        add(data, digital("e-008", "Zoom H6 recorder",
                 EquipmentCategory.AUDIO, "SN-ZH6-001", 20000.0));
-        data.equipment().add(tool("e-009", "Manfrotto 504X fluid-head tripod",
+        add(data, tool("e-009", "Manfrotto 504X fluid-head tripod",
                 "SN-504X-001", 35000.0));
-        data.equipment().add(tool("e-010", "DeWalt 20V cordless drill kit",
+        add(data, tool("e-010", "DeWalt 20V cordless drill kit",
                 "SN-DW20V-001", 9000.0));
+    }
+
+    /**
+     * Adds an item and points it at its bundled photo, {@code <id>.jpg} — the
+     * ten files in {@code resources/photos} (D50). {@code SeedPhotos} copies
+     * the file into {@code kitnapper-images/} on first launch and on reset.
+     */
+    private static void add(AppData data, Equipment item) {
+        item.setPhotoFile(item.getId() + ImageRules.OUTPUT_SUFFIX);
+        data.equipment().add(item);
     }
 
     private static void addLoans(AppData data, LocalDate today) {

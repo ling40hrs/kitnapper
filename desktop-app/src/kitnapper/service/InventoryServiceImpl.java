@@ -117,6 +117,7 @@ public final class InventoryServiceImpl implements InventoryService {
         requireManager();
         images.deleteAll();
         store.resetToSeed();
+        SeedPhotos.install(images, store.equipment());
         onChange.run();
     }
 

@@ -32,8 +32,11 @@ final class InventoryPhotoChecks {
     }
 
     static void run(ImageStore images, Path dir) throws IOException {
-        imports(images, dir);
-        rejections(images, dir);
+        // D50: the folder already holds the ten bundled seed photos, so the
+        // import checks count from this baseline instead of from zero.
+        long base = jpgCount(images.folder());
+        imports(images, dir, base);
+        rejections(images, dir, base);
         tolerantReads(images, dir);
         promoteAndSweep(images, dir);
         ProbeSupport.check("photo folder sits beside the save file",
@@ -42,12 +45,12 @@ final class InventoryPhotoChecks {
         ProbeSupport.check("deleteAll empties the folder", jpgCount(images.folder()) == 0);
     }
 
-    private static void imports(ImageStore images, Path dir) throws IOException {
+    private static void imports(ImageStore images, Path dir, long base) throws IOException {
         Path large = write(dir, "large.jpg", 3000, 2000, TYPE_INT_RGB, Color.ORANGE, "jpg");
         String staged = images.stage(large, MATTE);
         ProbeSupport.check("stage names the file as staging",
                 staged.startsWith(ImageRules.STAGING_PREFIX));
-        ProbeSupport.check("stage writes one file", jpgCount(images.folder()) == 1);
+        ProbeSupport.check("stage writes one file", jpgCount(images.folder()) == base + 1);
         BufferedImage loaded = images.load(staged, ImageRules.MAX_EDGE_PX).orElseThrow();
         ProbeSupport.check("downscale caps the longest edge",
                 Math.max(loaded.getWidth(), loaded.getHeight()) == ImageRules.MAX_EDGE_PX);
@@ -67,7 +70,7 @@ final class InventoryPhotoChecks {
         ProbeSupport.check("a stored photo is opaque", flattened.getRGB(1, 1) >>> 24 == 0xFF);
     }
 
-    private static void rejections(ImageStore images, Path dir) throws IOException {
+    private static void rejections(ImageStore images, Path dir, long base) throws IOException {
         Path text = Files.writeString(dir.resolve("notes.txt"), "not an image");
         ProbeSupport.check("unsupported extension rejected",
                 ProbeSupport.throwsIAE(() -> images.stage(text, MATTE)));
@@ -85,7 +88,7 @@ final class InventoryPhotoChecks {
                 ProbeSupport.throwsIAE(() -> images.stage(corrupt, MATTE)));
         ProbeSupport.check("missing source rejected",
                 ProbeSupport.throwsIAE(() -> images.stage(dir.resolve("gone.jpg"), MATTE)));
-        ProbeSupport.check("a rejected import writes nothing", jpgCount(images.folder()) == 3);
+        ProbeSupport.check("a rejected import writes nothing", jpgCount(images.folder()) == base + 3);
     }
 
     private static void tolerantReads(ImageStore images, Path dir) throws IOException {

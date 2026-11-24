@@ -100,8 +100,8 @@ public final class SettingsUiProbe {
         UiProbeSupport.check("the reset succeeds", failure.isEmpty());
         UiProbeSupport.check("the reset restores ten items", store.equipment().size() == 10);
         UiProbeSupport.check("the reset restores three loans", store.loans().size() == 3);
-        UiProbeSupport.check("the reset wipes the photos",
-            EditorProbeSupport.jpgCount(ctx.images().folder()) == 0);
+        UiProbeSupport.check("the reset restores the ten seed photos (D50)",
+            EditorProbeSupport.jpgCount(ctx.images().folder()) == store.equipment().size());
         UiProbeSupport.check("the session is re-bound", ctx.currentUser() != before
             && ctx.currentUser().getEmail().equals("admin@institution.edu"));
         UiProbeSupport.check("the reset ran the refresh hook", resets.get() == 1);

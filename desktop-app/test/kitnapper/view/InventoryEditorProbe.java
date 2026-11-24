@@ -103,7 +103,8 @@ public final class InventoryEditorProbe {
         PhotoStage rejected = controller.stagePhoto(text);
         UiProbeSupport.check("a rejected import returns an inline message",
             !rejected.ok() && rejected.error().contains("Unsupported image type"));
-        UiProbeSupport.check("a rejected import writes nothing", EditorProbeSupport.jpgCount(ctx.images().folder()) == 1);
+        UiProbeSupport.check("a rejected import writes nothing",
+            EditorProbeSupport.jpgCount(ctx.images().folder()) == store.equipment().size());
 
         PhotoStage second = controller.stagePhoto(EditorProbeSupport.photo(dir, "second.png"));
         UiProbeSupport.check("replacing the photo succeeds",

@@ -11,6 +11,7 @@ import kitnapper.model.MechanicalTool;
 import kitnapper.service.AppContext;
 import kitnapper.service.DataStore;
 import kitnapper.service.DataStoreImpl;
+import kitnapper.service.ImageRules;
 import kitnapper.service.ItemDraft;
 
 /**
@@ -36,8 +37,10 @@ final class InventoryChecks {
     private static void baseline(AppContext ctx, DataStore store) {
         ProbeSupport.check("the seed has ten items", store.equipment().size() == 10);
         ProbeSupport.check("the next id is e-011", ctx.inventory().peekNextId().equals("e-011"));
-        ProbeSupport.check("the seed ships no photos", store.equipment().stream()
-                .allMatch(item -> item.getPhotoFile().isEmpty()));
+        ProbeSupport.check("the seed references its bundled photos (D50)",
+                store.equipment().stream().allMatch(item -> item.getPhotoFile()
+                        .filter(name -> name.equals(item.getId() + ImageRules.OUTPUT_SUFFIX))
+                        .isPresent()));
     }
 
     private static void addKinds(AppContext ctx, DataStore store, Path dir) {

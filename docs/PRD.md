@@ -318,7 +318,7 @@ On first application startup (with `T` = the startup date), populate the system 
 | Borrower | `student1@institution.edu` | `student123` | Student One |
 | Borrower | `student2@institution.edu` | `student123` | Student Two |
 
-### 9.2 Equipment (10 total — replacement values are example seed values in PHP, kept configurable; seed items ship **without photos**, the UI falls back to the category tile per design.md §3.5)
+### 9.2 Equipment (10 total — replacement values are example seed values in PHP, kept configurable; every seed item ships **with a bundled photo** (`e-00N.jpg`, design.md §12 / D50) and falls back to the category tile per design.md §3.5 only when that file is unavailable)
 
 | # | Item | Category | Replacement Value |
 | :-- | :--- | :--- | :--- |
@@ -342,6 +342,10 @@ On first application startup (with `T` = the startup date), populate the system 
 | L-003 | student1 | Rode Wireless PRO | T − 11 days | T − 4 days | `OVERDUE` | 4 days late → ₱200.00 accrued; tests Overdue Dashboard + fee engine |
 
 *Optional demo aid: one additional `ACTIVE` loan may be seeded if the demo script needs another row; it is in addition to, not part of, the required seed set.*
+
+Every seeded item carries a bundled demo photo (`photoFile` = its id + `.jpg`), shipped
+in `desktop-app/resources/photos` and copied into `kitnapper-images/` on first launch
+and after a demo reset (D50). Attribution and licences are listed in `seed-data.md`.
 
 ### 9.4 Expected State on First Launch
 - Overdue Dashboard shows exactly **1 row** (L-003) with **₱200.00** accrued live.

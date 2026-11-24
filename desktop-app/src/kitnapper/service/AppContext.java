@@ -48,6 +48,9 @@ public final class AppContext {
         this.penalties = new PenaltyServiceImpl(store, today,
                 this::currentUser, this::fireChanged);
         this.images = new ImageStoreImpl(store.folder());
+        // Bundled seed photos (D50): install before the sweep below, so the
+        // sweep sees the restored <id>.jpg files and keeps them.
+        SeedPhotos.install(images, store.equipment());
         this.inventory = new InventoryServiceImpl(store, images,
                 this::currentUser, this::fireChanged);
         // Load-time orphan sweep (D11): runs after Main's load(), so the

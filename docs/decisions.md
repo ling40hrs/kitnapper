@@ -142,11 +142,25 @@ The attribution rules above now run on the Windows machine, not just the origina
 
 ## 8. Scope Guardrails
 
-**In scope:** mock login/logout, catalog search/filter, instant checkout with limits, My Loans, return logging, late fees with live accrual, penalty settlement (paid/waived), overdue dashboard, all-loans view, inventory CRUD, optional per-item photo upload (local, downscaled JPEG), JSON persistence, demo reset, seed data.
+**In scope:** mock login/logout, catalog search/filter, instant checkout with limits, My Loans, return logging, late fees with live accrual, penalty settlement (paid/waived), overdue dashboard, all-loans view, inventory CRUD, optional per-item photo upload (local, downscaled JPEG), ten bundled demo photos shipped in the jar (D50), JSON persistence, demo reset, seed data.
 
-**Out of scope:** networking, real authentication, real payments, damage tracking, manual fee edits, loan cancellation/extension, reservations, barcode/QR, cloud image hosting (photos are local files only), notifications, mobile/web.
+**Out of scope:** networking, real authentication, real payments, damage tracking, manual fee edits, loan cancellation/extension, reservations, barcode/QR, cloud image hosting and any runtime image download (photos are local files only), notifications, mobile/web.
 
 ## 9. Implementation Status
+
+- **WP7 — bundled seed photos** (2026-11-24, D50). The demo dataset used to start
+  with ten category tiles; it now starts with ten real photos. `resources/photos/e-00N.jpg`
+  holds freely licensed Wikimedia Commons images, already encoded by the app's own
+  pipeline (1024 px longest edge, JPEG q0.85), so `service/SeedPhotos.install` is a
+  byte copy and reset stays instant. `SeedData` sets `photoFile` on every seed item;
+  `AppContext` installs before the orphan sweep; `InventoryServiceImpl.resetDemoData`
+  reinstalls after reseeding. Install is idempotent and never overwrites, so a
+  manager's replacement survives a restart. Saves seeded before this change pick the
+  photos up on the next "Reset demo data" — deliberately no migration code. Probes:
+  `SeedPhotosProbe` (+ 21st registration in `test/run-all.sh`) and adjusted baselines
+  in `InventoryChecks`, `InventoryPhotoChecks`, `ResetChecks`, `M5FlowProbe`,
+  `SettingsUiProbe` and `InventoryEditorProbe`. 21/21 green. Attribution lives in
+  `seed-data.md`.
 
 - **WP6 complete: presentation deck** (2026-11-17). `assets/kitnapper-presentation.pdf`,
   eleven slides, 16:9 at 960 × 540 pt, dark theme in the app's own palette

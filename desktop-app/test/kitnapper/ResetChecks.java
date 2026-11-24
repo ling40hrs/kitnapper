@@ -15,9 +15,9 @@ import kitnapper.service.DataStore;
 import kitnapper.service.ImageRules;
 
 /**
- * Demo-reset checks (plan §9.2, FR-12, D11, D33): the dataset returns to the
- * PRD §9 baseline, the photo folder is emptied, references are dropped, and
- * the signed-in manager is re-bound to the freshly seeded instance.
+ * Demo-reset checks (plan §9.2, FR-12, D11, D33, D50): the dataset returns to
+ * the PRD §9 baseline, the photo folder is rebuilt from the bundled seed
+ * photos, and the signed-in manager is re-bound to the seeded instance.
  */
 final class ResetChecks {
 
@@ -42,11 +42,12 @@ final class ResetChecks {
         ProbeSupport.check("the reset restores ten items", store.equipment().size() == 10);
         ProbeSupport.check("the reset restores three loans", store.loans().size() == 3);
         ProbeSupport.check("the reset clears penalties", store.penalties().isEmpty());
-        ProbeSupport.check("the reset drops photo references", store.equipment().stream()
-                .allMatch(item -> item.getPhotoFile().isEmpty()));
-        ProbeSupport.check("the reset wipes the photo folder",
-                !Files.isDirectory(ctx.images().folder())
-                        || jpgCount(ctx.images().folder()) == 0);
+        ProbeSupport.check("the reset restores the seed photo references", store.equipment()
+                .stream().allMatch(item -> item.getPhotoFile().isPresent()));
+        ProbeSupport.check("the reset restores the ten bundled seed photos",
+                jpgCount(ctx.images().folder()) == store.equipment().size());
+        ProbeSupport.check("a restored seed photo loads (D50)",
+                ctx.images().load("e-001.jpg", 640).isPresent());
 
         ctx.rebindCurrentUser();
         User after = ctx.currentUser();

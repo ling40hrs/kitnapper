@@ -108,7 +108,7 @@ Priority scale: **H** = must-have, **M** = should-have, **L** = nice-to-have. Al
 | NFR-05 | Demonstrability: seed data reproduces the Overdue Dashboard scenario at startup with zero manual setup. | Startup inspection (see §6) |
 | NFR-06 | Maintainability: fee rate and enums defined exactly once; adding a `FeeStrategy` requires no changes to `LoanRecord`. | Code review (Open/Closed) |
 | NFR-07 | Durability: state survives restarts; a missing or corrupted save file falls back to seed data without crashing. | Delete/corrupt file test |
-| NFR-08 | Image storage: photos are local files under `kitnapper-images/` (never networked), downscaled to ≤ 1024 px JPEG; a missing or corrupt image falls back to the category tile without crashing; reset demo data clears the folder. | Manual walkthrough + corrupt-file test |
+| NFR-08 | Image storage: photos are local files under `kitnapper-images/`, downscaled to ≤ 1024 px JPEG, and the app makes no network calls at any point; a missing or corrupt image falls back to the category tile without crashing; reset demo data clears the folder and restores the ten bundled seed photos (D50). | Manual walkthrough + corrupt-file test |
 
 ## 5. Class Invariants (Model-Layer Enforced)
 
@@ -131,6 +131,8 @@ On first launch (or after demo reset) with `T` = startup date, the system must s
 1. Overdue Dashboard with exactly **1 row** (loan L-003) and **₱200.00** accrued live.
 2. Catalog with **7 AVAILABLE** and **3 LOANED** items (Sony A7 IV, MacBook Pro M3, Rode Wireless PRO).
 3. No frozen `Penalty` records yet — L-003's fee is still accruing.
+4. Every catalog row, card and preview shows its bundled photo (`e-00N.jpg`); no item
+   falls back to the category tile (D50, design.md §12).
 
 ### 6.2 Demo Walkthrough
 
@@ -147,7 +149,7 @@ Run in order; each step lists the requirement it proves.
 9. **Log the return of L-003** from All Loans or Overdue with the return date defaulting to `T` (the picker offers the borrow date … `T`) → the loan becomes `RETURNED`; exactly one ₱200.00 `LATE_FEE` penalty is created; item returns to `AVAILABLE` (FR-06, FR-07).
 10. **Open the penalty on Penalties and choose Waive with a reason** (a blank reason is rejected inline and the dialog stays open) → the badge shows `WAIVED` immediately and the reason appears in the preview (FR-11, NFR-02).
 11. **Add a new inventory item with a photo, then decommission it** — Inventory → **Add item**, fill the fields, **Choose photo…**, save → the photo shows in the inventory preview and on the catalog card/preview; closing and relaunching keeps it. **Edit item** and change the category → the item's kind and its own field stay the same. **Decommission** (confirmed) → the row stays listed, the preview reads "Decommissioned items are read-only.", and the catalog shows it as `DECOMMISSIONED` with no checkout (FR-10, NFR-08, D19).
-12. **Trigger "Reset demo data"** — Settings / Data → **Reset demo data** (confirmed) → state returns to the §6.1 baseline, `kitnapper-images/` is emptied, and the manager stays signed in (FR-12, D11, D33).
+12. **Trigger "Reset demo data"** — Settings / Data → **Reset demo data** (confirmed) → state returns to the §6.1 baseline, `kitnapper-images/` is rebuilt from the ten bundled seed photos (any uploaded and orphan files are gone), and the manager stays signed in (FR-12, D11, D33, D50).
 
 Seed dataset details: PRD §9; rationale and file placement: `seed-data.md`.
 
@@ -184,3 +186,4 @@ Seed dataset details: PRD §9; rationale and file placement: `seed-data.md`.
 | 3.2.0 | 2026-11-16 | §6.2 steps 11–12 aligned with the delivered M5 screens (Inventory add/edit/decommission, Settings reset, session kept, photo folder wiped); FR-10 acceptance gains the D19 kind rule and the D36 loan-aware guards; no requirement changed |
 | 3.1.5 | 2026-11-16 | §6.2 steps 8–10 aligned with the delivered M4 screens: the manager lands on the Dashboard (not a separate overdue view), All Loans lists newest first, the return is logged from All Loans or Overdue with the return-date picker defaulting to `T`, and the waive step names the Penalties screen, the mandatory reason and the inline rejection; no requirement changed |
 | 3.3.0 | 2026-11-16 | M6 verification evidence: thin scrollbars on all five scroll surfaces (design §6), the dialog and screen fades plus the instant theme switch (design §7, D39), one width rule so tables scroll instead of clipping (D41), the 1024×640 minimum preview with compact density and the metadata scroll guard (D42), preview-aware toast placement (D43), the §10 icon audit and its font-resolution fix, the suite green at UI scale 1.0/1.25/1.5, D32/D40 closed by measured query timings (max 0.46 ms), and the design §13 skeleton audit with a proven 10 s watchdog. NFR-02 and NFR-07 unchanged; **no requirement changed** |
+| 3.4.0 | 2026-11-24 | Seed dataset now ships ten bundled photos (D50): design §12 storage bullet, NFR-08 gains the no-network statement and the reset restore, §6.1 gains the photo check, §6.2 step 12 says the folder is rebuilt; no other requirement changed |

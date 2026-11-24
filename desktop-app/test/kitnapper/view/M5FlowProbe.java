@@ -123,8 +123,8 @@ public final class M5FlowProbe {
         UiProbeSupport.check("step 12: the baseline is restored",
             store.equipment().size() == 10 && store.loans().size() == 3
                 && store.penalties().isEmpty());
-        UiProbeSupport.check("step 12: the photo folder is empty",
-            EditorProbeSupport.jpgCount(ctx.images().folder()) == 0);
+        UiProbeSupport.check("step 12: the ten seed photos are restored (D50)",
+            EditorProbeSupport.jpgCount(ctx.images().folder()) == store.equipment().size());
         UiProbeSupport.check("step 12: the added item is gone", byName(store, "Flow Camera") == null);
         frame.dispose();
     }
