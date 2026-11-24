@@ -71,11 +71,11 @@ re-render.
 deck/
 ├── build.sh              glue + render (27 lines)
 ├── base.css              page frame, palette, type scale
-├── components.css        cards, badges, mats
-├── panels.css            tables, code panels, stat tiles
+├── components.css        cream cards, numbered steps
+├── panels.css            cream panels, tables, inline class names
 ├── slides.css            per-slide coordinates
 ├── slide-01-title.html
-├── slide-02-problem.html
+├── slide-02-desk.html
 ├── …
 ├── art/                  logo, SVG marks
 └── fonts/                static TTFs + OFL licence texts
@@ -395,7 +395,7 @@ Build, then **look at every page**. There is no lint for "this looks broken".
 ```bash
 sh deck/build.sh
 
-pdfinfo deck.pdf | grep -E "Pages|Page size"     # 11 pages, 960 x 540 pts
+pdfinfo deck.pdf | grep -E "Pages|Page size"     # 5 pages, 960 x 540 pts
 pdffonts deck.pdf                                # only your fonts, EMB=yes
 pdftotext deck.pdf - | head -40                  # text is real, not outlines
 

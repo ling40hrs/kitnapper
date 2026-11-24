@@ -148,6 +148,19 @@ The attribution rules above now run on the Windows machine, not just the origina
 
 ## 9. Implementation Status
 
+- **WP9 — deck rebuilt around the talk** (2026-11-24, D56). The eleven-slide deck
+  described the build instead of the project: architecture stack, JSON excerpt,
+  verification tiles, lesson cards. In a six-minute slot that is both too long to
+  read and too abstract to listen to, and every page used the same shape — a bold
+  headline plus a supporting sentence. The presentation was written first, out of
+  the app and the decision log: the desk's problem, one live demo, the class that
+  owns each rule, and an honest page about scope and defects. The deck then shrank
+  to those five beats. Slide 4's table names `User`, `FeeStrategy` and `LoanService`
+  because the claims are checkable; slide 5's defects are D44, D49, D52 and D53,
+  each found by hand while the probes were green. `deck/build.sh` is unchanged; the
+  PDF is 5 pages at 960 × 540 pt. Design, palette and bundled fonts are untouched,
+  and `assets/deck/` keeps the captures as the live-demo fallback.
+
 - **WP8 — Windows demo delivery** (2026-11-24, D55). The app used to reach a demo
   machine only through NetBeans or a JDK on `PATH`. `build.bat`, `run.bat` and
   `reset-demo.bat` mirror `build.sh` for a JDK-only Windows box, and `package.bat`
@@ -174,7 +187,8 @@ The attribution rules above now run on the Windows machine, not just the origina
   `SettingsUiProbe` and `InventoryEditorProbe`. 21/21 green. Attribution lives in
   `seed-data.md`.
 
-- **WP6 complete: presentation deck** (2026-11-17). `assets/kitnapper-presentation.pdf`,
+- **WP6 complete: presentation deck** (2026-11-17, **superseded by WP9/D56 — the
+  deck is now five slides**). `assets/kitnapper-presentation.pdf`,
   eleven slides, 16:9 at 960 × 540 pt, dark theme in the app's own palette
   (`#1b1b1b`, accent `#F0A32E`) and the bundled Inter, so the deck reads as part of
   the product. Outline as planned in `HANDOFF-M6-PLAN.md` §7: title and team,

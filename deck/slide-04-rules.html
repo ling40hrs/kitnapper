@@ -1,0 +1,42 @@
+<section class="slide">
+  <div class="glow"></div><div class="glow-ring"></div>
+  <img class="shard shard-tr" src="art/hex-amber.svg" alt="" />
+  <img class="shard shard-br" src="art/hex-ghost.svg" alt="" />
+  <img class="ciit" src="art/ciit.png" alt="CiIT" />
+
+  <div class="tab"></div>
+  <h2 class="sec">Where each rule lives</h2>
+  <p class="lead">Every rule is implemented once, in the package that owns it.</p>
+
+  <div class="panel rules">
+    <table>
+      <tr><th style="width: 150pt">Rule</th><th style="width: 146pt">Implemented by</th><th>What the code does</th></tr>
+      <tr>
+        <td>Who signs in, and what they see</td>
+        <td><code>User</code>, <code>Borrower</code>, <code>Manager</code></td>
+        <td class="dim"><code>getRole()</code> is implemented per subclass. The shell asks the user
+          object for its role; the session never decides.</td>
+      </tr>
+      <tr>
+        <td>What a late return costs</td>
+        <td><code>FeeStrategy</code></td>
+        <td class="dim">One implementation at &#8369;50 per day. A second rule is a second class;
+          this one does not change.</td>
+      </tr>
+      <tr>
+        <td>Whether a checkout is allowed</td>
+        <td><code>LoanService</code></td>
+        <td class="dim">Three active loans, due date within fourteen days. An out-of-window date
+          is rejected even though the picker cannot produce one.</td>
+      </tr>
+      <tr>
+        <td>Who draws the screen</td>
+        <td><code>view</code></td>
+        <td class="dim">No reference to service or controller. Screens receive callbacks and
+          return commands.</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="foot"><span>desktop-app/src/kitnapper &middot; model, service, controller, view</span><b>4</b></div>
+</section>
