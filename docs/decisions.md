@@ -148,6 +148,18 @@ The attribution rules above now run on the Windows machine, not just the origina
 
 ## 9. Implementation Status
 
+- **Repository QR on the live-demo page** (2026-11-27, D58). The audience hears the
+  repo URL once and cannot write it down mid-talk, so slide 3 now carries the
+  maintainer's own code (`deck/art/qr-repo.svg`, version 5, 37 × 37 modules, tool
+  mark baked into the centre) in a cream panel in the same 404 pt right column as
+  the seeded accounts, 17 pt below it — the two cards align, and the demo rail on
+  the left keeps its space. Size was chosen for the scan: 96 pt of code (~0.83 mm
+  modules at 960 pt, ~0.72 mm printed A4 landscape) plus a 4 pt white gutter, which
+  lifts the SVG's 2-module margin to ~4 modules; the cream card is not a quiet
+  zone. The label is three levels of the deck's own type — `Source`, one sentence,
+  the URL in monospace — so a QR is never left unlabelled. `deck/build.sh` is
+  unchanged; the PDF is still 5 pages at 960 × 540 pt.
+
 - **Deck copy pass** (2026-11-24, D57). The five-slide deck still had page furniture
   written for the build record rather than the talk: a footer breadcrumb on every
   content page (`desktop-app/src/kitnapper · model, service, controller, view`, and

@@ -75,6 +75,42 @@
 .steps.demo { top: 208pt; width: 400pt; }
 .panel.accounts { left: auto; right: 52pt; top: 208pt; width: 404pt; }
 
+/* Repository QR: a quiet cream card under the accounts table, white tile so the
+   code keeps its contrast and its built-in quiet zone. */
+.panel.repo-qr {
+    left: auto;
+    right: 52pt;
+    top: 351pt;
+    width: 404pt;
+    display: flex;
+    align-items: center;
+    gap: 15pt;
+    padding: 12pt 16pt;
+}
+/* 96pt of code + 4pt white gutter: the modules stay ~0.8mm at full size, the
+   quiet zone reaches ~4 modules in white, and the card matches the height of
+   the accounts table above it. */
+.repo-qr img {
+    flex: 0 0 auto;
+    box-sizing: content-box;
+    width: 96pt;
+    height: 96pt;
+    padding: 4pt;
+    background: #ffffff;
+    border-radius: 5pt;
+}
+.repo-qr h3 {
+    margin: 0 0 4pt;
+    font-family: "Mont";
+    font-weight: 700;
+    font-size: 7.4pt;
+    letter-spacing: 1.2pt;
+    text-transform: uppercase;
+    color: #8c4e05;
+}
+.repo-qr p { margin: 0 0 4pt; font-size: 10pt; line-height: 1.3; color: #4a3826; }
+.repo-qr .url { font-family: "DejaVu Sans Mono", monospace; font-size: 8.4pt; color: #6b3c05; }
+
 /* ---- 04 rules ------------------------------------------------------ */
 
 .panel.rules { top: 206pt; padding: 20pt 19pt 16pt; }
