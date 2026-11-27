@@ -14,8 +14,8 @@
 - Plans must be thorough backbones, not sketches: objective, confirmed
   decisions, API contracts, file inventory, work packages in execution order,
   probe plan, documentation updates, git plan, risks, and a definition of done.
-- Put the plan in the repository root, named like the other handoffs
-  (`HANDOFF-M<N>-PLAN.md`). The repo is the source of truth — not a hidden or
+- Put the plan in `docs/handoffs/`, named like the other handoffs
+  (`docs/handoffs/HANDOFF-M<N>-PLAN.md`). The repo is the source of truth — not a hidden or
   external directory.
 - Keep a numbered **execution log** in the plan. Every plan or phase gets an
   entry before it is committed, with the starting HEAD, what changed, commands

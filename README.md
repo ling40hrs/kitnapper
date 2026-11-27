@@ -37,16 +37,6 @@ a machine with no JDK, no NetBeans and no PATH setup.
 ```
 Finals/                       (the repository root)
 ├── README.md
-├── HANDOFF-M1.md             working docs for finished milestones
-├── HANDOFF-M2.md
-├── HANDOFF-M3.md
-├── HANDOFF-M3-PLAN.md        M3 record: plan and execution log
-├── HANDOFF-M4.md             M4 scope note (historical at close-out)
-├── HANDOFF-M4-PLAN.md        M4 record: plan and execution log
-├── HANDOFF-M5.md             M5 scope note (historical at close-out)
-├── HANDOFF-M5-PLAN.md        M5 record: plan and execution log
-├── HANDOFF-M6-PLAN.md        M6 record: plan and execution log (WP0–WP5)
-├── HANDOFF-SESSION-2026-11-14.md
 ├── .editorconfig             shared formatting
 ├── .gitattributes            LF everywhere; binary assets not normalized
 ├── .gitignore
@@ -64,7 +54,18 @@ Finals/                       (the repository root)
 │   ├── decisions.md          decision log
 │   ├── implementation-plan.md  class inventory, JSON schema, milestones M0–M6
 │   ├── preferences.md        tracked working preferences
-│   └── seed-data.md          seed data scope note
+│   ├── seed-data.md          seed data scope note
+│   └── handoffs/             working docs for finished milestones
+│       ├── HANDOFF-M1.md
+│       ├── HANDOFF-M2.md
+│       ├── HANDOFF-M3.md
+│       ├── HANDOFF-M3-PLAN.md        M3 record: plan and execution log
+│       ├── HANDOFF-M4.md             M4 scope note (historical at close-out)
+│       ├── HANDOFF-M4-PLAN.md        M4 record: plan and execution log
+│       ├── HANDOFF-M5.md             M5 scope note (historical at close-out)
+│       ├── HANDOFF-M5-PLAN.md        M5 record: plan and execution log
+│       ├── HANDOFF-M6-PLAN.md        M6 record: plan and execution log (WP0–WP5)
+│       └── HANDOFF-SESSION-2026-11-14.md
 └── desktop-app/              NetBeans Ant project
     ├── build.sh              JDK-only clean/build/run helper (no Ant needed)
     ├── build.bat             the same compile step for Windows (JDK only)
@@ -190,14 +191,14 @@ Build output is written to `build/` and `dist/`, both of which are ignored by Gi
 | [`docs/seed-data.md`](docs/seed-data.md) | Where seed data lives and when to split it out |
 | [`docs/preferences.md`](docs/preferences.md) | Tracked, machine-independent working preferences: planning, one-phase execution, document-commit-push, verification |
 | [`docs/pdf-decks.md`](docs/pdf-decks.md) | Portable playbook for the deck pipeline: HTML/CSS → WeasyPrint, font instancing and subsetting, the layout bugs it hit, and the verification loop |
-| [`HANDOFF-M4.md`](HANDOFF-M4.md) | M4 scope note: current state, reuse map, gotchas, probe commands (historical at M4 close-out; the contract was `HANDOFF-M4-PLAN.md`) |
-| [`HANDOFF-M4-PLAN.md`](HANDOFF-M4-PLAN.md) | M4 record: plan, work packages, probe plan, execution log, width pass |
-| [`HANDOFF-M5.md`](HANDOFF-M5.md) | M5 scope note: inventory, photos, reset (historical at M5 close-out; the contract was `HANDOFF-M5-PLAN.md`) |
-| [`HANDOFF-M5-PLAN.md`](HANDOFF-M5-PLAN.md) | M5 record: plan, work packages, probe plan, execution log, deviations |
-| [`HANDOFF-M6-PLAN.md`](HANDOFF-M6-PLAN.md) | **M6 record:** plan, work packages (WP0–WP6 shipped), probe plan, execution log |
+| [`docs/handoffs/HANDOFF-M4.md`](docs/handoffs/HANDOFF-M4.md) | M4 scope note: current state, reuse map, gotchas, probe commands (historical at M4 close-out; the contract was `HANDOFF-M4-PLAN.md`) |
+| [`docs/handoffs/HANDOFF-M4-PLAN.md`](docs/handoffs/HANDOFF-M4-PLAN.md) | M4 record: plan, work packages, probe plan, execution log, width pass |
+| [`docs/handoffs/HANDOFF-M5.md`](docs/handoffs/HANDOFF-M5.md) | M5 scope note: inventory, photos, reset (historical at M5 close-out; the contract was `HANDOFF-M5-PLAN.md`) |
+| [`docs/handoffs/HANDOFF-M5-PLAN.md`](docs/handoffs/HANDOFF-M5-PLAN.md) | M5 record: plan, work packages, probe plan, execution log, deviations |
+| [`docs/handoffs/HANDOFF-M6-PLAN.md`](docs/handoffs/HANDOFF-M6-PLAN.md) | **M6 record:** plan, work packages (WP0–WP6 shipped), probe plan, execution log |
 | [`assets/kitnapper-presentation.pdf`](assets/kitnapper-presentation.pdf) | The presentation deck (five slides, 16:9, rebuilt for the class talk in D56); rebuilt by `deck/build.sh` |
-| [`HANDOFF-M3-PLAN.md`](HANDOFF-M3-PLAN.md) | M3 record: plan, work packages, probe plan, execution log |
-| [`HANDOFF-M3.md`](HANDOFF-M3.md), [`HANDOFF-M2.md`](HANDOFF-M2.md), [`HANDOFF-M1.md`](HANDOFF-M1.md), [`HANDOFF-SESSION-2026-11-14.md`](HANDOFF-SESSION-2026-11-14.md) | Historical records of finished milestones (machine-specific paths and probe commands are stale) |
+| [`docs/handoffs/HANDOFF-M3-PLAN.md`](docs/handoffs/HANDOFF-M3-PLAN.md) | M3 record: plan, work packages, probe plan, execution log |
+| [`docs/handoffs/HANDOFF-M3.md`](docs/handoffs/HANDOFF-M3.md), [`docs/handoffs/HANDOFF-M2.md`](docs/handoffs/HANDOFF-M2.md), [`docs/handoffs/HANDOFF-M1.md`](docs/handoffs/HANDOFF-M1.md), [`docs/handoffs/HANDOFF-SESSION-2026-11-14.md`](docs/handoffs/HANDOFF-SESSION-2026-11-14.md) | Historical records of finished milestones (machine-specific paths and probe commands are stale) |
 
 The PRD and SRS are the sources of truth for behavior. If implementation and documentation disagree, the documentation takes precedence until both are updated together.
 
@@ -213,7 +214,7 @@ The PRD and SRS are the sources of truth for behavior. If implementation and doc
 
 ## Status
 
-Documentation complete; M0 (domain core), M1 (JSON persistence), M2 (Win11 shell + mock login), **M3 (catalog + instant checkout)**, **M4 (returns, fees, manager views)**, **M5 (inventory, photos, reset, settings)** and **M6 (polish, closed 2026-11-17)** are implemented and probed on JDK 17. The SRS §6.2 walkthrough and the deck restyle (WP7) are recorded in `HANDOFF-M6-PLAN.md` §16; every deliverable is in the repository.
+Documentation complete; M0 (domain core), M1 (JSON persistence), M2 (Win11 shell + mock login), **M3 (catalog + instant checkout)**, **M4 (returns, fees, manager views)**, **M5 (inventory, photos, reset, settings)** and **M6 (polish, closed 2026-11-17)** are implemented and probed on JDK 17. The SRS §6.2 walkthrough and the deck restyle (WP7) are recorded in `docs/handoffs/HANDOFF-M6-PLAN.md` §16; every deliverable is in the repository.
 
 M3 ships the real Catalog screen: search plus category/status filters, a details table with a 280 px preview pane, a cards view with shared selection, an empty state, and a 480 px checkout dialog whose due date is a `T … T+14` picker. Checkout persists, locks the item, and keeps validation errors inline. Managers get the same catalog read-only — no checkout action, an explicit caption instead.
 
@@ -223,4 +224,4 @@ M6 is polish, not features: thin overlay-style scrollbars on every scroll surfac
 
 Verification lives **inside** the repository: `desktop-app/test/run-all.sh` builds the app and runs twenty probes (`DataProbe`, `CatalogProbe`, `LoanProbe`, `InventoryProbe`, `SkinProbe`, `FontProbe`, `EdgeProbe`, `SizeProbe`, `FrameProbe`, `CloseProbe`, `CatalogUiProbe`, `PhotoUiProbe`, `InventoryEditorProbe`, `InventoryUiProbe`, `SettingsUiProbe`, `M5FlowProbe`, `LoansLayoutProbe`, `LoansUiProbe`, `GeometryProbe`, `MotionProbe`), using `xvfb-run -a` for the paint probes so they work with or without a display. `KITNAPPER_UI_SCALE=1.25` (or `1.5`) runs the same suite at a DPI proxy. It is the gate for every remaining work package, together with the SRS §6.2 walkthrough.
 
-Delivered: WP6 — the presentation deck, restyled in WP7 to the maintainer's reference design with bundled Montserrat and Open Sauce One. The interactive SRS §6.2 pass was run on 1920×1080, 1366×768 and 1024×640 in both themes and by keyboard; its fifteen findings were fixed at the root (D44–D49) and the 20-probe suite is green. See `docs/decisions.md` for the decision record, `docs/implementation-plan.md` for the build order, and `HANDOFF-M6-PLAN.md` for the M6 record.
+Delivered: WP6 — the presentation deck, restyled in WP7 to the maintainer's reference design with bundled Montserrat and Open Sauce One. The interactive SRS §6.2 pass was run on 1920×1080, 1366×768 and 1024×640 in both themes and by keyboard; its fifteen findings were fixed at the root (D44–D49) and the 20-probe suite is green. See `docs/decisions.md` for the decision record, `docs/implementation-plan.md` for the build order, and `docs/handoffs/HANDOFF-M6-PLAN.md` for the M6 record.

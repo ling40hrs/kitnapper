@@ -204,7 +204,7 @@ The attribution rules above now run on the Windows machine, not just the origina
   deck is now five slides**). `assets/kitnapper-presentation.pdf`,
   eleven slides, 16:9 at 960 × 540 pt, dark theme in the app's own palette
   (`#1b1b1b`, accent `#F0A32E`) and the bundled Inter, so the deck reads as part of
-  the product. Outline as planned in `HANDOFF-M6-PLAN.md` §7: title and team,
+  the product. Outline as planned in `docs/handoffs/HANDOFF-M6-PLAN.md` §7: title and team,
   problem, borrower demo, manager demo, the remaining screens (checkout dialog,
   penalties, inventory), architecture, OOP evidence, persistence, verification
   numbers, limitations, lessons. The generator is committed under
@@ -241,7 +241,7 @@ The attribution rules above now run on the Windows machine, not just the origina
   eleven slide files (16–43) and `build.sh`; `style.css` is gone. Copy was condensed
   to fit the reference's density, but every figure survives, and two stale numbers
   were corrected: the seed is ten items (7 free, 3 out) and the §6.2 pass found
-  fifteen defects. Record in `HANDOFF-M6-PLAN.md` §16 (WP7).
+  fifteen defects. Record in `docs/handoffs/HANDOFF-M6-PLAN.md` §16 (WP7).
 
 - **M3 complete: catalog + instant checkout** (2026-11-16). The catalog is a
   real screen: page header, search + category/status filters, a details table
@@ -260,15 +260,15 @@ The attribution rules above now run on the Windows machine, not just the origina
   1024×640 the preview's ID row and caption collide and table badges truncate;
   toasts overlap the preview action bar while visible. Inventory and docs:
   `docs/implementation-plan.md` 1.8.0 (D24–D26), `docs/design.md` §5,
-  `docs/SRS.md` §6.2, `README.md`, `HANDOFF-M4.md`.
-- **M4 complete: returns, late fees, penalty settlement, manager views** (2026-11-16, WP0–WP6 + width pass). Real screens for My Loans, All Loans, Overdue, Penalties and Dashboard; `PenaltyService(+Impl)`/settle (manager-only, one-way, reason-mandatory waive), `accruedFee(loanId, asOf)` overload, shared `LoansTable`/`LoansTableModel`/`LoanPreviewPane`, `ReturnDialog`/`SettlePenaltyDialog`, `ScreenMounts`/`CatalogActions` extracted from `AppController`. Verified with `./build.sh` (187 classes, zero warnings), `ant clean jar`, and `test/run-all.sh` — **12/12 green** including the registered `LoansUiProbe` (`PASS=105 FAIL=0`), plus a 33/33 manual pass through the real `AppController` on a temp seed (SRS §6.2 steps 7–10 and the §10.1 extras, eight 1280×800 screenshots). Seed scenario holds: one overdue row (L-003, ₱200.00), a return freezes exactly one penalty, a waive with reason persists across relaunch, a due-today return creates nothing, and a maintenance flag survives the return (D15). Two defects found and fixed during the close-out: the settle dialog opened on `Waive…` with the reason field disabled (listener registered after the initial pick), and a manager's first status line was dropped because `openMain` routed before showing the frame. Docs: `docs/implementation-plan.md` 1.9.0 (D28–D31), `docs/SRS.md` 3.1.5 (§6.2 steps 8–10 wording), `docs/design.md` §5, `README.md`, `HANDOFF-M4-PLAN.md`, `HANDOFF-M5.md`. Known M6 polish: the penalties table clips its Assessed column at 1280 (no width policy), 1024×640 preview clipping, toast overlap.
+  `docs/SRS.md` §6.2, `README.md`, `docs/handoffs/HANDOFF-M4.md`.
+- **M4 complete: returns, late fees, penalty settlement, manager views** (2026-11-16, WP0–WP6 + width pass). Real screens for My Loans, All Loans, Overdue, Penalties and Dashboard; `PenaltyService(+Impl)`/settle (manager-only, one-way, reason-mandatory waive), `accruedFee(loanId, asOf)` overload, shared `LoansTable`/`LoansTableModel`/`LoanPreviewPane`, `ReturnDialog`/`SettlePenaltyDialog`, `ScreenMounts`/`CatalogActions` extracted from `AppController`. Verified with `./build.sh` (187 classes, zero warnings), `ant clean jar`, and `test/run-all.sh` — **12/12 green** including the registered `LoansUiProbe` (`PASS=105 FAIL=0`), plus a 33/33 manual pass through the real `AppController` on a temp seed (SRS §6.2 steps 7–10 and the §10.1 extras, eight 1280×800 screenshots). Seed scenario holds: one overdue row (L-003, ₱200.00), a return freezes exactly one penalty, a waive with reason persists across relaunch, a due-today return creates nothing, and a maintenance flag survives the return (D15). Two defects found and fixed during the close-out: the settle dialog opened on `Waive…` with the reason field disabled (listener registered after the initial pick), and a manager's first status line was dropped because `openMain` routed before showing the frame. Docs: `docs/implementation-plan.md` 1.9.0 (D28–D31), `docs/SRS.md` 3.1.5 (§6.2 steps 8–10 wording), `docs/design.md` §5, `README.md`, `docs/handoffs/HANDOFF-M4-PLAN.md`, `docs/handoffs/HANDOFF-M5.md`. Known M6 polish: the penalties table clips its Assessed column at 1280 (no width policy), 1024×640 preview clipping, toast overlap.
 - **Scope: photos + skeleton loading moved to M5** (2026-11-15, D27). Seed items
   carry no photos (D11) and catalog queries are synchronous, so `PhotoTile`,
   `SkeletonPanel`, `SkeletonGate`, `SkeletonProbe`, and `PhotoTileProbe` ship
   with the inventory photo picker instead of M3. M3's catalog renders
   `GradientTile` only. Updated in `implementation-plan.md` (D27, M3/M5 rows,
   view inventory, revision 1.6.0), `design.md` §13/§14.2, and
-  `HANDOFF-M3-PLAN.md` §6.2/§8.9/§9/§14. Also synced the plan's commit wording
+  `docs/handoffs/HANDOFF-M3-PLAN.md` §6.2/§8.9/§9/§14. Also synced the plan's commit wording
   with `preferences.md` §3 (documented tasks ship without asking).
 - **Probe harness rebuilt in-repo (WP0.5)** (2026-11-15, base `60df95d`). Eight
   probes under `desktop-app/test/kitnapper/` (`DataProbe` 26, `CatalogProbe` 28,
@@ -278,7 +278,7 @@ The attribution rules above now run on the Windows machine, not just the origina
   `kitnapper.view` because `ResizeEdge`, `Sidebar`, and `ScreenCatalog` are
   package-private. Nothing under `test/` compiles into the app jar.
   `test/run-all.sh` is the verification gate for every remaining M3 work
-  package; baselines recorded in `HANDOFF-M3-PLAN.md` §9.4/§17.
+  package; baselines recorded in `docs/handoffs/HANDOFF-M3-PLAN.md` §9.4/§17.
 - **Debt cleanup + probe-rebuild plan** (2026-11-15, `77e900e` base). All
   line-cap violations cleared: `JsonParser` 202 → `JsonParser`/`JsonScanner`,
   `ResizeBands` 213 → `ResizeBands`/`ResizeEdge`, `MainFrame` 182 →
@@ -290,7 +290,7 @@ The attribution rules above now run on the Windows machine, not just the origina
   gives Ant-less machines a `clean|build|run` path (92 classes, zero warnings).
   `.gitattributes` enforces LF; `docs/logout-tokens.md` deleted. The lost probe
   harness is planned for `desktop-app/test/kitnapper/` (WP0.5 in
-  `HANDOFF-M3-PLAN.md`) — **planned, not yet built**, and blocking WP2
+  `docs/handoffs/HANDOFF-M3-PLAN.md`) — **planned, not yet built**, and blocking WP2
   verification. Existing `view/Dialogs` and `Theme.addThemeListener` stay.
 - **M3 WP1 complete: catalog/loan services and controllers** (2026-11-14,
   `19a1e1b`). `CatalogService(+Impl)` (name/serial search, category and status
@@ -304,7 +304,7 @@ The attribution rules above now run on the Windows machine, not just the origina
   2026-11-15 debt pass. Verified with `CatalogProbe` (28 checks) plus the full
   existing probe suite; no `kitnapper.view` file changed. **The catalog UI
   (WP2–WP6) is not written** — Catalog is still the M2 placeholder. See
-  `HANDOFF-M3-PLAN.md` §17.
+  `docs/handoffs/HANDOFF-M3-PLAN.md` §17.
 - **M2 complete: Win11 shell + mock login implemented** (2026-11-14). Two-frame
   flow (`LoginFrame` ↔ `MainFrame`) with custom-painted chrome (drag, resize
   bands, manual maximize to the work area), role-grouped sidebar, omnibar with
@@ -318,7 +318,7 @@ The attribution rules above now run on the Windows machine, not just the origina
   **Verification caveat:** the pre-split build compiled, jarred, and passed a
   scripted UI walkthrough (login/error/shell/sign-out/manager/theme/maximize/
   drag/resize/close); the post-split rewrite was **not** re-compiled before the
-  machine was retired — verify first (see `HANDOFF-M3.md` §2).
+  machine was retired — verify first (see `docs/handoffs/HANDOFF-M3.md` §2).
 - **M1 complete: JSON persistence layer implemented.** `kitnapper.service` +
   `kitnapper.service.persistence` (14 files): hand-written JSON parser/writer (no
   libraries), entity mappers for all three equipment kinds, `AppData`/`DataStore(+Impl)`
@@ -326,7 +326,7 @@ The attribution rules above now run on the Windows machine, not just the origina
   skeleton interface, and the PRD 9 seed dataset computed relative to the seeding
   date (D4). Round-trip and corruption checks (16/16) ran through a scratch `main`
   deleted before the commit (`fe9ed34`). `design.md` §13 (skeleton loading states) was
-  then resolved with the user. Next: M2 (shell + login) — see `HANDOFF-M2.md`.
+  then resolved with the user. Next: M2 (shell + login) — see `docs/handoffs/HANDOFF-M2.md`.
 - **M0 complete: domain core implemented.** The `kitnapper.model` layer (18 files per `implementation-plan.md` §2.1, including `GeneralEquipment` for the JSON `BASE` kind) compiled and enforced INV-1/2/4/5; at that point `Main.java` was still a blank placeholder and nothing was runnable. The scaffold is the NetBeans Ant project at `desktop-app/` (`C:\Users\CIIT\Downloads\kitnapper\desktop-app` on that retired machine).
 - Future build order: model → service/persistence → Swing views → demo polish. **Detailed in `docs/implementation-plan.md` (milestones M0–M6) — follow it one milestone at a time; the class inventory, JSON schema, and implementation decisions D1–D6 live there.**
 - Respect `OOP/AGENTS.md`: Java 17 + Swing, NetBeans Ant, no third-party libraries, 200-line file cap, MVC separation.
